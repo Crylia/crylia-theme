@@ -1,0 +1,90 @@
+configuration {
+    modi: "run,drun,window";
+    width: 30;
+    font: "UbuntuMono Nerd Font Regular Mono 12";
+    terminal: "alacritty";
+    line-margin: 0;
+    line-padding: 0;
+    separator-style: "solid";
+    hide-scrollbar: true;
+    display-drun: "Apps";
+    display-run: "Run";
+    display-window: "Windows";
+    show-icons: true;
+}
+/*
+background = #1d212a
+foreground = #a6bcfa
+yellow = #fee38f
+red = #fc8995
+green = #8ae19c
+blue = #a6bcfa
+purple = #de95d5
+strongpurple = #EAA3FC
+cyan = #81d4ef
+pink = #F3D1F4
+bluegreen = #A8E6CF
+*/
+
+* {
+    bg: #1d212a;
+    fg: #a6bcfa;
+    background-color: @bg;
+    text-color: @fg;
+    separatorcolor: #fc8995;
+}
+
+window {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px;
+    border-color: #a6bcfa;
+}
+
+prompt, entry {
+    text-color: #fc8995;
+    padding: 0px;
+}
+
+entry {
+    border-radius: 4px;
+    margin: 0 0 10px 10px;
+}
+
+mainbox {
+    background-color: #8ae19c;
+}
+
+listview {
+    padding: 10px 0 0 0;
+}
+
+prompt {
+    background-color: #fc8995;
+    text-color: @bg;
+    margin: 0 0 10px 0;
+    border-radius: 4px;
+    padding: 1px 4px 1px 4px;
+}
+
+element {
+    border-radius: 4px;
+    text-color: #a6bcfa;
+    padding: 4px;
+}
+
+element selected{
+    background-color: @fg;
+    text-color: @bg;
+}
+
+button {
+    padding: 10px;
+}
+
+button selected {
+    background-color: #fff;
+    text-color: @bg;
+    padding: 20px;
+}
+
