@@ -1,90 +1,119 @@
 configuration {
-    modi: "run,drun,window";
-    width: 30;
-    font: "UbuntuMono Nerd Font Regular Mono 12";
-    terminal: "alacritty";
-    line-margin: 0;
-    line-padding: 0;
-    separator-style: "solid";
-    hide-scrollbar: true;
-    display-drun: "Apps";
-    display-run: "Run";
-    display-window: "Windows";
-    show-icons: true;
+    modi:               "run,drun,window";
+    font:               "JetBrainsMono Nerd Font 14";
+    terminal:           "alacritty";
+    icon-theme:         "Papirus";
+    line-margin:        0;
+    line-padding:       0;
+    separator-style:    "solid";
+    hide-scrollbar:     true;
+    display-drun:       "ﬓ";
+    display-run:        "";
+    display-window:     "缾";
+    show-icons:         true;
 }
-/*
-background = #1d212a
-foreground = #a6bcfa
-yellow = #fee38f
-red = #fc8995
-green = #8ae19c
-blue = #a6bcfa
-purple = #de95d5
-strongpurple = #EAA3FC
-cyan = #81d4ef
-pink = #F3D1F4
-bluegreen = #A8E6CF
-*/
 
 * {
-    bg: #1d212a;
-    fg: #a6bcfa;
-    background-color: @bg;
-    text-color: @fg;
-    separatorcolor: #fc8995;
+    background:         #21212166;
+    background-alt:     #00000000;
+    background-bar:     #f2f2f215;
+    foreground:         #f2f2f2EE;
+    accent:			    #3DAEE966;
 }
 
 window {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px;
-    border-color: #a6bcfa;
-}
-
-prompt, entry {
-    text-color: #fc8995;
-    padding: 0px;
-}
-
-entry {
-    border-radius: 4px;
-    margin: 0 0 10px 10px;
-}
-
-mainbox {
-    background-color: #8ae19c;
-}
-
-listview {
-    padding: 10px 0 0 0;
+    background-color:   @background;
+    text-color:         @foreground;
+	border:				0px;
+	border-color:		@border;
+    border-radius:      0px;
+	width:				100%;
+	height:				100%;
 }
 
 prompt {
-    background-color: #fc8995;
-    text-color: @bg;
-    margin: 0 0 10px 0;
-    border-radius: 4px;
-    padding: 1px 4px 1px 4px;
+    enabled: 			true;
+	padding: 			0 0.5% 0 0.5%;
+    margin:             0 1% 0 0;
+	background-color: 	@background-alt;
+	text-color: 		@foreground;
+    font:               "JetBrainsMono Nerd Font 24";
+
+}
+
+entry {
+    background-color:   @background-alt;
+    text-color:         @foreground;
+    placeholder-color:  @foreground;
+    expand:             true;
+    horizontal-align:   0;
+    placeholder:        "Search";
+    padding:            1% 0 1% 0;
+    blink:              true;
+}
+
+inputbar {
+	children: 			[ prompt, entry ];
+    background-color:   @background-bar;
+    text-color:         @foreground;
+    expand:             false;
+	border:				0% 0% 0% 0%;
+    border-radius:      5px;
+	border-color:		@accent;
+    margin:             0% 25% 0% 25%;
+    padding:            0.2% 0.5% 0.2% 0.5%;
+}
+
+listview {
+    background-color:   @background-alt;
+    columns:            3;
+    spacing:            0%;
+    cycle:              false;
+    dynamic:            true;
+    layout:             vertical;
+}
+
+mainbox {
+    background-color:   @background-alt;
+	border:			    0% 0% 0% 0%;
+    border-radius:      0% 0% 0% 0%;
+	border-color:	    @accent;
+    children:           [ inputbar, listview ];
+    spacing:            8%;
+    padding:            10% 12.5% 10% 12.5%;
+}
+
+element-icon {
+    background-color: 	@background;
+    text-color:       	inherit;
+    horizontal-align:   0.5;
+    vertical-align:     0.5;
+    border:             0px;
+}
+
+element-text {
+    background-color: 	@background;
+    text-color:       	inherit;
+    expand:             true;
+    horizontal-align:   0.5;
+    vertical-align:     0.5;
+    margin:             0;
 }
 
 element {
-    border-radius: 4px;
-    text-color: #a6bcfa;
-    padding: 4px;
+    children:           [element-icon, element-text];
+    orientation:        vertical;
+    background-color:   @background-alt;
+    text-color:         @foreground;
+    padding:            1.5% 0.5% 1.5% 0.5%;
+    margin:             0.3% 1% 0.3% 1%;
+    font:               "JetBrainsMono Nerd Font 20";
 }
 
-element selected{
-    background-color: @fg;
-    text-color: @bg;
+element selected {
+    background-color:   @background-bar;
+    text-color:         @foreground;
+	border-radius:      5px;
+    border:             0px;
+    border-color:       #90CAF9;
 }
-
-button {
-    padding: 10px;
-}
-
-button selected {
-    background-color: #fff;
-    text-color: @bg;
-    padding: 20px;
-}
-
