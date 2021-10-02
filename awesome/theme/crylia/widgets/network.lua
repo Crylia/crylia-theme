@@ -90,7 +90,7 @@ return function ()
             echo "Connected but no internet"
         fi
     ]=]
-        
+
     local update_startup = function ()
         if startup then
             startup = false

@@ -115,6 +115,7 @@ awful.screen.connect_for_each_screen(
         s.calendar_osd = require("theme.crylia.modules.calendar_osd")()
         s.addtag = require("theme.crylia.widgets.addtag")()
         s.layoutlist = require("theme.crylia.widgets.layout_list")()
+        s.powerbutton = require("theme.crylia.widgets.power")()
 
 
         s.top_left:setup {
@@ -203,6 +204,13 @@ awful.screen.connect_for_each_screen(
                 },
                 {
                     s.clock,
+                    left = dpi(3),
+                    right = dpi(3),
+                    top = dpi(6),
+                    bottom = dpi(6),
+                    widget = wibox.container.margin
+                },{
+                    s.powerbutton,
                     left = dpi(3),
                     right = dpi(6),
                     top = dpi(6),

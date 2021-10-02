@@ -88,6 +88,6 @@ awful.rules.rules = main.rules(
 require("main.signals")
 
 -- Autostart programs
-awful.spawn.with_shell("~/.screenlayout/screen.sh")
+awful.spawn.with_shell("~/.screenlayout/single_screen.sh")
 awful.spawn.with_shell("picom --experimental-backends")
 awful.spawn.with_shell("xfce4-power-manager")

@@ -260,7 +260,7 @@ function _M.get()
 	        { modkey },
 	        "d",
 	        function ()
-	        	awful.spawn("rofi -show run")
+	        	awful.spawn("rofi -show drun -theme ~/.config/rofi/appmenu/rofi.rasi")
 	        end,
 	        { descripton = "Start a Application", group = "Application" }
 	    ),
@@ -268,7 +268,7 @@ function _M.get()
 	        { modkey },
 	        "Tab",
 	        function ()
-	        	awful.spawn("rofi -show window")
+	        	awful.spawn("rofi -show window -theme ~/.config/rofi/appmenu/rofi.rasi")
 	        end,
 	        { descripton = "Start a Application", group = "Application" }
 	    ),

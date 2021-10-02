@@ -13,7 +13,7 @@ local _M = { }
 local terminal = RC.vars.terminal
 
 M.session = {
-    { "Logout", function () awful.spawn.with_shell('logout') end },
+    { "Logout", function () awesome.quit() end },
     { "Shutdown", function () awful.spawn.with_shell('shutdown now') end },
     { "Reboot", function () awful.spawn.with_shell('reboot') end },
 }
