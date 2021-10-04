@@ -1,5 +1,5 @@
 configuration {
-	font: "Inter Regular 10";
+	font: "JetBrainsMono Nerd Font 11";
 	show-icons: true;
 	drun-display-format: "{name}";
 	fullscreen: false;
@@ -9,6 +9,9 @@ configuration {
 	disable-history: false;
 	fullscreen: true;
 	window-thumbnail: true;
+	display-drun:       "";
+    display-run:        "";
+    display-window:     "缾";
 }
 
 * {
@@ -36,8 +39,8 @@ prompt {
 
 button {
 	action: "ok";
-	str: " ";
-	font: "FantasqueSansMono Nerd Font 11";
+	str: "";
+	font: "JetBrainsMono Nerd Font 11";
 	expand: false;
 	text-color: @foreground;
 	background-color: @transparent;
@@ -46,12 +49,12 @@ button {
 }
 
 entry {
-	font: "Inter Regular 11";
+	font: "JetBrainsMono Nerd Font 11";
 	background-color: @transparent;
 	text-color: @foreground;
 	expand: true;
 	vertical-align: 0.5;
-	horizontal-align: 0.5;
+	margin: 0 0 0 10px;
 	placeholder: "Type to search";
 	placeholder-color: @foreground;
 	blink: true;
@@ -97,7 +100,6 @@ mainbox {
 	children: [ inputbar, listview ];
 	spacing: 25px;
 	padding: 70px 15% 0 15%;
-	/*padding: 70px 135px 0 135px;*/
 }
 
 element {
