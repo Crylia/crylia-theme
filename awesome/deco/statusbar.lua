@@ -17,10 +17,7 @@ awful.screen.connect_for_each_screen(
 
         -- Bar for the layoutbox, taglist and newtag button
         s.top_left = awful.popup {
-            widget = {
-                margins = dpi(10),
-                widget = wibox.container.margin
-            },
+            widget = wibox.container.background,
             ontop = false,
             bg = colors.color["Grey900"],
             stretch = false,
@@ -112,8 +109,8 @@ awful.screen.connect_for_each_screen(
         s.date = require("theme.crylia.widgets.date")()
         s.clock = require("theme.crylia.widgets.clock")()
         s.bluetooth = require("theme.crylia.widgets.bluetooth")()
-        s.calendar_osd = require("theme.crylia.modules.calendar_osd")()
-        s.addtag = require("theme.crylia.widgets.addtag")()
+        s.calendar_osd = require("theme.crylia.modules.calendar_osd")
+        --s.addtag = require("theme.crylia.widgets.addtag")()
         s.layoutlist = require("theme.crylia.widgets.layout_list")()
         s.powerbutton = require("theme.crylia.widgets.power")()
 
@@ -130,11 +127,6 @@ awful.screen.connect_for_each_screen(
                 {
                     taglist(s),
                     margins = dpi(6),
-                    widget = wibox.container.margin
-                },
-                {
-                    s.addtag,
-                    margins = dpi(7),
                     widget = wibox.container.margin
                 },
                 forced_height = 45,
@@ -236,10 +228,11 @@ awful.screen.connect_for_each_screen(
             },
             layout = wibox.layout.align.vertical
         }
-        --[[ s.calendar_osd_container:setup{
+        s.calendar_osd_container:setup{
             s.calendar_osd,
+            visible = false,
             layout = wibox.layout.align.horizontal
-        } ]]
+        }
 
         -- Signals
         awesome.connect_signal(

@@ -10,7 +10,7 @@ function _M.get()
         awful.key(
             { modkey },
             "f",
-            function (c)
+            function(c)
                 c.fullscreen = not c.fullscreen
                 c:raise()
             end,
@@ -19,24 +19,34 @@ function _M.get()
         awful.key(
             { modkey },
             "q",
-            function (c)
+            function(c)
                 c:kill()
             end,
             { description = "Close window", group = "Client" }
         ),
         awful.key(
-            { modkey, "Shift" },
+            { modkey, "Control" },
             "Space",
             awful.client.floating.toggle,
             { description = "Toggle floating window", group = "Client" }
         ),
         awful.key(
-            { modkey, "Control" },
-            "r",
+            { modkey},
+            "m",
             function (c)
-                awesome.restart()
+                c.maximized = not c.maximized
+                c:raise()
+            end ,
+            {description = "(un)maximize", group = "client"}
+        ),
+        awful.key(
+            { modkey, "Control" },
+            "m",
+            function (c)
+                c.maximized_vertical = not c.maximized_vertical
+                c:raise()
             end,
-            { description = "Restart awesome", group = "Client" }
+            { description = "Unmaximize", group = "client"}
         )
     )
     return clientkeys

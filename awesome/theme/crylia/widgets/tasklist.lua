@@ -43,7 +43,8 @@ local list_update = function (widget, buttons, label, data, objects)
 					task_title,
 					layout = wibox.layout.fixed.horizontal
 				},
-				margins = dpi(0),
+				right = dpi(5),
+				left = dpi(5),
 				widget = wibox.container.margin
 			},
 			bg = color.color["White"],

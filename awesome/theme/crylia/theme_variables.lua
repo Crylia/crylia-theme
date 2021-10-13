@@ -41,8 +41,8 @@ Theme.menu_border_width = dpi(1)
 Theme.taglist_fg_focus = colors.color["Grey900"]
 Theme.taglist_bg_focus = colors.color["White"]
 
-Theme.tooltip_border_color = colors.color["Grey800"]
-Theme.tooltip_bg = colors.color["White"] .. "00"
+Theme.tooltip_border_color = colors.color["Grey700"]
+Theme.tooltip_bg = colors.color["Grey800"]
 Theme.tooltip_fg = colors.color["White"]
 Theme.tooltip_border_width = dpi(1)
 Theme.tooltip_shape = function (cr, width, heigth)

@@ -8,7 +8,7 @@ local modkey = RC.vars.modkey
 function _M.get(globalkeys)
     for i = 1, 9 do
         globalkeys = gears.table.join(globalkeys,
-        
+
         -- View tag only
         awful.key(
             {modkey},
@@ -19,6 +19,7 @@ function _M.get(globalkeys)
                 if tag then
                     tag:view_only()
                 end
+                client.emit_signal("tag::switched")
             end,
             {description = "View Tag " .. i, group = "Tag"}
         ),
@@ -43,7 +44,7 @@ function _M.get(globalkeys)
                 local screen = awful.screen.focused()
                 local tag = screen.tags[i]
                 if tag then
-                    awful.tag.viewtoggle(tag)
+                    client.focus:move_to_tag(tag)
                 end
             end,
             {description = "Move focused client on tag " .. i, group = "Tag"}

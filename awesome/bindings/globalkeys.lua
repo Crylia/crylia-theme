@@ -112,7 +112,7 @@ function _M.get()
             { modkey },
             "Return",
             function ()
-                awful.spawn(terminal)
+                awful.spawn("alacritty -o font.size=8.0")
             end,
             {description = "Open terminal", group = "Launcher"}
         ),
@@ -280,6 +280,14 @@ function _M.get()
 	        end,
 	        { descripton = "Start a Application", group = "Application" }
 	    ),
+        awful.key(
+            { modkey, "Shift" },
+            "e",
+            function ()
+                awful.spawn("rofi -show power-menu -modi 'power-menu:~/.config/rofi/rofi-power-menu --choices=shutdown/reboot/logout/lockscreen' -theme ~/.config/rofi/powermenu/powermenu.rasi")
+            end,
+            { descripton = "Open the exit window", group = "System" }
+        ),
         awful.key(
             { },
             "Print",

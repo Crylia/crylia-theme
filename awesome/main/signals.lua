@@ -1,6 +1,8 @@
 -- Awesome Libs
 local awful = require("awful")
 local beautiful = require("beautiful")
+local naughty = require("naughty")
+
 
 client.connect_signal(
     "manage",
@@ -10,6 +12,41 @@ client.connect_signal(
         end
     end
 )
+
+client.connect_signal(
+    'unmanage',
+    function(c)
+        if #awful.screen.focused().clients > 0 then
+            awful.screen.focused().clients[1]:emit_signal(
+                'request::activate',
+                'mouse_enter',
+                {
+                    raise = true
+                }
+            )
+        end
+    end
+)
+
+client.connect_signal(
+    'tag::switched',
+    function(c)
+        if #awful.screen.focused().clients > 0 then
+            awful.screen.focused().clients[1]:emit_signal(
+                'request::activate',
+                'mouse_enter',
+                {
+                    raise = true
+                }
+            )
+        end
+    end
+)
+
+-- Sloppy focus
+client.connect_signal("mouse::enter", function(c)
+    c:emit_signal("request::activate", "mouse_enter", {raise = false})
+end)
 
 -- Workaround for focused border color, why in the love of god doesnt it work with
 -- beautiful.border_focus

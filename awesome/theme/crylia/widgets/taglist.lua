@@ -65,9 +65,9 @@ local list_update = function (widget, buttons, label, data, objects)
 
         tag_widget:buttons(buttons, object)
 
-        --local text, bg_color, bg_image, icon, args = label(object, tag_label)
+        local text, bg_color, bg_image, icon, args = label(object, tag_label)
 
-        tag_label:set_text(i)
+        tag_label:set_text(object.index)
 
         if object == awful.screen.focused().selected_tag then
             tag_widget:set_bg(color.color["White"])
@@ -143,7 +143,7 @@ local list_update = function (widget, buttons, label, data, objects)
                 end
             end
         )
-        
+
         widget:add(tag_widget)
         widget:set_spacing(dpi(6))
     end
@@ -153,7 +153,7 @@ end
 local tag_list = function (s)
     return awful.widget.taglist(
         s,
-        awful.widget.taglist.filter.all,
+        awful.widget.taglist.filter.noempty,
         gears.table.join(
             awful.button(
                 { },
@@ -200,9 +200,7 @@ local tag_list = function (s)
                 { },
                 5,
                 function (t)
-                    if client.focus then
-                        awful.tag.viewprev(t.screen)
-                    end
+                    awful.tag.viewprev(t.screen)
                 end
             )
         )

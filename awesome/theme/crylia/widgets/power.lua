@@ -75,6 +75,7 @@ return function ()
         "button::release",
         function ()
             power_widget.bg = color.color["Red200"] .. "dd"
+            awful.spawn("rofi -show power-menu -modi 'power-menu:~/.config/rofi/rofi-power-menu --choices=shutdown/reboot/logout/lockscreen' -theme ~/.config/rofi/powermenu/powermenu.rasi")
         end
     )
 
