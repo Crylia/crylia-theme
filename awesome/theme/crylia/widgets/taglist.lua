@@ -3,6 +3,7 @@ local awful = require("awful")
 local gears = require("gears")
 local dpi = require("beautiful").xresources.apply_dpi
 local color = require("theme.crylia.colors")
+local naughty = require("naughty")
 
 local list_update = function (widget, buttons, label, data, objects)
     widget:reset()
@@ -63,7 +64,31 @@ local list_update = function (widget, buttons, label, data, objects)
 			widget = wibox.widget.background
         }
 
-        tag_widget:buttons(buttons, object)
+        local function create_buttons(buttons, object)
+			if buttons then
+				local btns = {}
+				for _, b in ipairs(buttons) do
+					-- Create a proxy button object: it will receive the real
+					-- press and release events, and will propagate them to the
+					-- button object the user provided, but with the object as
+					-- argument.
+					local btn = awful.button {
+						modifiers = b.modifiers,
+						button = b.button,
+						on_press = function()
+							b:emit_signal('press', object)
+						end,
+						on_release = function()
+							b:emit_signal('release', object)
+						end
+					}
+					btns[#btns + 1] = btn
+				end
+				return btns
+			end
+		end
+
+        tag_widget:buttons(create_buttons(buttons, object))
 
         local text, bg_color, bg_image, icon, args = label(object, tag_label)
 
@@ -94,7 +119,7 @@ local list_update = function (widget, buttons, label, data, objects)
 			        margins = dpi(6),
 			        widget = wibox.container.margin
                 }
-                icon.icon_container.icon:set_image(client.icon)
+                icon.icon_container.icon:set_image(client:get_icon(1))
                 tag_widget.widget_margin.container:setup({
                     icon,
                     layout = wibox.layout.align.horizontal
@@ -110,7 +135,12 @@ local list_update = function (widget, buttons, label, data, objects)
             "mouse::enter",
             function ()
                 old_bg = tag_widget.bg
-                tag_widget.bg = "#3A475C" .. "dd"
+                --naughty.notify({title = tostring(old_bg)})
+                if object == awful.screen.focused().selected_tag then
+                    tag_widget.bg = '#dddddd' .. 'dd'
+                else
+                    tag_widget.bg = '#3A475C' .. 'dd'
+                end
                 local w = mouse.current_wibox
                 if w then
                     old_cursor, old_wibox = w.cursor, w
@@ -122,14 +152,22 @@ local list_update = function (widget, buttons, label, data, objects)
         tag_widget:connect_signal(
             "button::press",
             function ()
-                tag_widget.bg = "#3A475C" .. "bb"
+                if object == awful.screen.focused().selected_tag then
+                    tag_widget.bg = '#bbbbbb' .. 'dd'
+                else
+                    tag_widget.bg = '#3A475C' .. 'dd'
+                end
             end
         )
 
         tag_widget:connect_signal(
             "button::release",
             function ()
-                tag_widget.bg = "#3A475C" .. "dd"
+                if object == awful.screen.focused().selected_tag then
+                    tag_widget.bg = '#dddddd' .. 'dd'
+                else
+                    tag_widget.bg = '#3A475C' .. 'dd'
+                end
             end
         )
 
@@ -147,7 +185,6 @@ local list_update = function (widget, buttons, label, data, objects)
         widget:add(tag_widget)
         widget:set_spacing(dpi(6))
     end
-
 end
 
 local tag_list = function (s)

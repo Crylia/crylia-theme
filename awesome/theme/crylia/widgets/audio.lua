@@ -115,6 +115,7 @@ return function ()
     audio_widget:connect_signal(
         "button::press",
         function ()
+            awesome.emit_signal("module::volume_osd:show", true)
             audio_widget.bg = color.color["Yellow200"] .. "bb"
         end
     )
@@ -134,13 +135,6 @@ return function ()
                 old_wibox.cursor = old_cursor
                 old_wibox = nil
             end
-        end
-    )
-
-    audio_widget:connect_signal(
-        "button::press",
-        function ()
-            awesome.emit_signal("module::volume_osd:show", true)
         end
     )
 

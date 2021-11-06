@@ -62,7 +62,31 @@ local list_update = function (widget, buttons, label, data, objects)
 			delay_show = 1
 		}
 
-		task_widget:buttons(buttons, object)
+		local function create_buttons(buttons, object)
+			if buttons then
+				local btns = {}
+				for _, b in ipairs(buttons) do
+					-- Create a proxy button object: it will receive the real
+					-- press and release events, and will propagate them to the
+					-- button object the user provided, but with the object as
+					-- argument.
+					local btn = awful.button {
+						modifiers = b.modifiers,
+						button = b.button,
+						on_press = function()
+							b:emit_signal('press', object)
+						end,
+						on_release = function()
+							b:emit_signal('release', object)
+						end
+					}
+					btns[#btns + 1] = btn
+				end
+				return btns
+			end
+		end
+
+		task_widget:buttons(create_buttons(buttons, object))
 
 		local text, bg, bg_image, icon, args = label(object, task_title)
 
@@ -72,7 +96,7 @@ local list_update = function (widget, buttons, label, data, objects)
 			else
 				local text_full = text:match('>(.-)<')
 				if text_full then
-					text = text_full
+					text = object.class:sub(1,20)
 					task_tool_tip:set_text(text_full)
 					task_tool_tip:add_to_object(task_widget)
 				else
@@ -88,7 +112,7 @@ local list_update = function (widget, buttons, label, data, objects)
 		end
 
 		if icon then
-			task_icon.icon:set_image(icon)
+			task_icon.icon:set_image(object:get_icon(1))
 		else
 			task_icon_margin:set_margins(0)
 		end
@@ -101,7 +125,11 @@ local list_update = function (widget, buttons, label, data, objects)
     	    "mouse::enter",
     	    function ()
     	        old_bg = task_widget.bg
-    	        task_widget.bg = "#ffffff" .. "bb"
+				if object == client.focus then
+                    task_widget.bg = '#dddddddd'
+				else
+					task_widget.bg = '#3A475Cdd'
+				end
     	        local w = mouse.current_wibox
     	        if w then
     	            old_cursor, old_wibox = w.cursor, w
@@ -113,14 +141,22 @@ local list_update = function (widget, buttons, label, data, objects)
     	task_widget:connect_signal(
     	    "button::press",
     	    function ()
-    	        task_widget.bg = "#ffffff" .. "aa"
+    	        if object == client.focus then
+					task_widget.bg = "#ffffffaa"
+				else
+					task_widget.bg = '#3A475Caa'
+				end
     	    end
     	)
 
     	task_widget:connect_signal(
     	    "button::release",
     	    function ()
-    	        task_widget.bg = "#ffffff" .. "bb"
+    	        if object == client.focus then
+					task_widget.bg = "#ffffffdd"
+				else
+					task_widget.bg = '#3A475Cdd'
+				end
     	    end
     	)
 
@@ -148,20 +184,32 @@ return function(s)
 	return awful.widget.tasklist(
 		s,
 		awful.widget.tasklist.filter.currenttags,
-		gears.table.join(
+		awful.util.table.join(
 			awful.button(
 				{},
 				1,
-				function (c)
+				function(c)
 					if c == client.focus then
 						c.minimized = true
 					else
+						-- Without this, the following
+						-- :isvisible() makes no sense
 						c.minimized = false
-						if not c.invisible() and c.first_tag then
-							c:emit_signal("request::activate")
-							c:raise()
+						if not c:isvisible() and c.first_tag then
+							c.first_tag:view_only()
 						end
+						-- This will also un-minimize
+						-- the client, if needed
+						c:emit_signal('request::activate')
+						c:raise()
 					end
+				end
+			),
+			awful.button(
+				{},
+				3,
+				function(c)
+					c:kill()
 				end
 			)
 		),

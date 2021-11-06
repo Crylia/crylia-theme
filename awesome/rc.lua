@@ -87,6 +87,9 @@ awful.rules.rules = main.rules(
 -- Signals
 require("main.signals")
 
+-- Titlebar
+require("theme.crylia.modules.titlebar")
+
 -- Autostart programs
 --awful.spawn.with_shell("~/.screenlayout/single_screen.sh")
 awful.spawn.with_shell("picom --experimental-backends")

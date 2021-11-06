@@ -25,8 +25,8 @@ function _M.get()
             { description = "Close window", group = "Client" }
         ),
         awful.key(
-            { modkey, "Control" },
-            "Space",
+            { modkey },
+            "space",
             awful.client.floating.toggle,
             { description = "Toggle floating window", group = "Client" }
         ),

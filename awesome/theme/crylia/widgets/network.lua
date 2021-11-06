@@ -131,7 +131,7 @@ return function ()
                 [[ iw dev ]] .. interfaces.wlan_interface .. [[ link ]],
                 function (stdout)
                     local essid = stdout:match("SSID: (.-)\n") or "N/A"
-                    local bitrate = stdout: match("tx bitrate: (.+/s)") or "N/A"
+                    local bitrate = stdout:match("tx bitrate: (.+/s)") or "N/A"
                     local message = "Connected to <b>" .. essid .. "</b>\nSignal strength <b>" .. tostring(wifi_strength) .. "%</b>\n" .. "Bit rate <b>" .. tostring(bitrate) .. "</b>"
 
                     if healthy then
@@ -177,7 +177,7 @@ return function ()
                         return
                     end
                     wifi_strength = tonumber(stdout)
-                    network_widget.container.network_layout.spacing = dpi(10)
+                    network_widget.container.network_layout.spacing = dpi(8)
                     network_widget.container.network_layout.label.visible = true
                     network_widget.container.network_layout.label:set_text(tostring(wifi_strength))
                     local wifi_strength_rounded = math.floor(wifi_strength / 25 + 0.5)
@@ -259,7 +259,7 @@ return function ()
         end
         network_widget.container.network_layout.label.visible = false
         update_tooltip("Network unreachable")
-        network_widget.test.test2.spacing = dpi(0)
+        network_widget.container.network_layout.spacing = dpi(0)
         network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. icon .. ".svg", color.color["Grey900"]))
     end
 

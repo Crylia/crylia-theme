@@ -1,6 +1,6 @@
------------------------------
--- This is the date widget --
------------------------------
+------------------------------
+-- This is the audio widget --
+------------------------------
 
 -- Awesome Libs
 local awful = require("awful")
@@ -10,74 +10,78 @@ local gears = require("gears")
 local wibox = require("wibox")
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/date/"
+local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/kblayout/"
 
--- Returns the date widget
 return function ()
-
-    local date_widget = wibox.widget{
+    local kblayout_widget = wibox.widget{
         {
             {
                 {
                     {
                         {
                             id = "icon",
-                            image = gears.color.recolor_image(icondir .. "calendar.svg", color.color["Grey900"]),
                             widget = wibox.widget.imagebox,
-                            resize = false
+                            resize = false,
+                            image = gears.color.recolor_image(icondir .. "keyboard.svg", color.color["Grey900"])
                         },
                         id = "icon_layout",
                         widget = wibox.container.place
                     },
-                    id = "icon_margin",
                     top = dpi(2),
-                    widget = wibox.container.margin
+                    widget = wibox.container.margin,
+                    id = "icon_margin"
                 },
-                spacing = dpi(10),
+                spacing = dpi(6),
                 {
                     id = "label",
                     align = "center",
                     valign = "center",
                     widget = wibox.widget.textbox
                 },
-                id = "date_layout",
+                id = "kblayout_layout",
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(10),
+            left = dpi(5),
             right = dpi(10),
             widget = wibox.container.margin
         },
-        bg = color.color["Teal200"],
+        bg = color.color["Green200"],
         fg = color.color["Grey900"],
         shape = function (cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.widget.background
     }
-
-    local set_date = function ()
-        date_widget.container.date_layout.label:set_text(os.date("%a, %b %d"))
+    local layout = "";
+    local get_kblayout = function ()
+        awful.spawn.easy_async_with_shell(
+            [[ setxkbmap -query | grep layout | awk '{print $2}' ]],
+            function (stdout)
+                layout = stdout
+                kblayout_widget.container.kblayout_layout.label.text = stdout
+                return stdout
+            end
+        )
+        return layout
     end
 
-    -- Updates the date every minute, dont blame me if you miss silvester
-    local date_updater = gears.timer {
-        timeout = 60,
-        autostart = true,
-        call_now = true,
-        callback = function ()
-            set_date()
+    local set_kblayout = function (kblayout)
+        kblayout = "de"
+        if get_kblayout():gsub("\n", "") == "de" then
+            kblayout = "ru"
         end
-    }
+        awful.spawn.easy_async_with_shell("setxkbmap -layout " .. kblayout)
+        get_kblayout()
+    end
 
     -- Signals
     local old_wibox, old_cursor, old_bg
-    date_widget:connect_signal(
+    kblayout_widget:connect_signal(
         "mouse::enter",
         function ()
-            awesome.emit_signal("widget::calendar_osd:stop", true)
-            old_bg = date_widget.bg
-            date_widget.bg = color.color["Teal200"] .. "dd"
+            old_bg = kblayout_widget.bg
+            kblayout_widget.bg = color.color["Green200"] .. "dd"
             local w = mouse.current_wibox
             if w then
                 old_cursor, old_wibox = w.cursor, w
@@ -86,25 +90,25 @@ return function ()
         end
     )
 
-    date_widget:connect_signal(
+    kblayout_widget:connect_signal(
         "button::press",
         function ()
-            date_widget.bg = color.color["Teal200"] .. "bb"
+            set_kblayout()
+            kblayout_widget.bg = color.color["Green200"] .. "bb"
         end
     )
 
-    date_widget:connect_signal(
+    kblayout_widget:connect_signal(
         "button::release",
         function ()
-            date_widget.bg = color.color["Teal200"] .. "dd"
+            kblayout_widget.bg = color.color["Green200"] .. "dd"
         end
     )
 
-    date_widget:connect_signal(
+    kblayout_widget:connect_signal(
         "mouse::leave",
         function ()
-            awesome.emit_signal("widget::calendar_osd:rerun", true)
-            date_widget.bg = old_bg
+            kblayout_widget.bg = old_bg
             if old_wibox then
                 old_wibox.cursor = old_cursor
                 old_wibox = nil
@@ -112,5 +116,6 @@ return function ()
         end
     )
 
-    return date_widget
+    get_kblayout()
+    return kblayout_widget
 end

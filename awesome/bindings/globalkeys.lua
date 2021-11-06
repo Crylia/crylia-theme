@@ -171,14 +171,6 @@ function _M.get()
             {description = "Decrease the number of columns", group = "Layout"}
         ),
         awful.key(
-            { modkey },
-            "space",
-            function ()
-                awful.layout.inc( 1)
-            end,
-            {description = "Select next", group = "Layout"}
-        ),
-        awful.key(
             { modkey, "Shift" },
             "space",
             function ()
@@ -333,7 +325,7 @@ function _M.get()
             { modkey },
             "F5",
             function (c)
-                awful.spawn("xbacklight -inc 10")
+                awful.spawn("xbacklight -inc 10%+")
                 awesome.emit_signal("module::brightness_osd:show", true)
                 awesome.emit_signal("module::brightness_slider:update")
                 awesome.emit_signal("widget::brightness_osd:rerun")
@@ -343,10 +335,10 @@ function _M.get()
             { modkey },
             "F4",
             function (c)
-                awful.spawn("xbacklight -dec 10")
+                awful.spawn("xbacklight -dec 10%-")
+                awesome.emit_signal("widget::brightness_osd:rerun")
                 awesome.emit_signal("module::brightness_osd:show", true)
                 awesome.emit_signal("module::brightness_slider:update")
-                awesome.emit_signal("widget::brightness_osd:rerun")
             end
         ),
         awful.key(
@@ -355,6 +347,13 @@ function _M.get()
             function ()
                 local t = awful.screen.focused().selected_tag
                 t:delete()
+            end
+        ),
+        awful.key(
+            { },
+            "Escape",
+            function ()
+                awesome.emit_signal("module::powermenu:hide")
             end
         )
     )

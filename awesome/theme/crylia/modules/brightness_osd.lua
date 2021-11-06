@@ -9,10 +9,12 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local naughty = require("naughty")
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/brightness/"
 
---TODO: fix backlight keys and osd not working correctly
+-- TODO: fix backlight keys and osd not working correctly
 return function ()
 
     local brightness_osd_widget = wibox.widget{
@@ -28,7 +30,7 @@ return function ()
                     },
                     nil,
                     {
-                        ic = "value",
+                        id = "value",
                         text = "0%",
                         align = "center",
                         valign = "center",
@@ -81,10 +83,10 @@ return function ()
             right = dpi(24),
             widget = wibox.container.margin
         },
-        bg = color.color["Grey900"] .. '44',
+        bg = color.color["Grey900"],
         widget = wibox.container.background,
         ontop = true,
-        visible = false,
+        visible = true,
         type = "notification",
         forced_height = dpi(100),
         forced_width = dpi(300),
@@ -95,9 +97,8 @@ return function ()
         "property::value",
         function ()
             local brightness_value = brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:get_value()
-            
             -- Performance is horrible, or it overrides and executes at the same time as the keybindings
-            awful.spawn("xbacklight -set " .. brightness_value .. "%", false)
+            --awful.spawn("xbacklight -set " .. brightness_value, false)
             brightness_osd_widget.container.osd_layout.label_value_layout.value:set_text(brightness_value .. "%")
 
             awesome.emit_signal(
@@ -134,44 +135,6 @@ return function ()
         )
     end
 
-    local hide_osd = gears.timer{
-        timeout = 5,
-        autostart = true,
-        callback = function ()
-            brightness_osd_widget.visible = false
-        end
-    }
-
-    -- Signals
-    brightness_osd_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            brightness_osd_widget.visible = true
-            hide_osd:stop()
-        end
-    )
-
-    brightness_osd_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            brightness_osd_widget.visible = true
-            hide_osd:again()
-        end
-    )
-
-    awesome.connect_signal(
-        "widget::brightness_osd:rerun",
-        function ()
-            if hide_osd.started then
-                hide_osd:again()
-            else
-                hide_osd:start()
-            end
-        end
-    )
-
-    update_slider()
-
     awesome.connect_signal(
         "module::brightness_slider:update",
         function ()
@@ -183,13 +146,6 @@ return function ()
         "widget::brightness:update",
         function (value)
             brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:set_value(tonumber(value))
-        end
-    )
-
-    awesome.connect_signal(
-        "module::brightness_osd:show",
-        function ()
-            brightness_osd_widget.visible = true
         end
     )
 

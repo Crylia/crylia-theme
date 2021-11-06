@@ -42,9 +42,11 @@ function _M.get(globalkeys)
             "#" .. i + 9,
             function()
                 local screen = awful.screen.focused()
-                local tag = screen.tags[i]
-                if tag then
-                    client.focus:move_to_tag(tag)
+                if client.focus then
+                    local tag = screen.tags[i]
+                    if tag then
+                        client.focus:move_to_tag(tag)
+                    end
                 end
             end,
             {description = "Move focused client on tag " .. i, group = "Tag"}

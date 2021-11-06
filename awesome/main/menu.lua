@@ -19,7 +19,7 @@ M.session = {
 }
 
 M.applications = {
-    { "Brave", "brave-browser" },
+    { "Firefox", "firefox" },
     { "VS Code", "code" },
     { "Blender", "blender" },
     { "Steam", "steam" },

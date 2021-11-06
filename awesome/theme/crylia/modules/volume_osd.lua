@@ -81,10 +81,10 @@ return function ()
             right = dpi(24),
             widget = wibox.container.margin
         },
-        bg = color.color["Grey900"] .. '44',
+        bg = color.color["Grey900"],
         widget = wibox.container.background,
         ontop = true,
-        visible = false,
+        visible = true,
         type = "notification",
         forced_height = dpi(100),
         forced_width = dpi(300),
@@ -147,14 +147,6 @@ return function ()
         )
     end
 
-    local hide_osd = gears.timer{
-        timeout = 5,
-        autostart = true,
-        callback = function ()
-            volume_osd_widget.visible = false
-        end
-    }
-
     -- Signals
     awesome.connect_signal(
         "module::slider:update",
@@ -167,40 +159,6 @@ return function ()
         "widget::volume:update",
         function (value)
             volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:set_value(tonumber(value))
-        end
-    )
-
-    awesome.connect_signal(
-        "module::volume_osd:show",
-        function ()
-            volume_osd_widget.visible = true
-        end
-    )
-
-    volume_osd_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            volume_osd_widget.visible = true
-            hide_osd:stop()
-        end
-    )
-
-    volume_osd_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            volume_osd_widget.visible = true
-            hide_osd:again()
-        end
-    )
-
-    awesome.connect_signal(
-        "widget::volume_osd:rerun",
-        function ()
-            if hide_osd.started then
-                hide_osd:again()
-            else
-                hide_osd:start()
-            end
         end
     )
 

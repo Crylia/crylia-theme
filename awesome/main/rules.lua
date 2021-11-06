@@ -37,13 +37,14 @@ function _M.get(clientkeys, clientbuttons)
                     "pop-up"
                 }
             },
-            properties = { floating = true }
+            properties = { floating = true, titlebars_enabled = true }
         },
         {
+            id = "titlebar",
             rule_any = {
-                type = { "normal", "dialog" }
+                type = { "normal", "dialog", "modal", "utility" }
             },
-            properties = { titlebars_enabled = false }
+            properties = { titlebars_enabled = true }
         }
     }
     return rules

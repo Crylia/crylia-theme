@@ -1,7 +1,6 @@
 -- Awesome Libs
 local awful = require("awful")
 local beautiful = require("beautiful")
-local naughty = require("naughty")
 
 
 client.connect_signal(
@@ -43,6 +42,7 @@ client.connect_signal(
     end
 )
 
+
 -- Sloppy focus
 client.connect_signal("mouse::enter", function(c)
     c:emit_signal("request::activate", "mouse_enter", {raise = false})
@@ -51,7 +51,7 @@ end)
 -- Workaround for focused border color, why in the love of god doesnt it work with
 -- beautiful.border_focus
 client.connect_signal("focus", function (c)
-    c.border_color = "#bdbdbd"
+    c.border_color = "#616161"
 end)
 
 client.connect_signal("unfocus", function (c)
