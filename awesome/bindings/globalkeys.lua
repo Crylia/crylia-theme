@@ -276,7 +276,7 @@ function _M.get()
             { modkey, "Shift" },
             "e",
             function ()
-                awful.spawn("rofi -show power-menu -modi 'power-menu:~/.config/rofi/rofi-power-menu --choices=shutdown/reboot/logout/lockscreen' -theme ~/.config/rofi/powermenu/powermenu.rasi")
+                awesome.emit_signal("module::powermenu:show")
             end,
             { descripton = "Open the exit window", group = "System" }
         ),
