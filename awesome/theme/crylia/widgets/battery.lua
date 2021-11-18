@@ -10,6 +10,7 @@ local gears = require("gears")
 local naughty = require("naughty")
 local watch = awful.widget.watch
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/battery/"
@@ -165,45 +166,7 @@ return function ()
         )
     end
 
-    local old_wibox, old_cursor, old_bg
-    battery_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = battery_widget.bg
-            battery_widget.bg = color.color["Purple200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
-
-    -- Signals
-    battery_widget:connect_signal(
-        "button::press",
-        function ()
-            battery_widget.bg = color.color["Purple200"] .. "bb"
-        end
-    )
-
-    battery_widget:connect_signal(
-        "button::release",
-        function ()
-            battery_widget.bg = color.color["Purple200"] .. "dd"
-        end
-    )
-
-    battery_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            battery_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
-        end
-    )
+    hover_signal(battery_widget, color.color["Purple200"])
 
     battery_widget:connect_signal(
         'button::press',

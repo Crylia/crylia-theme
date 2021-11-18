@@ -4,12 +4,13 @@
 
 -- Awesome Libs
 
+local awful = require("awful")
 local wibox = require("wibox")
 local gears = require("gears")
 local dpi = require("beautiful").xresources.apply_dpi
 local color = require("theme.crylia.colors")
 
-return function ()
+return function (s)
     local styles = {}
 
     styles.month = {
@@ -118,5 +119,63 @@ return function ()
         end
     }
 
-    return calendar_osd_widget
+    local calendar_osd_container = awful.popup{
+        widget = wibox.container.background,
+        ontop = true,
+        bg = color.color["Grey900"],
+        stretch = false,
+        visible = false,
+        placement = function (c)awful.placement.top_right(c, {margins = {right = dpi(100),top = dpi(60)}})end,
+        shape = function (cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, 5)
+        end
+    }
+
+    local hide_osd = gears.timer{
+        timeout = 0.25,
+        autostart = true,
+        callback = function ()
+            calendar_osd_container.visible = false
+        end
+    }
+
+    calendar_osd_container:setup{
+        calendar_osd_widget,
+        layout = wibox.layout.align.horizontal
+    }
+
+    calendar_osd_container:connect_signal(
+        "mouse::enter",
+        function ()
+            calendar_osd_container.visible = true
+            hide_osd:stop()
+        end
+    )
+
+    calendar_osd_container:connect_signal(
+        "mouse::leave",
+        function ()
+            calendar_osd_container.visible = false
+            hide_osd:stop()
+        end
+    )
+
+    awesome.connect_signal(
+        "widget::calendar_osd:stop",
+        function ()
+            calendar_osd_container.visible = true
+            hide_osd:stop()
+        end
+    )
+
+    awesome.connect_signal(
+        "widget::calendar_osd:rerun",
+        function ()
+            if hide_osd.started then
+                hide_osd:again()
+            else
+                hide_osd:start()
+            end
+        end
+    )
 end

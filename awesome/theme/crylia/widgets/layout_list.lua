@@ -8,10 +8,10 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Returns the layoutbox widget
 return function ()
-    
     local layout = wibox.widget{
         {
             awful.widget.layoutbox(),
@@ -27,42 +27,12 @@ return function ()
     }
 
     -- Signals
-    local old_wibox, old_cursor, old_bg
-    layout:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = layout.bg
-            layout.bg = color.color["LightBlue200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
+    hover_signal(layout, color.color["LightBlue200"])
 
     layout:connect_signal(
         "button::press",
         function ()
-            layout.bg = color.color["LightBlue200"] .. "bb"
-        end
-    )
-
-    layout:connect_signal(
-        "button::release",
-        function ()
-            layout.bg = color.color["LightBlue200"] .. "dd"
-        end
-    )
-
-    layout:connect_signal(
-        "mouse::leave",
-        function ()
-            layout.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
+            awful.layout.inc(-1)
         end
     )
 

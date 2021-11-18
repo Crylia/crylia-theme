@@ -1,0 +1,12 @@
+{
+    "Lua.diagnostics.globals": [
+        "awesome",
+        "client",
+        "screen",
+        "mouse",
+        "root",
+        "mykeyboardlayout",
+        "modkey",
+        "hover_signal"
+    ]
+}

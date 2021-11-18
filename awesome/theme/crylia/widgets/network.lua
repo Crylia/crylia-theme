@@ -9,6 +9,7 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local naughty = require("naughty")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/network/"
@@ -126,7 +127,7 @@ return function ()
             network_notify(message, title, app_name, icon)
         end
 
-        local update_wireless_data = function (strength, healthy)
+        local update_wireless_data = function (healthy)
             awful.spawn.easy_async_with_shell(
                 [[ iw dev ]] .. interfaces.wlan_interface .. [[ link ]],
                 function (stdout)
@@ -158,10 +159,10 @@ return function ()
                             awesome.emit_signal("system::network_connected")
                         end
                         icon = icon .. '-' .. tostring(strength)
-                        update_wireless_data(wifi_strength_rounded, true)
+                        update_wireless_data(true)
                     else
                         icon = icon .. "-" .. tostring(strength)
-                        update_wireless_data(wifi_strength_rounded, false)
+                        update_wireless_data(false)
                     end
                     network_widget.container.network_layout.spacing = dpi(8)
                     network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. icon .. ".svg", color.color["Grey900"]))
@@ -323,44 +324,7 @@ return function ()
     }
 
     -- Signals
-    local old_wibox, old_cursor, old_bg
-    network_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = network_widget.bg
-            network_widget.bg = color.color["Red200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
-
-    network_widget:connect_signal(
-        "button::press",
-        function ()
-            network_widget.bg = color.color["Red200"] .. "bb"
-        end
-    )
-
-    network_widget:connect_signal(
-        "button::release",
-        function ()
-            network_widget.bg = color.color["Red200"] .. "dd"
-        end
-    )
-
-    network_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            network_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
-        end
-    )
+    hover_signal(network_widget, color.color["Red200"])
 
     network_widget:connect_signal(
         "button::press",

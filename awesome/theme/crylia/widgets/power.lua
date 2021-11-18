@@ -9,6 +9,7 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local naughty = require("naughty")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/power/"
@@ -50,44 +51,12 @@ return function ()
     }
 
     -- Signals
-    local old_wibox, old_cursor, old_bg
-    power_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = power_widget.bg
-            power_widget.bg = color.color["Red200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
-
-    power_widget:connect_signal(
-        "button::press",
-        function ()
-            power_widget.bg = color.color["Red200"] .. "bb"
-        end
-    )
+    hover_signal(power_widget, color.color["Red200"])
 
     power_widget:connect_signal(
         "button::release",
         function ()
-            power_widget.bg = color.color["Red200"] .. "dd"
             awesome.emit_signal("module::powermenu:show")
-            --awful.spawn("rofi -show power-menu -modi 'power-menu:~/.config/rofi/rofi-power-menu --choices=shutdown/reboot/logout/lockscreen' -theme ~/.config/rofi/powermenu/powermenu.rasi")
-        end
-    )
-
-    power_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            power_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
         end
     )
 

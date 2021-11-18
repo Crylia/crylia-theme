@@ -8,6 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/bluetooth/"
@@ -90,44 +91,7 @@ return function ()
     }
 
     -- Signals
-    local old_wibox, old_cursor, old_bg
-    bluetooth_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = bluetooth_widget.bg
-            bluetooth_widget.bg = color.color["Blue200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
-
-    bluetooth_widget:connect_signal(
-        "button::press",
-        function ()
-            bluetooth_widget.bg = color.color["Blue200"] .. "bb"
-        end
-    )
-
-    bluetooth_widget:connect_signal(
-        "button::release",
-        function ()
-            bluetooth_widget.bg = color.color["Blue200"] .. "dd"
-        end
-    )
-
-    bluetooth_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            bluetooth_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
-        end
-    )
+    hover_signal(bluetooth_widget, color.color["Blue200"])
 
     bluetooth_widget:connect_signal(
         "button::press",

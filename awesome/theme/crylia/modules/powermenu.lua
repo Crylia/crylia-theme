@@ -8,23 +8,25 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-local naughty = require("naughty")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/powermenu/"
 
-return function ()
+return function (s)
 
+    -- Profile picture imagebox
     local profile_picture = wibox.widget {
         image = icondir .. "defaultpfp.svg",
         resize = true,
         forced_height = dpi(200),
         clip_shape = function (cr, width, height)
-            gears.shape.rounded_rect(cr, width, height, 30)
+            gears.shape.rounded_rect(cr, dpi(width), dpi(height), 30)
         end,
         widget = wibox.widget.imagebox
     }
 
+    -- Username textbox
     local profile_name = wibox.widget {
         align = 'center',
         valign = 'center',
@@ -33,6 +35,9 @@ return function ()
         widget = wibox.widget.textbox
     }
 
+    -- Get the profile script from /var/lib/AccountsService/icons/${USER}
+    -- and copy it to the assets folder
+    -- TODO: If the user doesnt have AccountsService look into $HOME/.faces
     local update_profile_picture = function ()
         awful.spawn.easy_async_with_shell(
             [=[ 
@@ -69,9 +74,11 @@ return function ()
             end
         )
     end
-
     update_profile_picture()
-    local namestyle = "userhost"
+
+    -- Will determin the display style
+    local namestyle = RC.vars.namestyle
+    -- Get the full username(if set) and the username + hostname
     local update_user_name = function()
         awful.spawn.easy_async_with_shell(
             [=[
@@ -98,6 +105,7 @@ return function ()
     end
     update_user_name()
 
+    -- Universal Button widget
     local button = function(name, icon, bg_color, callback)
         local item = wibox.widget{
             {
@@ -105,7 +113,10 @@ return function ()
                     {
                         {
                             {
-                                --image = gears.color.recolor_image(icon, color.color["Grey900"]),
+                                -- TODO: using gears.color to recolor a SVG will make it look super low res
+                                -- currently I recolor it in the .svg file directly, but later implement
+                                -- a better way to recolor a SVG
+                                -- image = gears.color.recolor_image(icon, color.color["Grey900"]),
                                 image = icon,
                                 resize = true,
                                 forced_height = dpi(30),
@@ -133,7 +144,8 @@ return function ()
                 shape = function (cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, 10)
                 end,
-                widget = wibox.container.background
+                widget = wibox.container.background,
+                id = 'background'
             },
             spacing = dpi(0),
             layout = wibox.layout.align.vertical
@@ -149,6 +161,7 @@ return function ()
         return item
     end
 
+    -- Create the power menu actions
     local suspend_command = function()
         awful.spawn.easy_async_with_shell("dm-tool lock & systemctl suspend")
         awesome.emit_signal("module::powermenu:hide")
@@ -173,12 +186,21 @@ return function ()
         awesome.emit_signal("module::powermenu:hide")
     end
 
+    -- Create the buttons with their command and name etc
     local shutdown_button = button("Shutdown", icondir .. "shutdown.svg", color.color["Blue200"], shutdown_command)
     local reboot_button = button("Reboot", icondir .. "reboot.svg", color.color["Red200"], reboot_command)
     local suspend_button = button("Suspend", icondir .. "suspend.svg", color.color["Yellow200"], suspend_command)
     local logout_button = button("Logout", icondir .. "logout.svg", color.color["Green200"], logout_command)
     local lock_button = button("Lock", icondir .. "lock.svg", color.color["Orange200"], lock_command)
 
+    -- Signals to change color on hover
+    hover_signal(shutdown_button.background, color.color["Blue200"])
+    hover_signal(reboot_button.background, color.color["Red200"])
+    hover_signal(suspend_button.background, color.color["Yellow200"])
+    hover_signal(logout_button.background, color.color["Green200"])
+    hover_signal(lock_button.background, color.color["Orange200"])
+
+    -- The powermenu widget
     local powermenu = wibox.widget {
         layout = wibox.layout.align.vertical,
         expand = "none",
@@ -239,5 +261,60 @@ return function ()
         },
         nil
     }
-    return powermenu
+
+    -- Container for the widget, covers the entire screen
+    local powermenu_container = wibox{
+        widget = powermenu,
+        screen = s,
+        type = "splash",
+        visible = false,
+        ontop = true,
+        bg = "#21212188",
+        height = s.geometry.height,
+        width = s.geometry.width,
+        x = s.geometry.x,
+        y = s.geometry.y
+    }
+
+    -- Close on rightclick
+    powermenu_container:buttons(
+        gears.table.join(
+            awful.button(
+                {},
+                3,
+                function ()
+                    awesome.emit_signal("module::powermenu:hide")
+                end
+            )
+        )
+    )
+
+    -- Close on Escape
+    local powermenu_keygrabber = awful.keygrabber{
+        autostart = false,
+        stop_event = 'release',
+        keypressed_callback = function (self, mod, key, command)
+            if key == 'Escape' then
+                awesome.emit_signal("module::powermenu:hide")
+            end
+        end
+    }
+
+    -- Signals
+    awesome.connect_signal(
+        "module::powermenu:show",
+        function()
+            powermenu_container.visible = false
+            powermenu_container.visible = true
+            powermenu_keygrabber:start()
+        end
+    )
+
+    awesome.connect_signal(
+        "module::powermenu:hide",
+        function()
+            powermenu_keygrabber:stop()
+            powermenu_container.visible = false
+        end
+    )
 end

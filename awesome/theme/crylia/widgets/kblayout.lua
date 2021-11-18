@@ -8,6 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/kblayout/"
@@ -76,43 +77,12 @@ return function ()
     end
 
     -- Signals
-    local old_wibox, old_cursor, old_bg
-    kblayout_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = kblayout_widget.bg
-            kblayout_widget.bg = color.color["Green200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
+    hover_signal(kblayout_widget, color.color["Green200"])
 
     kblayout_widget:connect_signal(
         "button::press",
         function ()
             set_kblayout()
-            kblayout_widget.bg = color.color["Green200"] .. "bb"
-        end
-    )
-
-    kblayout_widget:connect_signal(
-        "button::release",
-        function ()
-            kblayout_widget.bg = color.color["Green200"] .. "dd"
-        end
-    )
-
-    kblayout_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            kblayout_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
         end
     )
 

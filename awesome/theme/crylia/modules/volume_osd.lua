@@ -13,7 +13,7 @@ local wibox = require("wibox")
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/audio/"
 
 -- Returns the volume_osd
-return function ()
+return function (s)
 
     local volume_osd_widget = wibox.widget{
         {
@@ -163,5 +163,63 @@ return function ()
     )
 
     update_slider()
-    return volume_osd_widget
+
+    local volume_container = awful.popup{
+        widget = wibox.container.background,
+        ontop = true,
+        bg = color.color["Grey900"],
+        stretch = false,
+        visible = false,
+        placement = function (c) awful.placement.bottom_right(c, {margins = dpi(10)}) end,
+        shape = function (cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, 5)
+        end
+    }
+
+    local hide_volume_osd = gears.timer{
+        timeout = 2,
+        autostart = true,
+        callback = function ()
+            volume_container.visible = false
+        end
+    }
+
+    volume_container:setup{
+        volume_osd_widget,
+        layout = wibox.layout.fixed.horizontal
+    }
+
+    awesome.connect_signal(
+            "module::volume_osd:show",
+            function ()
+                volume_container.visible = true
+            end
+        )
+
+        volume_container:connect_signal(
+            "mouse::enter",
+            function ()
+                volume_container.visible = true
+                hide_volume_osd:stop()
+            end
+        )
+
+        volume_container:connect_signal(
+            "mouse::leave",
+            function ()
+                volume_container.visible = true
+                hide_volume_osd:again()
+            end
+        )
+
+        awesome.connect_signal(
+            "widget::volume_osd:rerun",
+            function ()
+                if hide_volume_osd.started then
+                    hide_volume_osd:again()
+                else
+                    hide_volume_osd:start()
+                end
+            end
+        )
 end

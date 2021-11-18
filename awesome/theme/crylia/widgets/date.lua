@@ -8,6 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/date/"
@@ -71,32 +72,12 @@ return function ()
     }
 
     -- Signals
-    local old_wibox, old_cursor, old_bg
+    hover_signal(date_widget, color.color["Teal200"])
+
     date_widget:connect_signal(
         "mouse::enter",
         function ()
             awesome.emit_signal("widget::calendar_osd:stop", true)
-            old_bg = date_widget.bg
-            date_widget.bg = color.color["Teal200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
-
-    date_widget:connect_signal(
-        "button::press",
-        function ()
-            date_widget.bg = color.color["Teal200"] .. "bb"
-        end
-    )
-
-    date_widget:connect_signal(
-        "button::release",
-        function ()
-            date_widget.bg = color.color["Teal200"] .. "dd"
         end
     )
 
@@ -104,11 +85,6 @@ return function ()
         "mouse::leave",
         function ()
             awesome.emit_signal("widget::calendar_osd:rerun", true)
-            date_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
         end
     )
 

@@ -8,6 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/clock/"
@@ -71,45 +72,7 @@ return function ()
         end
     }
 
-    -- Signals
-    local old_wibox, old_cursor, old_bg
-    clock_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = clock_widget.bg
-            clock_widget.bg = color.color["Orange200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
-
-    clock_widget:connect_signal(
-        "button::press",
-        function ()
-            clock_widget.bg = color.color["Orange200"] .. "bb"
-        end
-    )
-
-    clock_widget:connect_signal(
-        "button::release",
-        function ()
-            clock_widget.bg = color.color["Orange200"] .. "dd"
-        end
-    )
-
-    clock_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            clock_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
-        end
-    )
+   hover_signal(clock_widget, color.color["Orange200"])
 
     return clock_widget
 end

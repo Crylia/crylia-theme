@@ -8,6 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+require("Main.Signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/audio/"
@@ -98,43 +99,15 @@ return function ()
     end
 
     -- Signals
-    local old_wibox, old_cursor, old_bg
-    audio_widget:connect_signal(
-        "mouse::enter",
-        function ()
-            old_bg = audio_widget.bg
-            audio_widget.bg = color.color["Yellow200"] .. "dd"
-            local w = mouse.current_wibox
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
+    hover_signal(audio_widget, color.color["Yellow200"])
 
     audio_widget:connect_signal(
         "button::press",
         function ()
+            awesome.emit_signal("widget::volume")
             awesome.emit_signal("module::volume_osd:show", true)
-            audio_widget.bg = color.color["Yellow200"] .. "bb"
-        end
-    )
-
-    audio_widget:connect_signal(
-        "button::release",
-        function ()
-            audio_widget.bg = color.color["Yellow200"] .. "dd"
-        end
-    )
-
-    audio_widget:connect_signal(
-        "mouse::leave",
-        function ()
-            audio_widget.bg = old_bg
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
+            awesome.emit_signal("module::slider:update")
+            awesome.emit_signal("widget::volume_osd:rerun")
         end
     )
 

@@ -66,3 +66,5 @@ Theme.notification_icon_size = dpi(40)
 Theme.titlebar_close_button_normal = icondir .. "close.svg"
 Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
 Theme.titlebar_minimize_button_normal = icondir .. "minimize.svg"
+Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
+Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"

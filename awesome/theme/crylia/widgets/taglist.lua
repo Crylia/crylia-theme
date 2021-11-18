@@ -3,7 +3,8 @@ local awful = require("awful")
 local gears = require("gears")
 local dpi = require("beautiful").xresources.apply_dpi
 local color = require("theme.crylia.colors")
-local naughty = require("naughty")
+local naughty =require("naughty")
+require("theme.crylia.Tools.IconHandler")
 
 local list_update = function (widget, buttons, label, data, objects)
     widget:reset()
@@ -102,32 +103,27 @@ local list_update = function (widget, buttons, label, data, objects)
         end
 
         for _, client in ipairs(object:clients()) do
-            if client.icon then
-                tag_label_margin:set_right(0)
-                local icon = wibox.widget{
+            tag_label_margin:set_right(0)
+            local icon = wibox.widget{
+                {
+                    id = "icon_container",
                     {
-                        id = "icon_container",
-                        {
-                            id = "icon",
-                            resize = true,
-                            widget = wibox.widget.imagebox
-                        },
-                        widget = wibox.container.place
+                        id = "icon",
+                        resize = true,
+                        widget = wibox.widget.imagebox
                     },
-                    tag_icon,
-			        forced_width = dpi(33),
-			        margins = dpi(6),
-			        widget = wibox.container.margin
-                }
-                icon.icon_container.icon:set_image(client:get_icon(1))
-                tag_widget.widget_margin.container:setup({
-                    icon,
-                    layout = wibox.layout.align.horizontal
-                })
-            else
-                tag_icon_margin:set_margins(0)
-                tag_icon:set_forced_width(0)
-            end
+                    widget = wibox.container.place
+                },
+                tag_icon,
+			    forced_width = dpi(33),
+			    margins = dpi(6),
+			    widget = wibox.container.margin
+            }
+            icon.icon_container.icon:set_image(GetIcon("Papirus", client))
+            tag_widget.widget_margin.container:setup({
+                icon,
+                layout = wibox.layout.align.horizontal
+            })
         end
 
         local old_wibox, old_cursor, old_bg
@@ -135,7 +131,6 @@ local list_update = function (widget, buttons, label, data, objects)
             "mouse::enter",
             function ()
                 old_bg = tag_widget.bg
-                --naughty.notify({title = tostring(old_bg)})
                 if object == awful.screen.focused().selected_tag then
                     tag_widget.bg = '#dddddd' .. 'dd'
                 else

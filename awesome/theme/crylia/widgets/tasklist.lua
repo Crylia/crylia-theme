@@ -3,7 +3,6 @@ local wibox = require('wibox')
 local dpi = require('beautiful').xresources.apply_dpi
 local gears = require('gears')
 local color = require('theme.crylia.colors')
-local naughty = require("naughty")
 
 local list_update = function (widget, buttons, label, data, objects)
 	widget:reset()
@@ -111,11 +110,7 @@ local list_update = function (widget, buttons, label, data, objects)
 			task_title:set_text('')
 		end
 
-		if icon then
-			task_icon.icon:set_image(object:get_icon(1))
-		else
-			task_icon_margin:set_margins(0)
-		end
+		task_icon.icon:set_image(GetIcon("Papirus", object))
 
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
@@ -192,14 +187,10 @@ return function(s)
 					if c == client.focus then
 						c.minimized = true
 					else
-						-- Without this, the following
-						-- :isvisible() makes no sense
 						c.minimized = false
 						if not c:isvisible() and c.first_tag then
 							c.first_tag:view_only()
 						end
-						-- This will also un-minimize
-						-- the client, if needed
 						c:emit_signal('request::activate')
 						c:raise()
 					end
