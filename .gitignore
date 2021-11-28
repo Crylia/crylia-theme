@@ -1,3 +1,3 @@
-awesome/.idea
-awesome/.vscode
-awesome/start-xephyr.sh
+**/awesome/.idea
+**/awesome/.vscode
+**/awesome/start-xephyr.sh
