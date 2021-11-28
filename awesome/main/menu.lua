@@ -4,21 +4,16 @@
 -- Awesome Libs
 local awful = require("awful")
 
--- Menu Namespace
-local M = { }
-
 -- Module Namespace
 local _M = { }
 
-local terminal = RC.vars.terminal
-
-M.session = {
+local session = {
     { "Logout", function () awesome.quit() end },
     { "Shutdown", function () awful.spawn.with_shell('shutdown now') end },
     { "Reboot", function () awful.spawn.with_shell('reboot') end },
 }
 
-M.applications = {
+local applications = {
     { "Firefox", "firefox" },
     { "VS Code", "code" },
     { "Blender", "blender" },
@@ -26,21 +21,18 @@ M.applications = {
     { "Lutris", "lutris" },
 }
 
-M.settings = {
+local settings = {
     { "General Settings", "gnome-control-center" },
     { "Power Settings", "xfce4-power-manager-settings" },
     { "Display Settings", "arandr" }
 }
 
-function _M.get()
+return function()
     local menu_items = {
-        { "Power Menu", M.session },
-        { "Applications", M.applications },
-        { "Open Terminal", terminal },
-        { "Settings", M.settings },
+        { "Power Menu", session },
+        { "Applications", applications },
+        { "Open Terminal", user_vars.vars.terminal },
+        { "Settings", settings },
     }
-
-    return menu_items
+    return menu_ttems
 end
-
-return _M.get

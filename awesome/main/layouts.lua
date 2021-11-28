@@ -4,9 +4,7 @@
 -- Awesome Libs
 local awful = require("awful")
 
-local _M = { }
-
-function _M.get()
+return function ()
     local layouts = {
         awful.layout.suit.tile,
         awful.layout.suit.floating,
@@ -14,5 +12,3 @@ function _M.get()
 
     return layouts
 end
-
-return _M.get

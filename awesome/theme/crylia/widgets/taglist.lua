@@ -3,8 +3,7 @@ local awful = require("awful")
 local gears = require("gears")
 local dpi = require("beautiful").xresources.apply_dpi
 local color = require("theme.crylia.colors")
-local naughty =require("naughty")
-require("theme.crylia.Tools.IconHandler")
+require("theme.crylia.tools.icon_handler")
 
 local list_update = function (widget, buttons, label, data, objects)
     widget:reset()
@@ -52,7 +51,6 @@ local list_update = function (widget, buttons, label, data, objects)
                 {
                     id = "container",
                     tag_label_margin,
-                    --tag_icon_margin,
                     layout = wibox.layout.fixed.horizontal
 				},
 				margins = dpi(0),
@@ -114,12 +112,12 @@ local list_update = function (widget, buttons, label, data, objects)
                     },
                     widget = wibox.container.place
                 },
-                tag_icon,
+                tag_icon_margin,
 			    forced_width = dpi(33),
 			    margins = dpi(6),
 			    widget = wibox.container.margin
             }
-            icon.icon_container.icon:set_image(GetIcon("Papirus", client))
+            icon.icon_container.icon:set_image(Get_icon("Papirus-Dark", client))
             tag_widget.widget_margin.container:setup({
                 icon,
                 layout = wibox.layout.align.horizontal

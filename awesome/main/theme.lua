@@ -5,8 +5,8 @@ local home = os.getenv("HOME")
 
 beautiful.init(home .. "/.config/awesome/theme/crylia/theme.lua")
 
-if(RC.vars.wallpaper) then
-    local wallpaper = RC.vars.wallpaper
+if(user_vars.vars.wallpaper) then
+    local wallpaper = user_vars.vars.wallpaper
     if awful.util.file_readable(wallpaper) then
         Theme.wallpaper = wallpaper
     end

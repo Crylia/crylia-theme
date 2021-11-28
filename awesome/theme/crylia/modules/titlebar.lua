@@ -8,7 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("Main.Signals")
+require("main.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/titlebar/"
@@ -138,16 +138,23 @@ local create_titlebar = function (c, bg, size)
 end
 
 local create_titlebar_dialog = function(c, bg, size)
-	awful.titlebar(c, {position = "left", bg = bg, size = size}) : setup {
-		{
-			{
-				{
+	local titlebar = awful.titlebar(c, {
+        position = "left",
+        bg = bg,
+        size = size
+    })
+
+    titlebar : setup {
+        {
+            {
+                {
                     awful.titlebar.widget.closebutton(c),
                     widget = wibox.container.background,
                     bg = color.color["Red200"],
                     shape = function (cr, height, width)
                         gears.shape.rounded_rect(cr, width, height, 4)
-                    end
+                    end,
+                    id = "closebutton"
                 },
                 {
                     awful.titlebar.widget.minimizebutton(c),
@@ -155,21 +162,33 @@ local create_titlebar_dialog = function(c, bg, size)
                     bg = color.color["Green200"],
                     shape = function (cr, height, width)
                         gears.shape.rounded_rect(cr, width, height, 4)
-                    end
+                    end,
+                    id = "minimizebutton"
                 },
-				spacing = dpi(7),
-				layout  = wibox.layout.fixed.vertical
-			},
-			margins = dpi(8),
-			widget = wibox.container.margin
-		},
-		{
+                spacing = dpi(10),
+				layout  = wibox.layout.fixed.vertical,
+                id = "spacing"
+            },
+            margins = dpi(8),
+            widget = wibox.container.margin,
+            id = "margin"
+        },
+        {
 			buttons = create_click_events(c),
 			layout = wibox.layout.flex.vertical
-		},
-		nil,
-		layout = wibox.layout.align.vertical
-	}
+        },
+        {
+            {
+                widget = awful.widget.clienticon(c)
+            },
+            margins = dpi(5),
+            widget = wibox.container.margin
+        },
+        layout = wibox.layout.align.vertical,
+        id = "main"
+    }
+    hover_signal(titlebar.main.margin.spacing.closebutton, color.color["Red200"])
+    hover_signal(titlebar.main.margin.spacing.minimizebutton, color.color["Green200"])
 end
 
 local create_titlebar_borderhack = function (c, bg, position)
@@ -234,6 +253,9 @@ local draw_titlebar = function (c)
         end
     elseif c.type == 'dialog' then
         create_titlebar_dialog(c, '#121212AA', 35)
+        create_titlebar_borderhack(c, "#121212AA", "right")
+        create_titlebar_borderhack(c, "#121212AA", "top")
+        create_titlebar_borderhack(c, "#121212AA", "bottom")
     elseif c.type == 'modal' then
     else
         create_titlebar_borderhack(c, "#121212AA", "right")

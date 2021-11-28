@@ -8,7 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("Main.Signals")
+require("main.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/bluetooth/"
@@ -86,7 +86,14 @@ return function ()
         autostart = true,
         call_now = true,
         callback = function ()
-            get_bluetooth_information()
+            awful.spawn.easy_async_with_shell(
+                "bluetoothctl list",
+                function (stdout)
+                    if stdout ~= nil or stdout:gsub("\n", ""):match("") then
+                        get_bluetooth_information()
+                    end
+                end
+            )
         end
     }
 

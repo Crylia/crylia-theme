@@ -8,7 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("Main.Signals")
+require("main.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/audio/"
@@ -58,7 +58,7 @@ return function ()
 
     local get_volume = function ()
         awful.spawn.easy_async_with_shell(
-            [[ awk -F"[][]" '/dB/ { print $2 }' <(amixer sget Master) ]],
+            [[ pacmd list-sinks | grep "volume: front" | awk '{print $5}' ]],
             function (stdout)
                 local icon = icondir .. "volume"
                 stdout = stdout:gsub("%%", "")
@@ -84,9 +84,9 @@ return function ()
 
     local check_muted = function ()
         awful.spawn.easy_async_with_shell(
-            [[ awk -F"[][]" '/dB/ { print $6 }' <(amixer sget Master) ]],
+            [[ pacmd list-sinks | grep "muted" ]],
             function (stdout)
-                if stdout:match("off") then
+                if stdout:match("yes") then
                     audio_widget.container.audio_layout.label.visible = false
                     audio_widget.container:set_right(0)
                     audio_widget.container.audio_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. "volume-mute" .. ".svg", color.color["Grey900"]))

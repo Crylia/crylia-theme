@@ -5,9 +5,7 @@
 -- Awesome Libs
 local awful = require("awful")
 
-local _M = { }
-
-function _M.get()
+return function()
     local tags = {}
     awful.screen.connect_for_each_screen(
         function (s)
@@ -16,12 +14,10 @@ function _M.get()
                     "1", "2", "3", "4", "5", "6", "7", "8", "9"
                 },
                 s,
-                RC.layouts[1]
+                user_vars.Layouts[1]
             )
         end
     )
 
     return tags
 end
-
-return _M.get

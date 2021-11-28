@@ -10,7 +10,7 @@ local gears = require("gears")
 local naughty = require("naughty")
 local watch = awful.widget.watch
 local wibox = require("wibox")
-require("Main.Signals")
+require("main.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/battery/"

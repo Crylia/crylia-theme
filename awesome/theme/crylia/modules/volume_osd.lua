@@ -20,48 +20,56 @@ return function (s)
             {
                 {
                     {
-                        id = "label",
-                        text = "Volume",
-                        align = "left",
-                        valign = "center",
-                        widget = wibox.widget.textbox
+                        nil,
+                        {
+                            nil,
+                            {
+                                id = "icon",
+                                forced_height = dpi(220),
+                                image = icondir .. "volume-high.svg",
+                                widget = wibox.widget.imagebox
+                            },
+                            nil,
+                            expand = "none",
+                            id = "icon_margin2",
+                            layout = wibox.layout.align.vertical
+                        },
+                        nil,
+                        id = "icon_margin1",
+                        expand = "none",
+                        layout = wibox.layout.align.horizontal
                     },
-                    nil,
-                    {
-                        id = "value",
-                        text = "0%",
-                        align = "center",
-                        valign = "center",
-                        widget = wibox.widget.textbox
-                    },
-                    id = "label_value_layout",
-                    forced_height = dpi(48),
-                    layout = wibox.layout.align.horizontal,
-                },
-                {
                     {
                         {
-                            id = "icon",
-                            image = gears.color.recolor_image(icondir .. "volume-high.svg", color.color["White"]),
-                            widget = wibox.widget.imagebox
+                            id = "label",
+                            text = "Volume",
+                            align = "left",
+                            valign = "center",
+                            widget = wibox.widget.textbox
                         },
-                        id = "icon_margin",
-                        top = dpi(12),
-                        bottom = dpi(12),
-                        widget = wibox.container.margin
+                        nil,
+                        {
+                            id = "value",
+                            text = "0%",
+                            align = "center",
+                            valign = "center",
+                            widget = wibox.widget.textbox
+                        },
+                        id = "label_value_layout",
+                        forced_height = dpi(48),
+                        layout = wibox.layout.align.horizontal,
                     },
                     {
                         {
                             id = "volume_slider",
                             bar_shape = gears.shape.rounded_rect,
-                            bar_height = dpi(2),
-                            bar_color = color.color["White"],
-                            bar_active_color = color.color["White"],
-                            handle_color = color.color["White"],
+                            bar_height = dpi(10),
+                            bar_color = color.color["Grey800"] .. "88",
+                            bar_active_color = "#ffffff",
+                            handle_color = "#ffffff",
                             handle_shape = gears.shape.circle,
-                            handle_width = dpi(15),
+                            handle_width = dpi(10),
                             handle_border_color = color.color["White"],
-                            handle_border_width = dpi(1),
                             maximum = 100,
                             widget = wibox.widget.slider
                         },
@@ -70,76 +78,80 @@ return function (s)
                         widget = wibox.container.place
                     },
                     id = "icon_slider_layout",
-                    spacing = dpi(24),
-                    layout = wibox.layout.fixed.horizontal
+                    spacing = dpi(0),
+                    layout = wibox.layout.align.vertical
                 },
                 id = "osd_layout",
-                layout = wibox.layout.fixed.vertical
+                layout = wibox.layout.align.vertical
             },
             id = "container",
             left = dpi(24),
             right = dpi(24),
             widget = wibox.container.margin
         },
-        bg = color.color["Grey900"],
+        bg = color.color["Grey900"] .. '88',
         widget = wibox.container.background,
         ontop = true,
         visible = true,
         type = "notification",
-        forced_height = dpi(100),
+        forced_height = dpi(300),
         forced_width = dpi(300),
         offset = dpi(5),
     }
 
+    local function update_osd()
+        local volume_level = volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:get_value()
+
+        awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ ".. volume_level .. "%", false)
+        awesome.emit_signal("widget::volume")
+        volume_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text(volume_level .. "%")
+
+        awesome.emit_signal(
+            "widget::volume:update",
+            volume_level
+        )
+
+        if awful.screen.focused().show_volume_osd then
+            awesome.emit_signal(
+                "module::volume_osd:show",
+                true
+            )
+        end
+
+        local icon = icondir .. "volume"
+        if volume_level < 1 then
+            icon = icon .. "-mute"
+        elseif volume_level >= 1 and volume_level < 34 then
+            icon = icon .. "-low"
+        elseif volume_level >= 34 and volume_level < 67 then
+            icon = icon .. "-medium"
+        elseif volume_level >= 67 then
+            icon = icon .. "-high"
+        end
+        volume_osd_widget.container.osd_layout.icon_slider_layout.icon_margin1.icon_margin2.icon:set_image(icon .. ".svg")
+    end
+
     volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:connect_signal(
         "property::value",
         function ()
-            local volume_level = volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:get_value()
-
-            awful.spawn("amixer sset Master ".. volume_level .. "%", false)
-            awesome.emit_signal("widget::volume")
-            volume_osd_widget.container.osd_layout.label_value_layout.value:set_text(volume_level .. "%")
-
-            awesome.emit_signal(
-                "widget::volume:update",
-                volume_level
-            )
-
-            if awful.screen.focused().show_volume_osd then
-                awesome.emit_signal(
-                    "module::volume_osd:show",
-                    true
-                )
-            end
-
-            local icon = icondir .. "volume"
-            if volume_level < 1 then
-                icon = icon .. "-mute"
-            elseif volume_level >= 1 and volume_level < 34 then
-                icon = icon .. "-low"
-            elseif volume_level >= 34 and volume_level < 67 then
-                icon = icon .. "-medium"
-            elseif volume_level >= 67 then
-                icon = icon .. "-high"
-            end
-            volume_osd_widget.container.osd_layout.icon_slider_layout.icon_margin.icon:set_image(gears.color.recolor_image(icon .. ".svg", color.color["White"]))
+            update_osd()
         end
     )
 
     local update_slider = function ()
         awful.spawn.easy_async_with_shell(
-            [[ awk -F"[][]" '/dB/ { print $6 }' <(amixer sget Master) ]],
+            [[ pacmd list-sinks | grep "muted" ]],
             function (stdout)
-                if stdout:match("off") then
-                    volume_osd_widget.container.osd_layout.label_value_layout.value:set_text("0%")
-                    --volume_osd_slider.volume_slider:set_value(0)
-                    volume_osd_widget.container.osd_layout.icon_slider_layout.icon_margin.icon:set_image(gears.color.recolor_image(icondir .. "volume-mute" .. ".svg", color.color["White"]))
+                if stdout:match("yes") then
+                    volume_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text("0%")
+                    volume_osd_widget.container.osd_layout.icon_slider_layout.icon_margin1.icon_margin2.icon:set_image(icondir .. "volume-mute" .. ".svg")
                 else
                     awful.spawn.easy_async_with_shell(
-                    [[ awk -F"[][]" '/dB/ { print $2 }' <(amixer sget Master) ]],
-                    function (stdout)
-                            stdout = stdout:sub(1, -3)
-                            volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:set_value(tonumber(stdout))
+                    [[ pacmd list-sinks | grep "volume: front" | awk '{print $5}' ]],
+                    function (stdout2)
+                            stdout2 = stdout2:sub(1, -3)
+                            volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:set_value(tonumber(stdout2))
+                            update_osd()
                         end
                     )
                 end
@@ -167,12 +179,12 @@ return function (s)
     local volume_container = awful.popup{
         widget = wibox.container.background,
         ontop = true,
-        bg = color.color["Grey900"],
+        bg = color.color["Grey900"] .. "00",
         stretch = false,
         visible = false,
-        placement = function (c) awful.placement.bottom_right(c, {margins = dpi(10)}) end,
+        placement = function (c) awful.placement.centered(c, {margins = {top = dpi(200)}}) end,
         shape = function (cr, width, height)
-            gears.shape.rounded_rect(cr, width, height, 5)
+            gears.shape.rounded_rect(cr, width, height, 15)
         end
     }
 
@@ -190,36 +202,36 @@ return function (s)
     }
 
     awesome.connect_signal(
-            "module::volume_osd:show",
-            function ()
-                volume_container.visible = true
-            end
-        )
+        "module::volume_osd:show",
+        function ()
+            volume_container.visible = true
+        end
+    )
 
-        volume_container:connect_signal(
-            "mouse::enter",
-            function ()
-                volume_container.visible = true
-                hide_volume_osd:stop()
-            end
-        )
+    volume_container:connect_signal(
+        "mouse::enter",
+        function ()
+            volume_container.visible = true
+            hide_volume_osd:stop()
+        end
+    )
 
-        volume_container:connect_signal(
-            "mouse::leave",
-            function ()
-                volume_container.visible = true
+    volume_container:connect_signal(
+        "mouse::leave",
+        function ()
+            volume_container.visible = true
+            hide_volume_osd:again()
+        end
+    )
+
+    awesome.connect_signal(
+        "widget::volume_osd:rerun",
+        function ()
+            if hide_volume_osd.started then
                 hide_volume_osd:again()
+            else
+                hide_volume_osd:start()
             end
-        )
-
-        awesome.connect_signal(
-            "widget::volume_osd:rerun",
-            function ()
-                if hide_volume_osd.started then
-                    hide_volume_osd:again()
-                else
-                    hide_volume_osd:start()
-                end
-            end
-        )
+        end
+    )
 end

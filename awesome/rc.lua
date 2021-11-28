@@ -17,72 +17,73 @@ local gears = require("gears")
 local menubar = require("menubar")
 
 -- Global Namespace
-RC = {}
-RC.vars = require("Main.UserVariables")
+user_vars = {}
+user_vars.vars = require("main.user_variables")
 
 -- Error Handling
-require("Main.ErrorHandling")
+require("main.error_handling")
 
 -- Default Theme and Custom Wallpaper
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
-beautiful.wallpaper = RC.vars.wallpaper
-modkey = RC.vars.modkey
+beautiful.wallpaper = user_vars.vars.wallpaper
+modkey = user_vars.vars.modkey
 
-require("Main.Theme")
+require("main.theme")
 
 -- Load Local User Libs
-local Main = {
-    Layouts = require("Main.Layouts"),
-    Tags = require("Main.Tags"),
-    Menu = require("Main.Menu"),
-    Rules = require("Main.Rules")
+local main = {
+    layouts = require("main.layouts"),
+    tags = require("main.tags"),
+    menu = require("main.menu"),
+    rules = require("main.rules")
 }
 
 -- Load all Shortcuts from Local User Libs
-local Bindings = {
-    GlobalButtons = require("Bindings.GlobalButtons"),
-    ClientButtons = require("Bindings.ClientButtons"),
-    GlobalKeys = require("Bindings.GlobalKeys"),
-    BindToTags = require("Bindings.BindToTags"),
-    ClientKeys = require("Bindings.ClientKeys")
+local bindings = {
+    global_buttons = require("bindings.global_buttons"),
+    client_buttons = require("bindings.client_buttons"),
+    global_keys = require("bindings.global_keys"),
+    bind_to_tags = require("bindings.bind_to_tags"),
+    client_keys = require("bindings.client_keys")
 }
 
-RC.Layouts = Main.Layouts()
+user_vars.Layouts = main.layouts()
 
-awful.layout.layouts = Main.Layouts()
+awful.layout.layouts = main.layouts()
 
-RC.Tags = Main.Tags()
+user_vars.tags = main.tags()
 
-RC.MainMenu = awful.menu({
-    items = Main.Menu()
+user_vars.main_menu = awful.menu({
+    items = main.menu()
 })
 
 -- A Variable needed in Statusbar (helper)
-RC.Launcher = awful.widget.launcher({
-    Image = beautiful.awesome_icon,
-    Menu = RC.MainMenu
+user_vars.launcher = awful.widget.launcher({
+    image = beautiful.awesome_icon,
+    menu = user_vars.main_menu
 })
 
 -- Menubar configuration
-menubar.utils.terminal = RC.vars.terminal
+menubar.utils.terminal = user_vars.vars.terminal
 
 -- Set root
-root.buttons(Bindings.GlobalButtons())
-root.keys(Bindings.BindToTags(Bindings.GlobalKeys()))
+root.buttons(bindings.global_buttons())
+root.keys(bindings.bind_to_tags(bindings.global_keys()))
 
 -- Default statusbar, comment if you want use a third party tool like polybar
-require("CryliaBar.init")
+require("crylia_bar.init")
 
 -- Rules to apply to new clients
-awful.rules.rules = Main.Rules(
-    Bindings.ClientKeys(),
-    Bindings.ClientButtons()
+awful.rules.rules = main.rules(
+    bindings.client_keys(),
+    bindings.client_buttons()
 )
 
 -- Signals
-require("Main.Signals")
+require("main.signals")
 
 -- Autostart programs
 --awful.spawn.with_shell("~/.screenlayout/single_screen.sh")
 awful.spawn.with_shell("picom --experimental-backends")
 awful.spawn.with_shell("xfce4-power-manager")
+awful.spawn.with_shell("light-locker --lock-on-suspend --lock-on-lid &")

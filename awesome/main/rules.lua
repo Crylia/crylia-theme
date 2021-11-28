@@ -6,9 +6,7 @@
 local awful = require("awful")
 local beautiful = require("beautiful")
 
-local _M = { }
-
-function _M.get(clientkeys, clientbuttons)
+return function (clientkeys, clientbuttons)
     local rules = {
         {
             rule = { },
@@ -28,7 +26,11 @@ function _M.get(clientkeys, clientbuttons)
                 instance = { },
                 class = {
                     "Arandr",
-                    "Tor Browser"
+                    "Lxappearance",
+                    "kdeconnect.app",
+                    "zoom",
+                    "file-roller",
+                    "File-roller"
                 },
                 name = { },
                 role = {
@@ -49,5 +51,3 @@ function _M.get(clientkeys, clientbuttons)
     }
     return rules
 end
-
-return _M.get

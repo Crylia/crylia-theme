@@ -8,7 +8,7 @@ local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("Main.Signals")
+require("main.signals")
 
 -- Returns the layoutbox widget
 return function ()

@@ -109,9 +109,7 @@ local list_update = function (widget, buttons, label, data, objects)
 			task_widget:set_bg("#3A475C")
 			task_title:set_text('')
 		end
-
-		task_icon.icon:set_image(GetIcon("Papirus", object))
-
+		task_icon.icon:set_image(Get_icon("Papirus-Dark", object))
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
 

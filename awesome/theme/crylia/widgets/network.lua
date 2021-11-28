@@ -9,7 +9,7 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local naughty = require("naughty")
 local wibox = require("wibox")
-require("Main.Signals")
+require("main.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/network/"
@@ -180,7 +180,7 @@ return function ()
                     wifi_strength = tonumber(stdout)
                     network_widget.container.network_layout.spacing = dpi(8)
                     network_widget.container.network_layout.label.visible = true
-                    network_widget.container.network_layout.label:set_text(tostring(wifi_strength))
+                    network_widget.container.network_layout.label:set_text(tostring(wifi_strength .. "%"))
                     local wifi_strength_rounded = math.floor(wifi_strength / 25 + 0.5)
                     update_wireless_icon(wifi_strength_rounded)
                 end
