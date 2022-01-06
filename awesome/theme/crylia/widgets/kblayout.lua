@@ -75,7 +75,7 @@ return function ()
 
         local xkeyboard_country_code = {
             {"ad", "", "AND"},    -- Andorra
-            {"af", "", "AFG"},    -- Afganistan
+            {"af", "", "AFG"},    -- Afghanistan
             {"al", "", "ALB"},    -- Albania
             {"am", "", "ARM"},    -- Armenia
             {"ara", "", "ARB"},   -- Arabic

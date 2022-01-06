@@ -6,45 +6,42 @@ local color = require('theme.crylia.colors')
 
 local list_update = function (widget, buttons, label, data, objects)
 	widget:reset()
-
 	for i, object in ipairs(objects) do
-
-		local task_icon = wibox.widget{
-			nil,
-			{
-				id = "icon",
-				resize = true,
-				widget = wibox.widget.imagebox
-			},
-			nil,
-			layout = wibox.layout.align.horizontal
-		}
-
-		local task_icon_margin = wibox.widget{
-			task_icon,
-			forced_width = dpi(33),
-			margins = dpi(3),
-			widget = wibox.container.margin
-		}
-
-		local task_title = wibox.widget{
-			text = "",
-			align = "center",
-			valign = "center",
-			visible = true,
-			widget = wibox.widget.textbox
-		}
-
 		local task_widget = wibox.widget{
 			{
 				{
-					task_icon_margin,
-					task_title,
-					layout = wibox.layout.fixed.horizontal
+					{
+						{
+							nil,
+							{
+								id = "icon",
+								resize = true,
+								widget = wibox.widget.imagebox
+							},
+							nil,
+							layout = wibox.layout.align.horizontal,
+							id = "layout_icon"
+						},
+						forced_width = dpi(33),
+						margins = dpi(3),
+						widget = wibox.container.margin,
+						id = "margin"
+					},
+					{
+						text = "",
+						align = "center",
+						valign = "center",
+						visible = true,
+						widget = wibox.widget.textbox,
+						id = "title"
+					},
+					layout = wibox.layout.fixed.horizontal,
+					id = "layout_it"
 				},
 				right = dpi(5),
 				left = dpi(5),
-				widget = wibox.container.margin
+				widget = wibox.container.margin,
+				id = "container"
 			},
 			bg = color.color["White"],
 			fg = color.color["Grey900"],
@@ -87,11 +84,11 @@ local list_update = function (widget, buttons, label, data, objects)
 
 		task_widget:buttons(create_buttons(buttons, object))
 
-		local text, bg, bg_image, icon, args = label(object, task_title)
+		local text, bg, bg_image, icon, args = label(object, task_widget.container.layout_it.title)
 
 		if object == client.focus then
 			if text == nil or text == '' then
-				task_title:set_margins(0)
+				task_widget.container.layout_it.title:set_margins(0)
 			else
 				local text_full = text:match('>(.-)<')
 				if text_full then
@@ -104,12 +101,12 @@ local list_update = function (widget, buttons, label, data, objects)
 			end
 			task_widget:set_bg(color.color["White"])
 			task_widget:set_fg(color.color["Grey900"])
-			task_title:set_text(text)
+			task_widget.container.layout_it.title:set_text(text)
 		else
 			task_widget:set_bg("#3A475C")
-			task_title:set_text('')
+			task_widget.container.layout_it.title:set_text('')
 		end
-		task_icon.icon:set_image(Get_icon("Papirus-Dark", object))
+		task_widget.container.layout_it.margin.layout_icon.icon:set_image(Get_icon("Papirus-Dark", object))
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
 

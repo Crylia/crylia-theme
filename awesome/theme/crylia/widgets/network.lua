@@ -72,8 +72,8 @@ return function ()
     local network_tooltip = awful.tooltip{
         text = "Loading",
         objects = {network_widget},
-        mode = "inside",
-        align = "right",
+        mode = "outside",
+        preferred_alignments = "middle",
         margins = dpi(10)
     }
 

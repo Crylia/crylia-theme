@@ -62,8 +62,8 @@ return function ()
     local battery_tooltip = awful.tooltip{
         objects = {battery_widget},
         text = "",
-        mode = "inside",
-        align = "right",
+        mode = "outside",
+        preferred_alignments = "middle",
         margins = dpi(10)
     }
 

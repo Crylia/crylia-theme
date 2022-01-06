@@ -1,7 +1,16 @@
 -------------------------------------------
 -- Uservariables are stored in this file --
 -------------------------------------------
+local dpi = require("beautiful").xresources.apply_dpi
 local home = os.getenv("HOME")
+
+local function get_screen()
+    local screen = {}
+    for i, s in ipairs(screen) do
+        screen[i] = {screen.x, screen.y}
+    end
+    return screen
+end
 
 -- If you want different default programs, wallpaper path or modkey; edit this file.
 local _M = {
@@ -28,7 +37,27 @@ local _M = {
     file_manager = "thunar",
 
     -- Screenshot program to make a screenshot when print is hit
-    screenshot_program = "flameshot gui"
+    screenshot_program = "flameshot gui",
+
+    -- If you use the dock here is how you control its size
+    dock_icon_size = dpi(50),
+
+    -- Add your programs exactly like in this example.
+    -- First entry has to be how you would start the program in the terminal (just try it if you dont know yahoo it)
+    -- Second can be what ever the fuck you want it to be (will be the displayed name if you hover over it)
+    dock_programs = {
+        {"firefox", "Firefox"},
+        {"discord", "Discord"},
+        {"spotify", "Spotify"},
+        {"code", "Visual Studio Code"},
+        {"arduino", "Arduino IDE"},
+        {"zoom", "Zoom"},
+        {"thunderbird", "Thunderbird"},
+        {"mattermost-desktop", "Mattermost"},
+        {"blender", "Blender"}
+    },
+
+    screens_size = get_screen()
 }
 
 return _M

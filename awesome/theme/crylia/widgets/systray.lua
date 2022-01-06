@@ -26,6 +26,7 @@ return function (s)
             width = dpi(100),
             strategy = "exact",
             layout = wibox.container.constraint,
+            id = "container"
         },
         widget = wibox.container.background,
         shape = function (cr, width, height)
@@ -34,7 +35,7 @@ return function (s)
         bg = color.color["BlueGrey800"]
     }
     -- Signals
-    --hover_signal(systray, color.color["Red200"])
+    hover_signal(systray.container, color.color["Red200"])
 
     return systray
 end

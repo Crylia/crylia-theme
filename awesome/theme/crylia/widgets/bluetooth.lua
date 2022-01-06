@@ -43,8 +43,8 @@ return function ()
     local bluetooth_tooltip = awful.tooltip{
         objects = {bluetooth_widget},
         text = "",
-        mode = "inside",
-        align = "right",
+        mode = "outside",
+        preferred_alignments = "middle",
         margins = dpi(10)
     }
 

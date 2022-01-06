@@ -90,10 +90,12 @@ local list_update = function (widget, buttons, label, data, objects)
         tag_widget:buttons(create_buttons(buttons, object))
 
         local text, bg_color, bg_image, icon, args = label(object, tag_label)
-
+        local naughty = require("naughty")
         tag_label:set_text(object.index)
-
-        if object == awful.screen.focused().selected_tag then
+        if object.urgent == true then
+            tag_widget:set_bg(color.color["RedA200"])
+            tag_widget:set_fg(color.color["Grey900"])
+        elseif object == awful.screen.focused().selected_tag then
             tag_widget:set_bg(color.color["White"])
             tag_widget:set_fg(color.color["Grey900"])
         else

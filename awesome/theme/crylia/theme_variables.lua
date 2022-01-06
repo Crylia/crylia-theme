@@ -71,3 +71,12 @@ Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
 
 Theme.bg_systray = colors.color["BlueGrey800"]
 Theme.systray_icon_spacing = dpi(10)
+
+Theme.hotkeys_bg = colors.color["Grey900"]
+Theme.hotkeys_fg = colors.color["White"]
+Theme.hotkeys_border_width = 0
+Theme.hotkeys_shape = function (cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, 10)
+end
+Theme.hotkeys_description_font = "JetBrains Mono, Bold 14"
+
