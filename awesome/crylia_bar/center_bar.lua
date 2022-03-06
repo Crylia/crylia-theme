@@ -11,6 +11,7 @@ local wibox = require("wibox")
 return function (s, widget)
 
     local top_center = awful.popup{
+        screen = s,
         widget = wibox.container.background,
         ontop = false,
         bg = colors.color["Grey900"],
@@ -21,7 +22,7 @@ return function (s, widget)
             gears.shape.rounded_rect(cr, width, height, 10)
         end
     }
-
+    local naught = require("naughty")
     top_center:setup{
         nil,
         {
@@ -34,10 +35,48 @@ return function (s, widget)
         layout = wibox.layout.align.horizontal
     }
 
-    awesome.connect_signal(
-        "hide_centerbar",
-        function (hide)
-            top_center.visible = hide
+    client.connect_signal(
+        "manage",
+        function (c)
+            if #s:get_clients() < 1 then
+                top_center.visible = false
+            else
+                top_center.visible = true
+            end
         end
     )
+
+    client.connect_signal(
+        "unmanage",
+        function (c)
+            if #s:get_clients() < 1 then
+                top_center.visible = false
+            else
+                top_center.visible = true
+            end
+        end
+    )
+
+    client.connect_signal(
+        "tag::switched",
+        function (c)
+            if #s:get_clients() < 1 then
+                top_center.visible = false
+            else
+                top_center.visible = true
+            end
+        end
+    )
+
+    awesome.connect_signal(
+        "refresh",
+        function (c)
+            if #s:get_clients() < 1 then
+                top_center.visible = false
+            else
+                top_center.visible = true
+            end
+        end
+    )
+
 end

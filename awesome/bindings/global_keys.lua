@@ -161,7 +161,7 @@ return function()
 	        { modkey },
 	        "d",
 	        function ()
-	        	awful.spawn("rofi -show drun -theme ~/.config/rofi/launcher/launcher.rasi")
+	        	awful.spawn("/home/crylia/.local/bin/rofi -show drun -theme ~/.config/rofi/rofi.rasi")
 	        end,
 	        { descripton = "Application launcher", group = "Application" }
 	    ),
@@ -169,7 +169,15 @@ return function()
 	        { modkey },
 	        "Tab",
 	        function ()
-	        	awful.spawn("rofi -show window -theme ~/.config/rofi/launcher/launcher.rasi")
+	        	awful.spawn("/home/crylia/.local/bin/rofi -show window -theme ~/.config/rofi/window.rasi")
+	        end,
+	        { descripton = "Client switcher (alt+tab)", group = "Application" }
+	    ),
+        awful.key(
+	        { "Mod1" },
+	        "Tab",
+	        function ()
+	        	awful.spawn("/home/crylia/.local/bin/rofi -show window -theme ~/.config/rofi/window.rasi")
 	        end,
 	        { descripton = "Client switcher (alt+tab)", group = "Application" }
 	    ),

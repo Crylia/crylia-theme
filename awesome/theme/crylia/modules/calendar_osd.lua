@@ -120,6 +120,7 @@ return function (s)
     }
 
     local calendar_osd_container = awful.popup{
+        screen = s,
         widget = wibox.container.background,
         ontop = true,
         bg = color.color["Grey900"],

@@ -11,6 +11,7 @@ local wibox = require("wibox")
 return function (s, widgets)
 
     local top_left = awful.popup{
+        screen = s,
         widget = wibox.container.background,
         ontop = false,
         bg = colors.color["Grey900"],

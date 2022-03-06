@@ -56,7 +56,7 @@ return function ()
         shape = function (cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
-        widget = wibox.widget.background
+        widget = wibox.container.background
     }
 
     local battery_tooltip = awful.tooltip{

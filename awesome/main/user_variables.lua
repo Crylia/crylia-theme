@@ -22,13 +22,13 @@ local _M = {
     modkey = "Mod4",
 
     -- place your wallpaper at this path with this name, you could also try to change the path
-    wallpaper = home .. "/.config/awesome/theme/crylia/assets/wallpaper.jpg",
+    wallpaper = home .. "/.config/awesome/theme/crylia/assets/space.jpg",
 
     -- Naming scheme for the powermenu, userhost = "user@hostname", fullname = "Firstname Surname", something else ...
     namestyle = "userhost",
 
     -- List every Keyboard layout you use here comma seperated. (run localectl list-keymaps to list all averiable keymaps)
-    kblayout = {"de", "ru", "us"},
+    kblayout = {"de", "ru"},
 
     -- Set to false if you dont have a controller
     bluetooth = true,
@@ -45,6 +45,7 @@ local _M = {
     -- Add your programs exactly like in this example.
     -- First entry has to be how you would start the program in the terminal (just try it if you dont know yahoo it)
     -- Second can be what ever the fuck you want it to be (will be the displayed name if you hover over it)
+    -- For steam games please use this format {"394360", "Name", true} true will tell the func that it's a steam game
     dock_programs = {
         {"firefox", "Firefox"},
         {"discord", "Discord"},

@@ -41,7 +41,8 @@ font:
     y: 0
   draw_bold_text_with_bright_colors: false
 # Background opacity from 0.0 transparent, 1.0 Opaque
-background_opacity: 0.4
+window:
+  opacity: 0.4
 # Terminal colors
 colors:
   primary:

@@ -34,5 +34,5 @@ return function()
         { "Open Terminal", user_vars.vars.terminal },
         { "Settings", settings },
     }
-    return menu_ttems
+    return menu_items
 end

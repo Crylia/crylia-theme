@@ -60,7 +60,7 @@ local list_update = function (widget, buttons, label, data, objects)
             shape = function (cr, width, height)
 				gears.shape.rounded_rect(cr, width, height, 5)
 			end,
-			widget = wibox.widget.background
+			widget = wibox.container.background
         }
 
         local function create_buttons(buttons, object)
@@ -235,8 +235,7 @@ local tag_list = function (s)
                     awful.tag.viewprev(t.screen)
                 end
             )
-        )
-        ,
+        ),
         {},
         list_update,
         wibox.layout.fixed.horizontal()

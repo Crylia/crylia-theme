@@ -2,6 +2,20 @@
 local awful = require("awful")
 local beautiful = require("beautiful")
 
+screen.connect_signal(
+    "added",
+    function ()
+        awesome.restart()
+    end
+)
+
+screen.connect_signal(
+    "removed",
+    function ()
+        awesome.restart()
+    end
+)
+
 client.connect_signal(
     "manage",
     function (c)

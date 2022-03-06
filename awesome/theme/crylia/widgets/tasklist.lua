@@ -6,7 +6,9 @@ local color = require('theme.crylia.colors')
 
 local list_update = function (widget, buttons, label, data, objects)
 	widget:reset()
+	local count
 	for i, object in ipairs(objects) do
+		count = i
 		local task_widget = wibox.widget{
 			{
 				{
@@ -48,7 +50,7 @@ local list_update = function (widget, buttons, label, data, objects)
 			shape = function (cr, width, height)
 				gears.shape.rounded_rect(cr, width, height, 5)
 			end,
-			widget = wibox.widget.background
+			widget = wibox.container.background
 		}
 
 		local task_tool_tip = awful.tooltip{
@@ -81,11 +83,9 @@ local list_update = function (widget, buttons, label, data, objects)
 				return btns
 			end
 		end
-
 		task_widget:buttons(create_buttons(buttons, object))
 
 		local text, bg, bg_image, icon, args = label(object, task_widget.container.layout_it.title)
-
 		if object == client.focus then
 			if text == nil or text == '' then
 				task_widget.container.layout_it.title:set_margins(0)
@@ -109,7 +109,6 @@ local list_update = function (widget, buttons, label, data, objects)
 		task_widget.container.layout_it.margin.layout_icon.icon:set_image(Get_icon("Papirus-Dark", object))
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
-
 		local old_wibox, old_cursor, old_bg
     	task_widget:connect_signal(
     	    "mouse::enter",
@@ -161,16 +160,10 @@ local list_update = function (widget, buttons, label, data, objects)
     	    end
     	)
 	end
-
-	if (widget.children and #widget.children or 0) == 0 then
-		awesome.emit_signal("hide_centerbar", false)
-	else
-		awesome.emit_signal("hide_centerbar", true)
-	end
 	return widget
 end
 
-return function(s)
+local tasklist = function(s)
 	return awful.widget.tasklist(
 		s,
 		awful.widget.tasklist.filter.currenttags,
@@ -204,3 +197,5 @@ return function(s)
 		wibox.layout.fixed.horizontal()
 	)
 end
+
+return tasklist

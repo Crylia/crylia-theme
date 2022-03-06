@@ -13,7 +13,7 @@ require("main.signals")
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/kblayout/"
 
-return function ()
+return function (s)
     local kblayout_widget = wibox.widget{
         {
             {
@@ -52,7 +52,7 @@ return function ()
         shape = function (cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
-        widget = wibox.widget.background
+        widget = wibox.container.background
     }
 
     local layout = "";
@@ -246,6 +246,7 @@ return function ()
     end
 
     local kb_menu_widget = awful.popup{
+        screen = s,
         shape = function (cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
