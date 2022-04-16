@@ -10,28 +10,28 @@ local gears = require("gears")
 local dpi = require("beautiful").xresources.apply_dpi
 local color = require("theme.crylia.colors")
 
-return function (s)
+return function(s)
     local styles = {}
 
-    styles.month = {
+    styles.month   = {
         padding = 15,
         bg_color = color.color["Grey900"],
         border_width = 1,
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end
     }
     styles.normal  = {
         fg_color = color.color["Grey900"],
-        font = "JetBrainsMonoExtraBold NF",
-        shape = function (cr, width, height)
+        font = user_vars.vars.font.extrabold,
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end
     }
-    styles.focus = {
+    styles.focus   = {
         fg_color = color.color["Grey900"],
         bg_color = color.color["Purple200"],
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end
     }
@@ -39,7 +39,7 @@ return function (s)
         fg_color = color.color["Grey900"],
         bg_color = color.color["Teal200"],
         markup = function(t) return '<b>' .. t .. '</b>' end,
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end
     }
@@ -48,12 +48,12 @@ return function (s)
         fg_color = color.color["Grey900"],
         bg_color = color.color["Teal200"],
         markup = function(t) return '<b>' .. t .. '</b>' end,
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end
     }
     local function decorate_cell(widget, flag, date)
-        if flag=='monthheader' and not styles.monthheader then
+        if flag == 'monthheader' and not styles.monthheader then
             flag = 'header'
         end
         local props = styles[flag] or {}
@@ -61,19 +61,19 @@ return function (s)
             widget:set_markup(props.markup(widget:get_text()))
         end
         -- Change bg color for weekends
-        local d = {year=date.year, month=(date.month or 1), day=(date.day or 1)}
+        local d = { year = date.year, month = (date.month or 1), day = (date.day or 1) }
         local weekday = tonumber(os.date('%w', os.time(d)))
         local default_bg = (weekday == 0 or weekday == 6) and color.color["Red200"] or color.color["White"]
         local ret = wibox.widget {
             {
                 widget,
-                left = dpi(8),
-                right = dpi(8),
-                top = dpi(4),
+                left   = dpi(8),
+                right  = dpi(8),
+                top    = dpi(4),
                 bottom = dpi(4),
-                widget  = wibox.container.margin
+                widget = wibox.container.margin
             },
-            shape = function (cr, width, height)
+            shape = function(cr, width, height)
                 gears.shape.rounded_rect(cr, width, height, 5)
             end,
             fg = props.fg_color or '#999999',
@@ -82,15 +82,16 @@ return function (s)
         }
         return ret
     end
+
     local calendar = wibox.widget {
         date = os.date('*t'),
         fn_embed = decorate_cell,
         widget = wibox.widget.calendar.month,
-        font = "JetBrainsMonoExtraBold NF",
+        font = user_vars.vars.font.extrabold,
         spacing = dpi(10)
     }
 
-    local calendar_osd_widget = wibox.widget{
+    local calendar_osd_widget = wibox.widget {
         {
             widget = wibox.widget.textbox,
             fg = "#ffffff",
@@ -106,7 +107,7 @@ return function (s)
         layout = wibox.layout.fixed.vertical
     }
 
-    local set_clock = function ()
+    local set_clock = function()
         calendar_osd_widget.digital_clock:set_text(os.date("%H:%M"))
     end
 
@@ -114,40 +115,40 @@ return function (s)
         timeout = 5,
         autostart = true,
         call_now = true,
-        callback = function ()
+        callback = function()
             set_clock()
         end
     }
 
-    local calendar_osd_container = awful.popup{
+    local calendar_osd_container = awful.popup {
         screen = s,
         widget = wibox.container.background,
         ontop = true,
         bg = color.color["Grey900"],
         stretch = false,
         visible = false,
-        placement = function (c)awful.placement.top_right(c, {margins = {right = dpi(100),top = dpi(60)}})end,
-        shape = function (cr, width, height)
+        placement = function(c) awful.placement.top_right(c, { margins = { right = dpi(100), top = dpi(60) } }) end,
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end
     }
 
-    local hide_osd = gears.timer{
+    local hide_osd = gears.timer {
         timeout = 0.25,
         autostart = true,
-        callback = function ()
+        callback = function()
             calendar_osd_container.visible = false
         end
     }
 
-    calendar_osd_container:setup{
+    calendar_osd_container:setup {
         calendar_osd_widget,
         layout = wibox.layout.align.horizontal
     }
 
     calendar_osd_container:connect_signal(
         "mouse::enter",
-        function ()
+        function()
             calendar_osd_container.visible = true
             hide_osd:stop()
         end
@@ -155,7 +156,7 @@ return function (s)
 
     calendar_osd_container:connect_signal(
         "mouse::leave",
-        function ()
+        function()
             calendar_osd_container.visible = false
             hide_osd:stop()
         end
@@ -163,7 +164,7 @@ return function (s)
 
     awesome.connect_signal(
         "widget::calendar_osd:stop",
-        function ()
+        function()
             calendar_osd_container.visible = true
             hide_osd:stop()
         end
@@ -171,7 +172,7 @@ return function (s)
 
     awesome.connect_signal(
         "widget::calendar_osd:rerun",
-        function ()
+        function()
             if hide_osd.started then
                 hide_osd:again()
             else

@@ -12,7 +12,7 @@ local awful = require("awful")
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/titlebar/"
 
-Theme.font = "JetBrains Mono, Bold"
+Theme.font = user_vars.vars.font.bold
 
 Theme.bg_normal = colors.color["Grey900"]
 Theme.bg_focus = colors.color["Grey900"]
@@ -31,7 +31,7 @@ Theme.border_normal = colors.color["Grey800"]
 --Theme.border_focus = colors.color["Red"] -- Doesnt work, no idea why; workaround is in signals.lua
 Theme.border_marked = colors.color["Red400"]
 
-Theme.menu_submenu_icon = Theme_path .. "assets.ArchLogo.png"
+--Theme.menu_submenu_icon = Theme_path .. "assets.ArchLogo.png"
 Theme.menu_height = dpi(30)
 Theme.menu_width = dpi(200)
 Theme.menu_bg_normal = colors.color["Grey900"]
@@ -47,7 +47,7 @@ Theme.tooltip_border_color = colors.color["Grey700"]
 Theme.tooltip_bg = colors.color["Grey800"]
 Theme.tooltip_fg = colors.color["White"]
 Theme.tooltip_border_width = dpi(0)
-Theme.tooltip_shape = function (cr, width, heigth)
+Theme.tooltip_shape = function(cr, width, heigth)
     gears.shape.rounded_rect(cr, width, heigth, 10)
 end
 
@@ -55,7 +55,7 @@ Theme.notification_bg = colors.color["Grey900"]
 Theme.notification_fg = colors.color["White"]
 Theme.notification_border_width = dpi(0)
 Theme.notification_border_color = colors.color["Grey900"]
-Theme.notification_shape = function (cr, width, heigth)
+Theme.notification_shape = function(cr, width, heigth)
     gears.shape.rounded_rect(cr, width, heigth, 10)
 end
 Theme.notification_margin = dpi(10)
@@ -75,8 +75,7 @@ Theme.systray_icon_spacing = dpi(10)
 Theme.hotkeys_bg = colors.color["Grey900"]
 Theme.hotkeys_fg = colors.color["White"]
 Theme.hotkeys_border_width = 0
-Theme.hotkeys_shape = function (cr, width, height)
+Theme.hotkeys_shape = function(cr, width, height)
     gears.shape.rounded_rect(cr, width, height, 10)
 end
-Theme.hotkeys_description_font = "JetBrains Mono, Bold 14"
-
+Theme.hotkeys_description_font = user_vars.vars.font.bold

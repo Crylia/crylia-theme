@@ -14,9 +14,9 @@ require("main.signals")
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/clock/"
 
 -- Returns the clock widget
-return function ()
+return function()
 
-    local clock_widget = wibox.widget{
+    local clock_widget = wibox.widget {
         {
             {
                 {
@@ -45,19 +45,19 @@ return function ()
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(10),
-            right = dpi(10),
+            left = dpi(8),
+            right = dpi(8),
             widget = wibox.container.margin
         },
         bg = color.color["Orange200"],
         fg = color.color["Grey900"],
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
-    local set_clock = function ()
+    local set_clock = function()
         clock_widget.container.clock_layout.label:set_text(os.date("%H:%M"))
     end
 
@@ -67,12 +67,12 @@ return function ()
         timeout = 5,
         autostart = true,
         call_now = true,
-        callback = function ()
+        callback = function()
             set_clock()
         end
     }
 
-   hover_signal(clock_widget, color.color["Orange200"])
+    Hover_signal(clock_widget, color.color["Orange200"])
 
     return clock_widget
 end

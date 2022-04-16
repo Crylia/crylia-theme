@@ -3,27 +3,27 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local colors = require ("theme.crylia.colors")
+local colors = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
-return function (s, widgets)
+return function(s, widgets)
 
-    local top_left = awful.popup{
+    local top_left = awful.popup {
         screen = s,
         widget = wibox.container.background,
         ontop = false,
         bg = colors.color["Grey900"],
         visible = true,
-        maximum_width =  dpi(650),
-        placement = function(c) awful.placement.top_left(c, {margins = dpi(10)}) end,
-        shape = function (cr, width, height)
+        maximum_width = dpi(650),
+        placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end,
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end
     }
 
-    top_left:struts{
+    top_left:struts {
         top = 55
     }
 

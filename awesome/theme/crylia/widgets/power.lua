@@ -14,9 +14,9 @@ require("main.signals")
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/power/"
 
-return function ()
+return function()
 
-    local power_widget = wibox.widget{
+    local power_widget = wibox.widget {
         {
             {
                 {
@@ -38,24 +38,24 @@ return function ()
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(5),
-            right = dpi(5),
+            left = dpi(8),
+            right = dpi(8),
             widget = wibox.container.margin
         },
         bg = color.color["Red200"],
         fg = color.color["Grey800"],
-        shape = function (cr, width, height)
-            gears.shape.rounded_rect(cr, height, width, 5)
+        shape = function(cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
     -- Signals
-    hover_signal(power_widget, color.color["Red200"])
+    Hover_signal(power_widget, color.color["Red200"])
 
     power_widget:connect_signal(
         "button::release",
-        function ()
+        function()
             awesome.emit_signal("module::powermenu:show")
         end
     )

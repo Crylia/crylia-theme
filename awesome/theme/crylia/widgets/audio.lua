@@ -14,9 +14,9 @@ require("main.signals")
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/audio/"
 
 -- Returns the audio widget
-return function ()
+return function()
 
-    local audio_widget = wibox.widget{
+    local audio_widget = wibox.widget {
         {
             {
                 {
@@ -33,7 +33,7 @@ return function ()
                     widget = wibox.container.margin,
                     id = "icon_margin"
                 },
-                spacing = dpi(6),
+                spacing = dpi(10),
                 {
                     id = "label",
                     align = "center",
@@ -44,22 +44,26 @@ return function ()
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(5),
-            right = dpi(10),
+            left = dpi(8),
+            right = dpi(8),
             widget = wibox.container.margin
         },
         bg = color.color["Yellow200"],
         fg = color.color["Grey900"],
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
-    local get_volume = function ()
+    local get_volume = function()
         awful.spawn.easy_async_with_shell(
-            [[ pacmd list-sinks | grep "volume: front" | awk '{print $5}' ]],
-            function (stdout)
+            [[ 
+                SINK="$(pacmd stat | awk -F": " '/^Default sink name: /{print $2}')"
+
+echo $(pacmd list-sinks | awk '/^\s+name: /{indefault = $2 == "<'$SINK'>"} /^\s+volume: / && indefault {print $5; exit}')
+            ]],
+            function(stdout)
                 local icon = icondir .. "volume"
                 stdout = stdout:gsub("%%", "")
                 local volume = tonumber(stdout) or 0
@@ -82,10 +86,10 @@ return function ()
         )
     end
 
-    local check_muted = function ()
+    local check_muted = function()
         awful.spawn.easy_async_with_shell(
             [[ pacmd list-sinks | grep "muted" ]],
-            function (stdout)
+            function(stdout)
                 if stdout:match("yes") then
                     audio_widget.container.audio_layout.label.visible = false
                     audio_widget.container:set_right(0)
@@ -99,11 +103,11 @@ return function ()
     end
 
     -- Signals
-    hover_signal(audio_widget, color.color["Yellow200"])
+    Hover_signal(audio_widget, color.color["Yellow200"])
 
     audio_widget:connect_signal(
         "button::press",
-        function ()
+        function()
             awesome.emit_signal("widget::volume")
             awesome.emit_signal("module::volume_osd:show", true)
             awesome.emit_signal("module::slider:update")
@@ -113,7 +117,7 @@ return function ()
 
     awesome.connect_signal(
         "widget::volume",
-        function (c)
+        function(c)
             check_muted()
         end
     )

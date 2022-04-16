@@ -11,27 +11,33 @@ local wibox = require("wibox")
 require("main.signals")
 
 -- Returns the layoutbox widget
-return function ()
-    local layout = wibox.widget{
+return function()
+    local layout = wibox.widget {
         {
-            awful.widget.layoutbox(),
-            margins = dpi(3),
-            forced_width = dpi(33),
+            {
+                awful.widget.layoutbox(),
+                id = "icon_layout",
+                widget = wibox.container.place
+            },
+            id = "icon_margin",
+            left = dpi(5),
+            right = dpi(5),
+            forced_width = dpi(40),
             widget = wibox.container.margin
         },
         bg = color.color["LightBlue200"],
-        shape = function (cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 5)
+        shape = function(cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
     -- Signals
-    hover_signal(layout, color.color["LightBlue200"])
+    Hover_signal(layout, color.color["LightBlue200"])
 
     layout:connect_signal(
         "button::press",
-        function ()
+        function()
             awful.layout.inc(-1)
         end
     )

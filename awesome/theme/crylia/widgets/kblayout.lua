@@ -13,8 +13,8 @@ require("main.signals")
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/kblayout/"
 
-return function (s)
-    local kblayout_widget = wibox.widget{
+return function(s)
+    local kblayout_widget = wibox.widget {
         {
             {
                 {
@@ -32,7 +32,7 @@ return function (s)
                     widget = wibox.container.margin,
                     id = "icon_margin"
                 },
-                spacing = dpi(6),
+                spacing = dpi(10),
                 {
                     id = "label",
                     align = "center",
@@ -43,129 +43,129 @@ return function (s)
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(5),
-            right = dpi(10),
+            left = dpi(8),
+            right = dpi(8),
             widget = wibox.container.margin
         },
         bg = color.color["Green200"],
         fg = color.color["Grey900"],
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
     local layout = "";
-    local get_kblayout = function ()
+    local get_kblayout = function()
         awful.spawn.easy_async_with_shell(
             [[ setxkbmap -query | grep layout | awk '{print $2}' ]],
-            function (stdout)
-                layout = stdout
-                kblayout_widget.container.kblayout_layout.label.text = stdout
-                return stdout
+            function(stdout)
+                layout = stdout:gsub("\n", "")
+                kblayout_widget.container.kblayout_layout.label.text = layout
+                return layout
             end
         )
         return layout
     end
 
 
-    local function create_kb_layout_item (keymap)
+    local function create_kb_layout_item(keymap)
         -- TODO: Add more, too lazy rn
         local longname, shortname
 
         local xkeyboard_country_code = {
-            {"ad", "", "AND"},    -- Andorra
-            {"af", "", "AFG"},    -- Afghanistan
-            {"al", "", "ALB"},    -- Albania
-            {"am", "", "ARM"},    -- Armenia
-            {"ara", "", "ARB"},   -- Arabic
-            {"at", "", "AUT"},    -- Austria
-            {"az", "", "AZE"},    -- Azerbaijan
-            {"ba", "", "BIH"},    -- Bosnia and Herzegovina
-            {"bd", "", "BGD"},    -- Bangladesh
-            {"be", "", "BEL"},    -- Belgium
-            {"bg", "", "BGR"},    -- Bulgaria
-            {"br", "", "BRA"},    -- Brazil
-            {"bt", "", "BTN"},    -- Bhutan
-            {"bw", "", "BWA"},    -- Botswana
-            {"by", "", "BLR"},    -- Belarus
-            {"ca", "", "CAN"},    -- Canada
-            {"cd", "", "COD"},    -- Congo
-            {"ch", "", "CHE"},    -- Switzerland
-            {"cm", "", "CMR"},    -- Cameroon
-            {"cn", "", "CHN"},    -- China
-            {"cz", "", "CZE"},    -- Czechia
-            {"de", "Deutsch (Germany)", "GER"},    -- Germany
-            {"dk", "", "DNK"},    -- Denmark
-            {"ee", "", "EST"},    -- Estonia
-            {"es", "", "ESP"},    -- Spain
-            {"et", "", "ETH"},    -- Ethiopia
-            {"eu", "?", "?"},    -- EurKey
-            {"fi", "", "FIN"},    -- Finland
-            {"fo", "", "FRO"},    -- Faroe Islands
-            {"fr", "", "FRA"},    -- France
-            {"gb", "English (Bri'ish)", "ENG"},    -- United Kingdom
-            {"ge", "", "GEO"},    -- Georgia
-            {"gh", "", "GHA"},    -- Ghana
-            {"gn", "", "GIN"},    -- Guinea
-            {"gr", "", "GRC"},    -- Greece
-            {"hr", "", "HRV"},    -- Croatia
-            {"hu", "", "HUN"},    -- Hungary
-            {"ie", "", "IRL"},    -- Ireland
-            {"il", "", "ISR"},    -- Israel
-            {"in", "", "IND"},    -- India
-            {"iq", "", "IRQ"},    -- Iraq
-            {"ir", "", "IRN"},    -- Iran
-            {"is", "", "ISL"},    -- Iceland
-            {"it", "", "ITA"},    -- Italy
-            {"jp", "", "JPN"},    -- Japan
-            {"ke", "", "KEN"},    -- Kenya
-            {"kg", "", "KGZ"},    -- Kyrgyzstan
-            {"kh", "", "KHM"},    -- Cambodia
-            {"kr", "", "KOR"},    -- Korea
-            {"kz", "", "KAZ"},    -- Kazakhstan
-            {"la", "", "LAO"},    -- Laos
-            {"latam", "?", "?"}, -- Latin America
-            {"latin", "?", "?"}, -- Latin
-            {"lk", "", "LKA"},    -- Sri Lanka
-            {"lt", "", "LTU"},    -- Lithuania
-            {"lv", "", "LVA"},    -- Latvia
-            {"ma", "", "MAR"},    -- Morocco
-            {"mao", "?", "?"},   -- Maori
-            {"me", "", "MNE"},    -- Montenegro
-            {"mk", "", "MKD"},    -- Macedonia
-            {"ml", "", "MLI"},    -- Mali
-            {"mm", "", "MMR"},    -- Myanmar
-            {"mn", "", "MNG"},    -- Mongolia
-            {"mt", "", "MLT"},    -- Malta
-            {"mv", "", "MDV"},    -- Maldives
-            {"ng", "", "NGA"},    -- Nigeria
-            {"nl", "", "NLD"},    -- Netherlands
-            {"no", "", "NOR"},    -- Norway
-            {"np", "", "NRL"},    -- Nepal
-            {"ph", "", "PHL"},    -- Philippines
-            {"pk", "", "PAK"},    -- Pakistan
-            {"pl", "", "POL"},    -- Poland
-            {"pt", "", "PRT"},    -- Portugal
-            {"ro", "", "ROU"},    -- Romania
-            {"rs", "", "SRB"},    -- Serbia
-            {"ru", "Русски (Russia)", "RUS"},    -- Russia
-            {"se", "", "SWE"},    -- Sweden
-            {"si", "", "SVN"},    -- Slovenia
-            {"sk", "", "SVK"},    -- Slovakia
-            {"sn", "", "SEN"},    -- Senegal
-            {"sy", "", "SYR"},    -- Syria
-            {"th", "", "THA"},    -- Thailand
-            {"tj", "", "TJK"},    -- Tajikistan
-            {"tm", "", "TKM"},    -- Turkmenistan
-            {"tr", "", "TUR"},    -- Turkey
-            {"tw", "", "TWN"},    -- Taiwan
-            {"tz", "", "TZA"},    -- Tanzania
-            {"ua", "", "UKR"},    -- Ukraine
-            {"us", "English (United States)", "USA"},    -- USA
-            {"uz", "", "UZB"},    -- Uzbekistan
-            {"vn", "", "VNM"},    -- Vietnam
-            {"za", "", "ZAF"}     -- South Africa
+            { "ad", "", "AND" }, -- Andorra
+            { "af", "", "AFG" }, -- Afghanistan
+            { "al", "", "ALB" }, -- Albania
+            { "am", "", "ARM" }, -- Armenia
+            { "ara", "", "ARB" }, -- Arabic
+            { "at", "", "AUT" }, -- Austria
+            { "az", "", "AZE" }, -- Azerbaijan
+            { "ba", "", "BIH" }, -- Bosnia and Herzegovina
+            { "bd", "", "BGD" }, -- Bangladesh
+            { "be", "", "BEL" }, -- Belgium
+            { "bg", "", "BGR" }, -- Bulgaria
+            { "br", "", "BRA" }, -- Brazil
+            { "bt", "", "BTN" }, -- Bhutan
+            { "bw", "", "BWA" }, -- Botswana
+            { "by", "", "BLR" }, -- Belarus
+            { "ca", "", "CAN" }, -- Canada
+            { "cd", "", "COD" }, -- Congo
+            { "ch", "", "CHE" }, -- Switzerland
+            { "cm", "", "CMR" }, -- Cameroon
+            { "cn", "", "CHN" }, -- China
+            { "cz", "", "CZE" }, -- Czechia
+            { "de", "Deutsch (Germany)", "GER" }, -- Germany
+            { "dk", "", "DNK" }, -- Denmark
+            { "ee", "", "EST" }, -- Estonia
+            { "es", "", "ESP" }, -- Spain
+            { "et", "", "ETH" }, -- Ethiopia
+            { "eu", "?", "?" }, -- EurKey
+            { "fi", "", "FIN" }, -- Finland
+            { "fo", "", "FRO" }, -- Faroe Islands
+            { "fr", "", "FRA" }, -- France
+            { "gb", "English (Bri'ish)", "ENG" }, -- United Kingdom
+            { "ge", "", "GEO" }, -- Georgia
+            { "gh", "", "GHA" }, -- Ghana
+            { "gn", "", "GIN" }, -- Guinea
+            { "gr", "", "GRC" }, -- Greece
+            { "hr", "", "HRV" }, -- Croatia
+            { "hu", "", "HUN" }, -- Hungary
+            { "ie", "", "IRL" }, -- Ireland
+            { "il", "", "ISR" }, -- Israel
+            { "in", "", "IND" }, -- India
+            { "iq", "", "IRQ" }, -- Iraq
+            { "ir", "", "IRN" }, -- Iran
+            { "is", "", "ISL" }, -- Iceland
+            { "it", "", "ITA" }, -- Italy
+            { "jp", "", "JPN" }, -- Japan
+            { "ke", "", "KEN" }, -- Kenya
+            { "kg", "", "KGZ" }, -- Kyrgyzstan
+            { "kh", "", "KHM" }, -- Cambodia
+            { "kr", "", "KOR" }, -- Korea
+            { "kz", "", "KAZ" }, -- Kazakhstan
+            { "la", "", "LAO" }, -- Laos
+            { "latam", "?", "?" }, -- Latin America
+            { "latin", "?", "?" }, -- Latin
+            { "lk", "", "LKA" }, -- Sri Lanka
+            { "lt", "", "LTU" }, -- Lithuania
+            { "lv", "", "LVA" }, -- Latvia
+            { "ma", "", "MAR" }, -- Morocco
+            { "mao", "?", "?" }, -- Maori
+            { "me", "", "MNE" }, -- Montenegro
+            { "mk", "", "MKD" }, -- Macedonia
+            { "ml", "", "MLI" }, -- Mali
+            { "mm", "", "MMR" }, -- Myanmar
+            { "mn", "", "MNG" }, -- Mongolia
+            { "mt", "", "MLT" }, -- Malta
+            { "mv", "", "MDV" }, -- Maldives
+            { "ng", "", "NGA" }, -- Nigeria
+            { "nl", "", "NLD" }, -- Netherlands
+            { "no", "", "NOR" }, -- Norway
+            { "np", "", "NRL" }, -- Nepal
+            { "ph", "", "PHL" }, -- Philippines
+            { "pk", "", "PAK" }, -- Pakistan
+            { "pl", "", "POL" }, -- Poland
+            { "pt", "", "PRT" }, -- Portugal
+            { "ro", "", "ROU" }, -- Romania
+            { "rs", "", "SRB" }, -- Serbia
+            { "ru", "Русски (Russia)", "RUS" }, -- Russia
+            { "se", "", "SWE" }, -- Sweden
+            { "si", "", "SVN" }, -- Slovenia
+            { "sk", "", "SVK" }, -- Slovakia
+            { "sn", "", "SEN" }, -- Senegal
+            { "sy", "", "SYR" }, -- Syria
+            { "th", "", "THA" }, -- Thailand
+            { "tj", "", "TJK" }, -- Tajikistan
+            { "tm", "", "TKM" }, -- Turkmenistan
+            { "tr", "", "TUR" }, -- Turkey
+            { "tw", "", "TWN" }, -- Taiwan
+            { "tz", "", "TZA" }, -- Tanzania
+            { "ua", "", "UKR" }, -- Ukraine
+            { "us", "English (United States)", "USA" }, -- USA
+            { "uz", "", "UZB" }, -- Uzbekistan
+            { "vn", "", "VNM" }, -- Vietnam
+            { "za", "", "ZAF" } -- South Africa
         }
 
         for i, c in ipairs(xkeyboard_country_code) do
@@ -175,7 +175,7 @@ return function (s)
             end
         end
 
-        local kb_layout_item = wibox.widget{
+        local kb_layout_item = wibox.widget {
             {
                 {
                     {
@@ -184,7 +184,7 @@ return function (s)
                             {
                                 text = shortname,
                                 widget = wibox.widget.textbox,
-                                font = "JetBrains Mono ExtraBold, 12",
+                                font = user_vars.vars.font.extrabold,
                                 id = "kbmapname"
                             },
                             widget = wibox.container.margin,
@@ -195,7 +195,7 @@ return function (s)
                             {
                                 text = longname,
                                 widget = wibox.widget.textbox,
-                                font = "JetBrains Mono Bold, 12",
+                                font = user_vars.vars.font.bold,
 
                             },
                             widget = wibox.container.margin
@@ -208,7 +208,7 @@ return function (s)
                     widget = wibox.container.margin,
                     id = "margin"
                 },
-                shape = function (cr, width, height)
+                shape = function(cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, 10)
                 end,
                 bg = color.color["Grey800"],
@@ -219,13 +219,13 @@ return function (s)
             margins = dpi(5),
             widget = wibox.container.margin
         }
-        hover_signal(kb_layout_item.background, color.color["White"], color.color["Grey900"])
+        Hover_signal(kb_layout_item.background, color.color["White"], color.color["Grey900"])
         kb_layout_item:connect_signal(
             "button::press",
-            function ()
+            function()
                 awful.spawn.easy_async_with_shell(
                     "setxkbmap " .. keymap,
-                    function (stdout)
+                    function(stdout)
                         awesome.emit_signal("kblayout::hide:kbmenu")
                         get_kblayout()
                     end
@@ -245,9 +245,9 @@ return function (s)
         return kb_layout_items
     end
 
-    local kb_menu_widget = awful.popup{
+    local kb_menu_widget = awful.popup {
         screen = s,
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background,
@@ -257,7 +257,7 @@ return function (s)
         max_height = dpi(600),
         visible = false,
         ontop = true,
-        placement = function (c) awful.placement.align(c, {position = "top_right", margins = {right = dpi(255), top = dpi(60)}}) end
+        placement = function(c) awful.placement.align(c, { position = "top_right", margins = { right = dpi(255), top = dpi(60) } }) end
     }
 
     kb_menu_widget:setup(
@@ -267,20 +267,20 @@ return function (s)
     local function toggle_kb_layout()
         awful.spawn.easy_async_with_shell(
             "setxkbmap -query | grep layout: | awk '{print $2}'",
-            function (stdout)
+            function(stdout)
                 for j, n in ipairs(user_vars.vars.kblayout) do
                     if stdout:match(n) then
                         if j == #user_vars.vars.kblayout then
                             awful.spawn.easy_async_with_shell(
                                 "setxkbmap " .. user_vars.vars.kblayout[1],
-                                function ()
+                                function()
                                     get_kblayout()
                                 end
                             )
                         else
                             awful.spawn.easy_async_with_shell(
                                 "setxkbmap " .. user_vars.vars.kblayout[j + 1],
-                                function ()
+                                function()
                                     get_kblayout()
                                 end
                             )
@@ -293,19 +293,19 @@ return function (s)
 
     awesome.connect_signal(
         "kblayout::toggle",
-        function ()
+        function()
             toggle_kb_layout()
         end
     )
 
     --kb_menu_widget:move_next_to(mouse.current_widget_geometry)
     -- Signals
-    hover_signal(kblayout_widget, color.color["Green200"])
+    Hover_signal(kblayout_widget, color.color["Green200"])
 
-    local kblayout_keygrabber = awful.keygrabber{
+    local kblayout_keygrabber = awful.keygrabber {
         autostart = false,
         stop_event = 'release',
-        keypressed_callback = function (self, mod, key, command)
+        keypressed_callback = function(self, mod, key, command)
             if key == 'Escape' then
                 awesome.emit_signal("kblayout::hide:kbmenu")
             end
@@ -314,7 +314,7 @@ return function (s)
 
     kblayout_widget:connect_signal(
         "button::press",
-        function ()
+        function()
             if kb_menu_widget.visible then
                 kb_menu_widget.visible = false
                 kblayout_keygrabber:stop()
@@ -327,7 +327,7 @@ return function (s)
 
     awesome.connect_signal(
         "kblayout::hide:kbmenu",
-        function ()
+        function()
             kb_menu_widget.visible = false
             kblayout_keygrabber:stop()
         end

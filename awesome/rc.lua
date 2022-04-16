@@ -57,11 +57,11 @@ user_vars.main_menu = awful.menu({
     items = main.menu()
 })
 
--- A Variable needed in Statusbar (helper)
+--[[ -- A Variable needed in Statusbar (helper)
 user_vars.launcher = awful.widget.launcher({
     image = beautiful.awesome_icon,
     menu = user_vars.main_menu
-})
+}) ]]
 
 -- Menubar configuration
 menubar.utils.terminal = user_vars.vars.terminal
@@ -70,7 +70,7 @@ menubar.utils.terminal = user_vars.vars.terminal
 root.buttons(bindings.global_buttons())
 root.keys(bindings.bind_to_tags(bindings.global_keys()))
 
--- Default statusbar, comment if you want use a third party tool like polybar
+-- Default statusbar
 require("crylia_bar.init")
 
 -- Rules to apply to new clients
@@ -81,9 +81,4 @@ awful.rules.rules = main.rules(
 
 -- Signals
 require("main.signals")
-
--- Autostart programs
---awful.spawn.with_shell("~/.screenlayout/single_screen.sh")
-awful.spawn.with_shell("picom --experimental-backends")
-awful.spawn.with_shell("xfce4-power-manager")
-awful.spawn.with_shell("light-locker --lock-on-suspend --lock-on-lid &")
+require("theme.crylia.tools.auto_starter")

@@ -4,12 +4,12 @@ local dpi = require('beautiful').xresources.apply_dpi
 local gears = require('gears')
 local color = require('theme.crylia.colors')
 
-local list_update = function (widget, buttons, label, data, objects)
+local list_update = function(widget, buttons, label, data, objects)
 	widget:reset()
 	local count
 	for i, object in ipairs(objects) do
 		count = i
-		local task_widget = wibox.widget{
+		local task_widget = wibox.widget {
 			{
 				{
 					{
@@ -47,14 +47,14 @@ local list_update = function (widget, buttons, label, data, objects)
 			},
 			bg = color.color["White"],
 			fg = color.color["Grey900"],
-			shape = function (cr, width, height)
+			shape = function(cr, width, height)
 				gears.shape.rounded_rect(cr, width, height, 5)
 			end,
 			widget = wibox.container.background
 		}
 
-		local task_tool_tip = awful.tooltip{
-			objects = {task_widget},
+		local task_tool_tip = awful.tooltip {
+			objects = { task_widget },
 			mode = "inside",
 			align = "right",
 			delay_show = 1
@@ -83,6 +83,7 @@ local list_update = function (widget, buttons, label, data, objects)
 				return btns
 			end
 		end
+
 		task_widget:buttons(create_buttons(buttons, object))
 
 		local text, bg, bg_image, icon, args = label(object, task_widget.container.layout_it.title)
@@ -92,7 +93,7 @@ local list_update = function (widget, buttons, label, data, objects)
 			else
 				local text_full = text:match('>(.-)<')
 				if text_full then
-					text = object.class:sub(1,20)
+					text = object.class:sub(1, 20)
 					task_tool_tip:set_text(text_full)
 					task_tool_tip:add_to_object(task_widget)
 				else
@@ -110,55 +111,55 @@ local list_update = function (widget, buttons, label, data, objects)
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
 		local old_wibox, old_cursor, old_bg
-    	task_widget:connect_signal(
-    	    "mouse::enter",
-    	    function ()
-    	        old_bg = task_widget.bg
+		task_widget:connect_signal(
+			"mouse::enter",
+			function()
+				old_bg = task_widget.bg
 				if object == client.focus then
-                    task_widget.bg = '#dddddddd'
+					task_widget.bg = '#dddddddd'
 				else
 					task_widget.bg = '#3A475Cdd'
 				end
-    	        local w = mouse.current_wibox
-    	        if w then
-    	            old_cursor, old_wibox = w.cursor, w
-    	            w.cursor = "hand1"
-    	        end
-    	    end
-    	)
+				local w = mouse.current_wibox
+				if w then
+					old_cursor, old_wibox = w.cursor, w
+					w.cursor = "hand1"
+				end
+			end
+		)
 
-    	task_widget:connect_signal(
-    	    "button::press",
-    	    function ()
-    	        if object == client.focus then
+		task_widget:connect_signal(
+			"button::press",
+			function()
+				if object == client.focus then
 					task_widget.bg = "#ffffffaa"
 				else
 					task_widget.bg = '#3A475Caa'
 				end
-    	    end
-    	)
+			end
+		)
 
-    	task_widget:connect_signal(
-    	    "button::release",
-    	    function ()
-    	        if object == client.focus then
+		task_widget:connect_signal(
+			"button::release",
+			function()
+				if object == client.focus then
 					task_widget.bg = "#ffffffdd"
 				else
 					task_widget.bg = '#3A475Cdd'
 				end
-    	    end
-    	)
+			end
+		)
 
-    	task_widget:connect_signal(
-    	    "mouse::leave",
-    	    function ()
-    	        task_widget.bg = old_bg
-    	        if old_wibox then
-    	            old_wibox.cursor = old_cursor
-    	            old_wibox = nil
-    	        end
-    	    end
-    	)
+		task_widget:connect_signal(
+			"mouse::leave",
+			function()
+				task_widget.bg = old_bg
+				if old_wibox then
+					old_wibox.cursor = old_cursor
+					old_wibox = nil
+				end
+			end
+		)
 	end
 	return widget
 end

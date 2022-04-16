@@ -3,17 +3,17 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local colors = require ("theme.crylia.colors")
+local colors = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
-return function(s, programs)
+return function(screen, programs)
 
-    local function create_dock_element (program, name, is_steam, size)
+    local function create_dock_element(program, name, is_steam, size)
         is_steam = is_steam or false
 
-        local dock_element = wibox.widget{
+        local dock_element = wibox.widget {
             {
                 {
                     {
@@ -21,7 +21,7 @@ return function(s, programs)
                             resize = true,
                             forced_width = size,
                             forced_height = size,
-                            image = Get_icon("Papirus-Dark",program, is_steam),
+                            image = Get_icon("Papirus-Dark", program, is_steam),
                             widget = wibox.widget.imagebox
                         },
                         {
@@ -36,7 +36,7 @@ return function(s, programs)
                     widget = wibox.container.margin,
                     id = "margin"
                 },
-                shape = function (cr, width, height)
+                shape = function(cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, 10)
                 end,
                 bg = colors.color["Grey900"],
@@ -47,11 +47,11 @@ return function(s, programs)
             widget = wibox.container.margin
         }
 
-        hover_signal(dock_element.background, colors.color["Grey800"], colors.color["White"])
+        Hover_signal(dock_element.background, colors.color["Grey800"], colors.color["White"])
 
         dock_element:connect_signal(
             "button::press",
-            function ()
+            function()
                 if is_steam then
                     awful.spawn("steam steam://rungameid/" .. program)
                 else
@@ -61,7 +61,7 @@ return function(s, programs)
         )
 
         awful.tooltip {
-            objects = {dock_element},
+            objects = { dock_element },
             text = name,
             mode = "outside",
             preferred_alignments = "middle",
@@ -72,8 +72,8 @@ return function(s, programs)
             local color = ""
             local indicators
             local t = 1
-            for indicator_screen in screen do
-                for j,indicator_client in ipairs(indicator_screen.get_clients()) do
+            --[[ for indicator_screen in screen do
+                for j, indicator_client in ipairs(indicator_screen.get_clients()) do
                     if indicator_client.class == program then
                         if indicator_client.maximized then
                             color = colors.color["Green200"]
@@ -87,7 +87,7 @@ return function(s, programs)
                             color = colors.color["White"]
                         end
 
-                        local indicator = wibox.widget{
+                        local indicator = wibox.widget {
                             widget = wibox.container.background,
                             shape = gears.shape.circle,
                             forced_height = dpi(50),
@@ -97,7 +97,7 @@ return function(s, programs)
                         t = t + 1
                     end
                 end
-            end
+            end ]]
             return indicators
         end
 
@@ -106,22 +106,34 @@ return function(s, programs)
         return dock_element
     end
 
-    local dock = awful.popup{
+    local dock = awful.popup {
         widget = wibox.container.background,
         ontop = true,
         bg = colors.color["Grey900"],
         visible = true,
-        screen = s,
+        screen = screen,
         type = "dock",
         height = user_vars.vars.dock_icon_size + 10,
-        placement = function(c) awful.placement.bottom(c, {margins = dpi(10)}) end,
+        placement = function(c) awful.placement.bottom(c, { margins = dpi(10) }) end,
         shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 15)
         end
     }
 
+    local fakedock = awful.popup {
+        widget = wibox.container.background,
+        ontop = true,
+        bg = '#00000000',
+        visible = true,
+        screen = screen,
+        type = "dock",
+        id = "fakedock",
+        height = dpi(10),
+        placement = function(c) awful.placement.bottom(c, { margins = dpi(0) }) end,
+    }
+
     local function get_dock_elements(pr)
-        local dock_elements = {layout = wibox.layout.fixed.horizontal}
+        local dock_elements = { layout = wibox.layout.fixed.horizontal }
 
         for i, p in ipairs(pr) do
             dock_elements[i] = create_dock_element(p[1], p[2], p[3], user_vars.vars.dock_icon_size)
@@ -130,60 +142,83 @@ return function(s, programs)
         return dock_elements
     end
 
+    local function get_fake_elements(amount)
+        local fake_elements = { layout = wibox.layout.fixed.horizontal }
+
+        for i = 0, amount, 1 do
+            fake_elements[i] = wibox.widget {
+                bg = '00000000',
+                forced_width = user_vars.vars.dock_icon_size + dpi(20),
+                forced_height = dpi(10),
+                widget = wibox.container.background
+            }
+        end
+        return fake_elements
+    end
+
     dock:setup {
         get_dock_elements(programs),
+        layout = wibox.layout.fixed.vertical
+    }
+
+    --TODO: Replace with fake elements
+    fakedock:setup {
+        get_fake_elements(#programs),
         layout = wibox.layout.fixed.vertical
     }
     local naughty = require("naughty")
     --[[ TODO: This function runs every 0.1 second, it can be optimized by
     calling it every time the mouse is over the dock, a client changes it states ...
     but im too lazy rn ]]
-    local function check_for_dock_hide()
-        for s in screen do
-            local mx, my = mouse.coords().x * 100 / s.geometry.width, mouse.coords().y * 100 / s.geometry.height
-            if ((mx > 30) and (mx < 70)) and (my > 99) then
+    -- TODO: draw a invisible non clickable fake dock and check of mouse if over that
+    local function check_for_dock_hide(s)
+        if s == mouse.screen then
+            --local mx, my = mouse.coords().x * 100 / screen.geometry.width, mouse.coords().y * 100 / screen.geometry.height
+
+            if mouse.current_widget then
                 dock.visible = true
-                break;
+                return
             end
-            for j,c in ipairs(s.get_clients()) do
+            for j, c in ipairs(screen.get_clients()) do
                 local y = c:geometry().y
                 local h = c.height
-                if (y + h) >= s.geometry.height - user_vars.vars.dock_icon_size - 35 then
+                if (y + h) >= screen.geometry.height - user_vars.vars.dock_icon_size - 35 then
                     dock.visible = false
-                    break;
                 else
                     dock.visible = true
                 end
             end
+        else
+            dock.visible = false
         end
     end
 
     client.connect_signal(
         "manage",
-        function ()
-            check_for_dock_hide()
+        function()
+            check_for_dock_hide(screen)
         end
     )
 
-    local dock_intelligent_hide = gears.timer{
+    local dock_intelligent_hide = gears.timer {
         timeout = 1,
         autostart = true,
         call_now = true,
-        callback = function ()
-            check_for_dock_hide()
+        callback = function()
+            check_for_dock_hide(screen)
         end
     }
 
     dock:connect_signal(
         "mouse::enter",
-        function ()
+        function()
             dock_intelligent_hide:stop()
         end
     )
 
     dock:connect_signal(
         "mouse::leave",
-        function ()
+        function()
             dock_intelligent_hide:again()
         end
     )

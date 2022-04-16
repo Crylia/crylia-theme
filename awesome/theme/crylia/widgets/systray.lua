@@ -11,16 +11,13 @@ local wibox = require("wibox")
 require("main.signals")
 
 
-return function (s)
+return function(s)
 
-    local systray = wibox.widget{
+    local systray = wibox.widget {
         {
             {
                 wibox.widget.systray(),
-                top = dpi(6),
-                bottom = dpi(6),
-                left = dpi(6),
-                right = dpi(6),
+                margins = dpi(6),
                 widget = wibox.container.margin,
                 id = 'st'
             },
@@ -29,13 +26,15 @@ return function (s)
             id = "container"
         },
         widget = wibox.container.background,
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         bg = color.color["BlueGrey800"]
     }
     -- Signals
-    hover_signal(systray.container, color.color["Red200"])
+    Hover_signal(systray.container, color.color["Red200"])
+
     systray.container.st.widget:set_base_size(dpi(20))
+
     return systray
 end

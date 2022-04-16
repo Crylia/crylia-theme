@@ -1,0 +1,7 @@
+{
+  "Lua.diagnostics.globals": [
+    "user_vars",
+    "modkey",
+    "root"
+  ]
+}

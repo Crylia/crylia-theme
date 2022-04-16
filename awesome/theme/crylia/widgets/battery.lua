@@ -16,8 +16,8 @@ require("main.signals")
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/battery/"
 
 -- Returns the battery widget
-return function ()
-    local battery_widget = wibox.widget{
+return function()
+    local battery_widget = wibox.widget {
         {
             {
                 {
@@ -35,7 +35,7 @@ return function ()
                     top = dpi(2),
                     widget = wibox.container.margin
                 },
-                spacing = dpi(8),
+                spacing = dpi(10),
                 {
                     visible = false,
                     align = 'center',
@@ -47,30 +47,30 @@ return function ()
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(5),
-            right = dpi(10),
+            left = dpi(8),
+            right = dpi(8),
             widget = wibox.container.margin
         },
         bg = color.color["Purple200"],
         fg = color.color["Grey900"],
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
-    local battery_tooltip = awful.tooltip{
-        objects = {battery_widget},
+    local battery_tooltip = awful.tooltip {
+        objects = { battery_widget },
         text = "",
-        mode = "outside",
+        mode = "inside",
         preferred_alignments = "middle",
         margins = dpi(10)
     }
 
-    local get_battery_info = function ()
+    local get_battery_info = function()
         awful.spawn.easy_async_with_shell(
             [[ upower -i $(upower -e | grep BAT) | grep "time to " ]],
-            function (stdout)
+            function(stdout)
                 if stdout == nil or stdout == '' then
                     battery_tooltip:set_text('No Battery Found')
                     return
@@ -95,7 +95,7 @@ return function ()
     local last_battery_check = os.time()
     local notify_critical_battery = true
 
-    local battery_warning = function ()
+    local battery_warning = function()
         naughty.notify({
             icon = gears.color.recolor_image(icondir .. "battery-alert.svg", color.color["White"]),
             app_name = "System notification",
@@ -105,10 +105,10 @@ return function ()
         })
     end
 
-    local update_battery = function (status)
+    local update_battery = function(status)
         awful.spawn.easy_async_with_shell(
             [[sh -c "upower -i $(upower -e | grep BAT) | grep percentage | awk '{print \$2}' |tr -d '\n%'"]],
-            function (stdout)
+            function(stdout)
                 local battery_percentage = tonumber(stdout)
 
                 if not battery_percentage then
@@ -129,7 +129,7 @@ return function ()
 
                 if battery_percentage > 0 and battery_percentage < 10 and status == 'discharging' then
                     icon = icon .. '-' .. 'alert'
-                    if(os.difftime(os.time(), last_battery_check) > 300 or notify_critical_battery) then
+                    if (os.difftime(os.time(), last_battery_check) > 300 or notify_critical_battery) then
                         last_battery_check = os.time()
                         notify_critical_battery = false
                         battery_warning()
@@ -156,7 +156,7 @@ return function ()
                     icon = icon .. '-' .. status .. '-' .. '70'
                 elseif battery_percentage >= 80 and battery_percentage < 90 then
                     icon = icon .. '-' .. status .. '-' .. '80'
-                elseif battery_percentage >=90 and battery_percentage < 100 then
+                elseif battery_percentage >= 90 and battery_percentage < 100 then
                     icon = icon .. '-' .. status .. '-' .. '90'
                 end
 
@@ -166,18 +166,18 @@ return function ()
         )
     end
 
-    hover_signal(battery_widget, color.color["Purple200"])
+    Hover_signal(battery_widget, color.color["Purple200"])
 
     battery_widget:connect_signal(
         'button::press',
-        function ()
+        function()
             awful.spawn("xfce4-power-manager-settings")
         end
     )
 
     battery_widget:connect_signal(
         "mouse::enter",
-        function ()
+        function()
             get_battery_info()
         end
     )
@@ -185,7 +185,7 @@ return function ()
     watch(
         [[sh -c "upower -i $(upower -e | grep BAT) | grep state | awk '{print \$2}' | tr -d '\n'"]],
         5,
-        function (widget, stdout)
+        function(widget, stdout)
             local status = stdout:gsub('%\n', '')
             if status == nil or status == '' then
                 battery_widget.container.battery_layout.spacing = dpi(0)

@@ -13,15 +13,15 @@ require("main.signals")
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/powermenu/"
 
-return function (s)
+return function(s)
 
     -- Profile picture imagebox
     local profile_picture = wibox.widget {
         image = icondir .. "defaultpfp.svg",
         resize = true,
         forced_height = dpi(200),
-        clip_shape = function (cr, width, height)
-            gears.shape.rounded_rect(cr, dpi(width), dpi(height), 30)
+        clip_shape = function(cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, 30)
         end,
         widget = wibox.widget.imagebox
     }
@@ -38,7 +38,7 @@ return function (s)
     -- Get the profile script from /var/lib/AccountsService/icons/${USER}
     -- and copy it to the assets folder
     -- TODO: If the user doesnt have AccountsService look into $HOME/.faces
-    local update_profile_picture = function ()
+    local update_profile_picture = function()
         awful.spawn.easy_async_with_shell(
             [=[ 
                 iconPath="/var/lib/AccountsService/icons/${USER}"
@@ -65,7 +65,7 @@ return function (s)
                     fi
                 fi
              ]=],
-            function (stdout)
+            function(stdout)
                 if stdout then
                     profile_picture:set_image(stdout:gsub("\n", ""))
                 else
@@ -107,7 +107,7 @@ return function (s)
 
     -- Universal Button widget
     local button = function(name, icon, bg_color, callback)
-        local item = wibox.widget{
+        local item = wibox.widget {
             {
                 {
                     {
@@ -141,7 +141,7 @@ return function (s)
                 },
                 fg = color.color["Grey900"],
                 bg = bg_color,
-                shape = function (cr, width, height)
+                shape = function(cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, 10)
                 end,
                 widget = wibox.container.background,
@@ -194,11 +194,11 @@ return function (s)
     local lock_button = button("Lock", icondir .. "lock.svg", color.color["Orange200"], lock_command)
 
     -- Signals to change color on hover
-    hover_signal(shutdown_button.background, color.color["Blue200"])
-    hover_signal(reboot_button.background, color.color["Red200"])
-    hover_signal(suspend_button.background, color.color["Yellow200"])
-    hover_signal(logout_button.background, color.color["Green200"])
-    hover_signal(lock_button.background, color.color["Orange200"])
+    Hover_signal(shutdown_button.background, color.color["Blue200"])
+    Hover_signal(reboot_button.background, color.color["Red200"])
+    Hover_signal(suspend_button.background, color.color["Yellow200"])
+    Hover_signal(logout_button.background, color.color["Green200"])
+    Hover_signal(lock_button.background, color.color["Orange200"])
 
     -- The powermenu widget
     local powermenu = wibox.widget {
@@ -263,7 +263,7 @@ return function (s)
     }
 
     -- Container for the widget, covers the entire screen
-    local powermenu_container = wibox{
+    local powermenu_container = wibox {
         widget = powermenu,
         screen = s,
         type = "splash",
@@ -282,7 +282,7 @@ return function (s)
             awful.button(
                 {},
                 3,
-                function ()
+                function()
                     awesome.emit_signal("module::powermenu:hide")
                 end
             )
@@ -290,10 +290,10 @@ return function (s)
     )
 
     -- Close on Escape
-    local powermenu_keygrabber = awful.keygrabber{
+    local powermenu_keygrabber = awful.keygrabber {
         autostart = false,
         stop_event = 'release',
-        keypressed_callback = function (self, mod, key, command)
+        keypressed_callback = function(self, mod, key, command)
             if key == 'Escape' then
                 awesome.emit_signal("module::powermenu:hide")
             end

@@ -14,9 +14,9 @@ require("main.signals")
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/date/"
 
 -- Returns the date widget
-return function ()
+return function()
 
-    local date_widget = wibox.widget{
+    local date_widget = wibox.widget {
         {
             {
                 {
@@ -45,19 +45,19 @@ return function ()
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(10),
-            right = dpi(10),
+            left = dpi(8),
+            right = dpi(8),
             widget = wibox.container.margin
         },
         bg = color.color["Teal200"],
         fg = color.color["Grey900"],
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
-    local set_date = function ()
+    local set_date = function()
         date_widget.container.date_layout.label:set_text(os.date("%a, %b %d"))
     end
 
@@ -66,24 +66,24 @@ return function ()
         timeout = 60,
         autostart = true,
         call_now = true,
-        callback = function ()
+        callback = function()
             set_date()
         end
     }
 
     -- Signals
-    hover_signal(date_widget, color.color["Teal200"])
+    Hover_signal(date_widget, color.color["Teal200"])
 
     date_widget:connect_signal(
         "mouse::enter",
-        function ()
+        function()
             awesome.emit_signal("widget::calendar_osd:stop", true)
         end
     )
 
     date_widget:connect_signal(
         "mouse::leave",
-        function ()
+        function()
             awesome.emit_signal("widget::calendar_osd:rerun", true)
         end
     )

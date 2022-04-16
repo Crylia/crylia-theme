@@ -16,18 +16,18 @@ local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/networ
 
 -- Insert your interfaces here, get the from ip a
 local interfaces = {
-    wlan_interface = "wlo1",
-    lan_interface = "enx00e04c89ce6f"
+    wlan_interface = user_vars.vars.network.wlan,
+    lan_interface = user_vars.vars.network.ethernet
 }
 
 local network_mode = nil
 
 -- Returns the network widget
-return function ()
+return function()
     local startup = true
     local reconnect_startup = true
-
-    local network_widget = wibox.widget{
+    local wifi_strength
+    local network_widget = wibox.widget {
         {
             {
                 {
@@ -45,7 +45,7 @@ return function ()
                     top = dpi(2),
                     widget = wibox.container.margin
                 },
-                spacing = dpi(8),
+                spacing = dpi(10),
                 {
                     id = "label",
                     visible = false,
@@ -57,22 +57,22 @@ return function ()
                 layout = wibox.layout.fixed.horizontal
             },
             id = "container",
-            left = dpi(10),
-            right = dpi(10),
+            left = dpi(8),
+            right = dpi(8),
             widget = wibox.container.margin
         },
         bg = color.color["Red200"],
         fg = color.color["Grey900"],
-        shape = function (cr, width, height)
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 5)
         end,
         widget = wibox.container.background
     }
 
-    local network_tooltip = awful.tooltip{
+    local network_tooltip = awful.tooltip {
         text = "Loading",
-        objects = {network_widget},
-        mode = "outside",
+        objects = { network_widget },
+        mode = "inside",
         preferred_alignments = "middle",
         margins = dpi(10)
     }
@@ -92,21 +92,21 @@ return function ()
         fi
     ]=]
 
-    local update_startup = function ()
+    local update_startup = function()
         if startup then
             startup = false
         end
     end
 
-    local update_reconnect_startup = function (status)
+    local update_reconnect_startup = function(status)
         reconnect_startup = status
     end
 
-    local update_tooltip = function (message)
+    local update_tooltip = function(message)
         network_tooltip:set_markup(message)
     end
 
-    local network_notify = function (message, title, app_name, icon)
+    local network_notify = function(message, title, app_name, icon)
         naughty.notify({
             text = message,
             title = title,
@@ -116,21 +116,21 @@ return function ()
         })
     end
 
-    local update_wireless = function ()
+    local update_wireless = function()
         network_mode = "wireless"
 
-        local notify_connected = function (essid)
-            local message = "You are now connected to ".. essid
+        local notify_connected = function(essid)
+            local message = "You are now connected to " .. essid
             local title = "Connection successfull"
             local app_name = "System Notification"
             local icon = icondir .. "wifi-strength-4.svg"
             network_notify(message, title, app_name, icon)
         end
 
-        local update_wireless_data = function (healthy)
+        local update_wireless_data = function(healthy)
             awful.spawn.easy_async_with_shell(
                 [[ iw dev ]] .. interfaces.wlan_interface .. [[ link ]],
-                function (stdout)
+                function(stdout)
                     local essid = stdout:match("SSID: (.-)\n") or "N/A"
                     local bitrate = stdout:match("tx bitrate: (.+/s)") or "N/A"
                     local message = "Connected to <b>" .. essid .. "</b>\nSignal strength <b>" .. tostring(wifi_strength) .. "%</b>\n" .. "Bit rate <b>" .. tostring(bitrate) .. "</b>"
@@ -149,10 +149,10 @@ return function ()
             )
         end
 
-        local update_wireless_icon = function (strength)
+        local update_wireless_icon = function(strength)
             awful.spawn.easy_async_with_shell(
                 check_for_internet,
-                function (stdout)
+                function(stdout)
                     local icon = "wifi-strength"
                     if not stdout:match("Connected but no internet") then
                         if startup or reconnect_startup then
@@ -170,10 +170,10 @@ return function ()
             )
         end
 
-        local update_wireless_strength = function ()
+        local update_wireless_strength = function()
             awful.spawn.easy_async_with_shell(
                 [[ awk 'NR==3 {printf "%3.0f", ($3/70)*100}' /proc/net/wireless ]],
-                function (stdout)
+                function(stdout)
                     if not tonumber(stdout) then
                         return
                     end
@@ -191,11 +191,11 @@ return function ()
         update_startup()
     end
 
-    local update_wired = function ()
+    local update_wired = function()
         network_mode = "wired"
 
-        local notify_connected = function ()
-            local message = "You are now connected to ".. interfaces.lan_interface
+        local notify_connected = function()
+            local message = "You are now connected to " .. interfaces.lan_interface
             local title = "Connection successfull"
             local app_name = "System Notification"
             local icon = icondir .. "ethernet.svg"
@@ -204,7 +204,7 @@ return function ()
 
         awful.spawn.easy_async_with_shell(
             check_for_internet,
-            function (stdout)
+            function(stdout)
                 local icon = "ethernet"
 
                 if stdout:match("Connected but no internet") then
@@ -229,15 +229,15 @@ return function ()
 
     end
 
-    local update_disconnected = function ()
-        local notify_wireless_disconnected = function (essid)
+    local update_disconnected = function()
+        local notify_wireless_disconnected = function(essid)
             local message = "WiFi has been disconnected"
             local title = "Connection lost"
             local app_name = "System Notification"
             local icon = icondir .. "wifi-strength-off-outline.svg"
             network_notify(message, title, app_name, icon)
         end
-        local notify_wired_disconnected = function (essid)
+        local notify_wired_disconnected = function(essid)
             local message = "Ethernet has been unplugged"
             local title = "Connection lost"
             local app_name = "System Notification"
@@ -264,7 +264,7 @@ return function ()
         network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. icon .. ".svg", color.color["Grey900"]))
     end
 
-    local check_network_mode = function ()
+    local check_network_mode = function()
         awful.spawn.easy_async_with_shell(
             [=[
                 wireless="]=] .. tostring(interfaces.wlan_interface) .. [=["
@@ -301,7 +301,7 @@ return function ()
                 }
                 print_network_mode
             ]=],
-            function (stdout)
+            function(stdout)
                 local mode = stdout:gsub("%\n", "")
                 if stdout:match("No internet connected") then
                     update_disconnected()
@@ -314,21 +314,21 @@ return function ()
         )
     end
 
-    local network_updater = gears.timer{
+    local network_updater = gears.timer {
         timeout = 5,
         autostart = true,
         call_now = true,
-        callback = function ()
+        callback = function()
             check_network_mode()
         end
     }
 
     -- Signals
-    hover_signal(network_widget, color.color["Red200"])
+    Hover_signal(network_widget, color.color["Red200"])
 
     network_widget:connect_signal(
         "button::press",
-        function ()
+        function()
             awful.spawn("gnome-control-center wlan")
         end
     )
