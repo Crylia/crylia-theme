@@ -3,6 +3,10 @@
 This theme is inspired by simple bar and many other things that I think look good and fit my theme. AwesomeWM lets you configure your desktop as you want, no compromises, the sky is the limit!
 This is the reason I choose AwesomeWM.
 
+![Desktop](./desktop.png)
+
+![Lockscreen](./lockscreen.png)
+
 ## FAQ - Wiki
 
 ---
