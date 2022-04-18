@@ -28,18 +28,6 @@ But in order for it to work as seen you need some dependencies installed along t
 |Rofi|rofi|[Guide here]()|For the application launcher|
 |Picom|picom-ibhagwan-git<sup>aur</sup>|[Guide here]()|Compositor, needed for transparency/blur/effects/animations etc|
 |||||
-## TODO
-
----
-
-This is my 1.0 release, meaning that I will add many more features as time goes on. At this state the config is usable on (hopefully) all systems complying with my dependency list.
-
-- [ ] Independent Application launcher
-- [ ] Alt+Tab like Window switcher
-- [ ] Switching trough Keyboard layouts using \<*super*\>+\<*space*\>(like on gnome where you hold down super)
-- [ ] System tray needs a lot of work (maybe an own implementation)
-- [ ] Manual tiling layout like i3
-- [ ] Interactive calendar with online support
 
 ## Features
 
