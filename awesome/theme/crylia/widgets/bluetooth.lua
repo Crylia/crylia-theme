@@ -55,7 +55,7 @@ return function()
     awful.widget.watch(
         "rfkill list bluetooth",
         5,
-        function(stdout)
+        function(_, stdout)
             local icon = icondir .. "bluetooth"
             if stdout:match('Soft blocked: yes') or stdout:gsub("\n", "") == '' then
                 icon = icon .. "-off"
@@ -65,13 +65,13 @@ return function()
                 icon = icon .. "-on"
                 bluetooth_state = "on"
                 awful.spawn.easy_async_with_shell(
-                    [[ bluetoothctl info | grep Name: | awk '{ first = $1; $1 = ""; print $0 }' ]],
+                    './.config/awesome/theme/crylia/scripts/bt.sh',
                     function(stdout2)
                         if stdout2 == nil or stdout2:gsub("\n", "") == "" then
                             bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently not connected")
                         else
-                            bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently connected to:" .. connected_device)
-                            connected_device = stdout2
+                            connected_device = stdout2:gsub("%(", ""):gsub("%)", "")
+                            bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently connected to:\n" .. connected_device)
                         end
                     end
                 )
@@ -90,8 +90,8 @@ return function()
             awful.spawn.easy_async_with_shell(
                 "rfkill list bluetooth",
                 function(stdout)
-                    if stdout:gsub("\n", "") == '' then
-                        if bluetooth_state == "on" then
+                    if stdout:gsub("\n", "") ~= '' then
+                        if bluetooth_state == "off" then
                             awful.spawn.easy_async_with_shell(
                                 [[
                                     rfkill unblock bluetooth
@@ -100,7 +100,7 @@ return function()
                                 ]],
                                 function()
                                     naughty.notify({
-                                        Title = "System Notification",
+                                        title = "System Notification",
                                         app_name = "Bluetooth",
                                         message = "Bluetooth activated"
                                     })
@@ -114,7 +114,7 @@ return function()
                                 ]],
                                 function()
                                     naughty.notify({
-                                        Title = "System Notification",
+                                        title = "System Notification",
                                         app_name = "Bluetooth",
                                         message = "Bluetooth deactivated"
                                     })
