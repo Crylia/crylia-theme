@@ -84,7 +84,6 @@ local list_update = function(widget, buttons, label, data, objects)
         tag_widget:buttons(create_buttons(buttons, object))
 
         local text, bg_color, bg_image, icon, args = label(object, tag_label)
-        local naughty = require("naughty")
         tag_label:set_text(object.index)
         if object.urgent == true then
             tag_widget:set_bg(color.color["RedA200"])

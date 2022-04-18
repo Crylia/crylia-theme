@@ -64,10 +64,6 @@ local list_update = function(widget, buttons, label, data, objects)
 			if buttons then
 				local btns = {}
 				for _, b in ipairs(buttons) do
-					-- Create a proxy button object: it will receive the real
-					-- press and release events, and will propagate them to the
-					-- button object the user provided, but with the object as
-					-- argument.
 					local btn = awful.button {
 						modifiers = b.modifiers,
 						button = b.button,
@@ -93,7 +89,11 @@ local list_update = function(widget, buttons, label, data, objects)
 			else
 				local text_full = text:match('>(.-)<')
 				if text_full then
-					text = object.class:sub(1, 20)
+					if object.class == nil then
+						text = object.name
+					else
+						text = object.class:sub(1, 20)
+					end
 					task_tool_tip:set_text(text_full)
 					task_tool_tip:add_to_object(task_widget)
 				else
@@ -110,6 +110,7 @@ local list_update = function(widget, buttons, label, data, objects)
 		task_widget.container.layout_it.margin.layout_icon.icon:set_image(Get_icon("Papirus-Dark", object))
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
+
 		local old_wibox, old_cursor, old_bg
 		task_widget:connect_signal(
 			"mouse::enter",

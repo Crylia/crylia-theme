@@ -4,10 +4,11 @@
 -- Awesome Libs
 local awful = require("awful")
 
-return function ()
+return function()
     local layouts = {
         awful.layout.suit.tile,
         awful.layout.suit.floating,
+        awful.layout.suit.fair,
     }
 
     return layouts

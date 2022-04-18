@@ -31,17 +31,26 @@ return function(s, widgets)
         {
             {
                 widgets[1],
-                margins = dpi(6),
+                left = dpi(6),
+                right = dpi(3),
+                top = dpi(6),
+                bottom = dpi(6),
                 widget = wibox.container.margin
             },
             {
                 widgets[2],
-                margins = dpi(6),
+                left = dpi(3),
+                right = dpi(3),
+                top = dpi(6),
+                bottom = dpi(6),
                 widget = wibox.container.margin
             },
             {
                 widgets[3],
-                margins = dpi(6),
+                left = dpi(3),
+                right = dpi(6),
+                top = dpi(6),
+                bottom = dpi(6),
                 widget = wibox.container.margin
             },
             forced_height = 45,

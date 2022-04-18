@@ -15,8 +15,19 @@ end
 -- If you want different default programs, wallpaper path or modkey; edit this file.
 local _M = {
 
+    -- Write the terminal command to start anything here
+    autostart = {
+        "picom --experimental-backends",
+        "xfce4-power-manager",
+        "light-locker --lock-on-suspend --lock-on-lid &",
+        "flatpak run com.spotify.Client",
+        "discord",
+        "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1"
+    },
+
+    -- Type 'ip a' and check your wlan and ethernet name
     network = {
-        wlan = "",
+        wlan = "wlo1",
         ethernet = "eno1"
     },
 

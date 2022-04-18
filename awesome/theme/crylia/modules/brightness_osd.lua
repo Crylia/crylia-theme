@@ -13,9 +13,9 @@ local wibox = require("wibox")
 local icondir = awful.util.getdir("config") .. "theme/crylia/assets/icons/brightness/"
 
 -- TODO: fix backlight keys and osd not working correctly
-return function (s)
+return function(s)
 
-    local brightness_osd_widget = wibox.widget{
+    local brightness_osd_widget = wibox.widget {
         {
             {
                 {
@@ -101,7 +101,7 @@ return function (s)
 
     brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:connect_signal(
         "property::value",
-        function ()
+        function()
             local brightness_value = brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:get_value()
             -- Performance is horrible, or it overrides and executes at the same time as the keybindings
             --awful.spawn("xbacklight -set " .. brightness_value, false)
@@ -131,11 +131,11 @@ return function (s)
         end
     )
 
-    local update_slider = function ()
+    local update_slider = function()
         awful.spawn.easy_async_with_shell(
             [[ sleep 0.1 && xbacklight -get ]],
-            function (stdout)
-                stdout = stdout:sub(1,-9)
+            function(stdout)
+                stdout = stdout:sub(1, -9)
                 brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:set_value(tonumber(stdout))
             end
         )
@@ -143,48 +143,49 @@ return function (s)
 
     awesome.connect_signal(
         "module::brightness_slider:update",
-        function ()
+        function()
             update_slider()
         end
     )
 
     awesome.connect_signal(
         "widget::brightness:update",
-        function (value)
+        function(value)
             brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:set_value(tonumber(value))
         end
     )
 
     update_slider()
 
-    local brightness_container = awful.popup{
+    local brightness_container = awful.popup {
         widget = wibox.container.background,
         ontop = true,
         bg = color.color["Grey900"] .. "00",
         stretch = false,
         visible = false,
-        placement = function (c) awful.placement.centered(c, {margins = {top = dpi(200)}}) end,
-        shape = function (cr, width, height)
+        screen = s,
+        placement = function(c) awful.placement.centered(c, { margins = { top = dpi(200) } }) end,
+        shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 15)
         end
     }
 
-    local hide_brightness_osd = gears.timer{
+    local hide_brightness_osd = gears.timer {
         timeout = 2,
         autostart = true,
-        callback = function ()
+        callback = function()
             brightness_container.visible = false
         end
     }
 
-    brightness_container:setup{
+    brightness_container:setup {
         brightness_osd_widget,
         layout = wibox.layout.fixed.horizontal
     }
 
     awesome.connect_signal(
         "widget::brightness_osd:rerun",
-        function ()
+        function()
             if hide_brightness_osd.started then
                 hide_brightness_osd:again()
             else
@@ -195,14 +196,16 @@ return function (s)
 
     awesome.connect_signal(
         "module::brightness_osd:show",
-        function ()
-            brightness_container.visible = true
+        function()
+            if s == mouse.screen then
+                brightness_container.visible = true
+            end
         end
     )
 
     brightness_container:connect_signal(
         "mouse::enter",
-        function ()
+        function()
             brightness_container.visible = true
             hide_brightness_osd:stop()
         end
@@ -210,7 +213,7 @@ return function (s)
 
     brightness_container:connect_signal(
         "mouse::leave",
-        function ()
+        function()
             brightness_container.visible = true
             hide_brightness_osd:again()
         end

@@ -184,6 +184,7 @@ echo $(pacmd list-sinks | awk '/^\s+name: /{indefault = $2 == "<'$SINK'>"} /^\s+
         bg = color.color["Grey900"] .. "00",
         stretch = false,
         visible = false,
+        screen = s,
         placement = function(c) awful.placement.centered(c, { margins = { top = dpi(200) } }) end,
         shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 15)
@@ -206,7 +207,9 @@ echo $(pacmd list-sinks | awk '/^\s+name: /{indefault = $2 == "<'$SINK'>"} /^\s+
     awesome.connect_signal(
         "module::volume_osd:show",
         function()
-            volume_container.visible = true
+            if s == mouse.screen then
+                volume_container.visible = true
+            end
         end
     )
 

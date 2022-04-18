@@ -7,6 +7,7 @@ local awful = require("awful")
 local color = require("theme.crylia.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
+local naughty = require("naughty")
 local wibox = require("wibox")
 require("main.signals")
 
@@ -51,54 +52,34 @@ return function()
     local bluetooth_state = "off"
     local connected_device = "nothing"
 
-    -- ! if you don't have a bluetooth device then this function will
-    -- ! spawn hundereds of processes of bluetoothctl, this will be bad
-    -- TODO: Check for a bluetooth controller first, maybe use a different program
-    local get_bluetooth_information = function()
-        --     awful.spawn.easy_async_with_shell(
-        --         [[ bluetoothctl show | grep Powered | awk '{print $2}' ]],
-        --         function(stdout)
-        --             local icon = icondir .. "bluetooth"
-        --             stdout = stdout:gsub("\n", "")
-        --             if stdout == "yes" then
-        --                 icon = icon .. "-on"
-        --                 bluetooth_state = "on"
-        --                 awful.spawn.easy_async_with_shell(
-        --                     [[ bluetoothctl info | grep Name: | awk '{ first = $1; $1 = ""; print $0 }' ]],
-        --                     function(stdout2)
-        --                         if stdout2 == nil or stdout2:gsub("\n", "") == "" then
-        --                             bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently not connected")
-        --                         else
-        --                             bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently connected to:" .. connected_device)
-        --                             connected_device = stdout2
-        --                         end
-        --                     end
-        --                 )
-        --             else
-        --                 icon = icon .. "-off"
-        --                 bluetooth_state = "off"
-        --                 bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n")
-        --             end
-        --             bluetooth_widget.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icon .. ".svg", color.color["Grey900"]))
-        --         end
-        --     )
-    end
-
-    local bluetooth_update = gears.timer {
-        timeout = 5,
-        autostart = true,
-        call_now = true,
-        callback = function()
-            --[[ awful.spawn.easy_async_with_shell(
-                "bluetoothctl list",
-                function(stdout)
-                    if stdout ~= nil or stdout:gsub("\n", ""):match("") then
-                        get_bluetooth_information()
+    awful.widget.watch(
+        "rfkill list bluetooth",
+        5,
+        function(stdout)
+            local icon = icondir .. "bluetooth"
+            if stdout:match('Soft blocked: yes') or stdout:gsub("\n", "") == '' then
+                icon = icon .. "-off"
+                bluetooth_state = "off"
+                bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n")
+            else
+                icon = icon .. "-on"
+                bluetooth_state = "on"
+                awful.spawn.easy_async_with_shell(
+                    [[ bluetoothctl info | grep Name: | awk '{ first = $1; $1 = ""; print $0 }' ]],
+                    function(stdout2)
+                        if stdout2 == nil or stdout2:gsub("\n", "") == "" then
+                            bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently not connected")
+                        else
+                            bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently connected to:" .. connected_device)
+                            connected_device = stdout2
+                        end
                     end
-                end
-            ) ]]
-        end
-    }
+                )
+            end
+            bluetooth_widget.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icon .. ".svg", color.color["Grey900"]))
+        end,
+        bluetooth_widget
+    )
 
     -- Signals
     Hover_signal(bluetooth_widget, color.color["Blue200"])
@@ -106,24 +87,45 @@ return function()
     bluetooth_widget:connect_signal(
         "button::press",
         function()
-            if bluetooth_state == "on" then
-                awful.spawn.easy_async_with_shell(
-                    "bluetoothctl power off",
-                    function(stdout)
-                        get_bluetooth_information()
+            awful.spawn.easy_async_with_shell(
+                "rfkill list bluetooth",
+                function(stdout)
+                    if stdout:gsub("\n", "") == '' then
+                        if bluetooth_state == "on" then
+                            awful.spawn.easy_async_with_shell(
+                                [[
+                                    rfkill unblock bluetooth
+                                    sleep 1
+                                    bluetoothctl power on
+                                ]],
+                                function()
+                                    naughty.notify({
+                                        Title = "System Notification",
+                                        app_name = "Bluetooth",
+                                        message = "Bluetooth activated"
+                                    })
+                                end
+                            )
+                        else
+                            awful.spawn.easy_async_with_shell(
+                                [[
+                                    bluetoothctl power off
+                                    rfkill block bluetooth
+                                ]],
+                                function()
+                                    naughty.notify({
+                                        Title = "System Notification",
+                                        app_name = "Bluetooth",
+                                        message = "Bluetooth deactivated"
+                                    })
+                                end
+                            )
+                        end
                     end
-                )
-            else
-                awful.spawn.easy_async_with_shell(
-                    "bluetoothctl power on",
-                    function(stdout)
-                        get_bluetooth_information()
-                    end
-                )
-            end
+                end
+            )
         end
     )
 
-    get_bluetooth_information()
     return bluetooth_widget
 end

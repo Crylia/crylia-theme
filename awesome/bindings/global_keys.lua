@@ -10,32 +10,32 @@ return function()
     local globalkeys = gears.table.join(
         awful.key(
             { modkey },
-            "s",
+            "#39",
             hotkeys_popup.show_help,
             { description = "Cheat sheet", group = "Awesome" }
         ),
         -- Tag browsing
         awful.key(
             { modkey },
-            "Left",
+            "#113",
             awful.tag.viewprev,
             { description = "View previous tag", group = "Tag" }
         ),
         awful.key(
             { modkey },
-            "Right",
+            "#114",
             awful.tag.viewnext,
             { description = "View next tag", group = "Tag" }
         ),
         awful.key(
             { modkey },
-            "Escape",
+            "#66",
             awful.tag.history.restore,
             { description = "Go back to last tag", group = "Tag" }
         ),
         awful.key(
             { modkey },
-            "j",
+            "#44",
             function()
                 awful.client.focus.byidx(1)
             end,
@@ -43,7 +43,7 @@ return function()
         ),
         awful.key(
             { modkey },
-            "k",
+            "#45",
             function()
                 awful.client.focus.byidx(-1)
             end,
@@ -51,7 +51,7 @@ return function()
         ),
         awful.key(
             { modkey },
-            "w",
+            "#25",
             function()
                 user_vars.main_menu:show()
             end,
@@ -59,7 +59,7 @@ return function()
         ),
         awful.key(
             { modkey, "Shift" },
-            "j",
+            "#44",
             function()
                 awful.client.swap.byidx(1)
             end,
@@ -67,7 +67,7 @@ return function()
         ),
         awful.key(
             { modkey, "Shift" },
-            "k",
+            "#45",
             function()
                 awful.client.swap.byidx(-1)
             end,
@@ -75,7 +75,7 @@ return function()
         ),
         awful.key(
             { modkey, "Control" },
-            "j",
+            "#44",
             function()
                 awful.screen.focus_relative(1)
             end,
@@ -83,7 +83,7 @@ return function()
         ),
         awful.key(
             { modkey, "Control" },
-            "k",
+            "#45",
             function()
                 awful.screen.focus_relative(-1)
             end,
@@ -91,13 +91,13 @@ return function()
         ),
         awful.key(
             { modkey },
-            "u",
+            "#30",
             awful.client.urgent.jumpto,
             { description = "Jump to urgent client", group = "Client" }
         ),
         awful.key(
             { modkey },
-            "Return",
+            "#36",
             function()
                 awful.spawn(user_vars.vars.terminal)
             end,
@@ -105,13 +105,13 @@ return function()
         ),
         awful.key(
             { modkey, "Control" },
-            "r",
+            "#27",
             awesome.restart,
             { description = "Reload awesome", group = "Awesome" }
         ),
         awful.key(
             { modkey },
-            "l",
+            "#46",
             function()
                 awful.tag.incmwfact(0.05)
             end,
@@ -119,7 +119,7 @@ return function()
         ),
         awful.key(
             { modkey },
-            "h",
+            "#43",
             function()
                 awful.tag.incmwfact(-0.05)
             end,
@@ -127,7 +127,7 @@ return function()
         ),
         awful.key(
             { modkey, "Control" },
-            "h",
+            "#43",
             function()
                 awful.tag.incncol(1, nil, true)
             end,
@@ -135,7 +135,7 @@ return function()
         ),
         awful.key(
             { modkey, "Control" },
-            "l",
+            "#46",
             function()
                 awful.tag.incncol(-1, nil, true)
             end,
@@ -143,7 +143,7 @@ return function()
         ),
         awful.key(
             { modkey, "Shift" },
-            "space",
+            "#65",
             function()
                 awful.layout.inc(-1)
             end,
@@ -151,7 +151,7 @@ return function()
         ),
         awful.key(
             { modkey, "Shift" },
-            "Return",
+            "#36",
             function()
                 awful.layout.inc(1)
             end,
@@ -159,7 +159,7 @@ return function()
         ),
         awful.key(
             { modkey },
-            "d",
+            "#40",
             function()
                 awful.spawn("rofi -show drun -theme ~/.config/rofi/rofi.rasi")
             end,
@@ -167,7 +167,7 @@ return function()
         ),
         awful.key(
             { modkey },
-            "Tab",
+            "#23",
             function()
                 awful.spawn("rofi -show window -theme ~/.config/rofi/window.rasi")
             end,
@@ -175,7 +175,7 @@ return function()
         ),
         awful.key(
             { "Mod1" },
-            "Tab",
+            "#23",
             function()
                 awful.spawn("rofi -show window -theme ~/.config/rofi/window.rasi")
             end,
@@ -183,7 +183,7 @@ return function()
         ),
         awful.key(
             { modkey },
-            "e",
+            "#26",
             function()
                 awful.spawn(user_vars.vars.file_manager)
             end,
@@ -191,7 +191,7 @@ return function()
         ),
         awful.key(
             { modkey, "Shift" },
-            "e",
+            "#26",
             function()
                 awesome.emit_signal("module::powermenu:show")
             end,
@@ -199,7 +199,7 @@ return function()
         ),
         awful.key(
             {},
-            "Print",
+            "#107",
             function()
                 awful.spawn(user_vars.vars.screenshot_program)
             end,
@@ -297,7 +297,7 @@ return function()
         ),
         awful.key(
             { modkey },
-            "space",
+            "#65",
             function()
                 awesome.emit_signal("kblayout::toggle")
             end,

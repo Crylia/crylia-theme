@@ -195,7 +195,7 @@ local create_titlebar_borderhack = function(c, bg, position)
     local borderhack = awful.titlebar(c, {
         position = position,
         bg = bg,
-        size = "2"
+        size = "4"
     })
     borderhack:setup {
         {
