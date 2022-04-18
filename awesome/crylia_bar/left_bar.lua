@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local colors = require("theme.crylia.colors")
+local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -14,7 +14,7 @@ return function(s, widgets)
         screen = s,
         widget = wibox.container.background,
         ontop = false,
-        bg = colors.color["Grey900"],
+        bg = color["Grey900"],
         visible = true,
         maximum_width = dpi(650),
         placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end,

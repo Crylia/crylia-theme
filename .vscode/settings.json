@@ -2,6 +2,10 @@
   "Lua.diagnostics.globals": [
     "user_vars",
     "modkey",
-    "root"
+    "root",
+    "awesome",
+    "client",
+    "screen",
+    "mouse"
   ]
 }

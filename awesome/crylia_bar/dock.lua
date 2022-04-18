@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local colors = require("theme.crylia.colors")
+local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -13,6 +13,42 @@ return function(screen, programs)
     local function create_dock_element(program, name, is_steam, size)
         is_steam = is_steam or false
 
+        if program:match("com.*%a.Client") ~= nil then
+            program = program:gsub("com.", ""):gsub(".Client", ""):gsub("flatpak", ""):gsub("run", ""):gsub(" ", "")
+        end
+
+        local function create_indicator()
+            local col = "#fff"
+            local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
+            for i, c in ipairs(client.get()) do
+                if string.lower(c.class):match(program or name) then
+                    if c == client.focus then
+                        col = color["YellowA200"]
+                    elseif c.urgent then
+                        col = color["RedA200"]
+                    elseif c.maximized then
+                        col = color["GreenA200"]
+                    elseif c.minimized then
+                        col = color["BlueA200"]
+                    elseif c.fullscreen then
+                        col = color["PinkA200"]
+                    else
+                        col = color["Grey600"]
+                    end
+                    local indicator = wibox.widget {
+                        widget = wibox.container.background,
+                        shape = gears.shape.rounded_rect,
+                        forced_height = dpi(3),
+                        spacing_widget = dpi(5),
+                        spacing = dpi(5),
+                        bg = col
+                    }
+                    indicators[i] = indicator
+                end
+            end
+            return indicators
+        end
+
         local dock_element = wibox.widget {
             {
                 {
@@ -21,14 +57,11 @@ return function(screen, programs)
                             resize = true,
                             forced_width = size,
                             forced_height = size,
-                            image = Get_icon("Papirus-Dark", program, is_steam),
-                            widget = wibox.widget.imagebox
+                            image = Get_icon(user_vars.icon_theme, program, is_steam),
+                            widget = wibox.widget.imagebox,
+                            id = "icon"
                         },
-                        {
-                            widget = nil,
-                            layout = wibox.layout.align.horizontal,
-                            id = "indicator"
-                        },
+                        create_indicator(),
                         layout = wibox.layout.align.vertical,
                         id = "dock_layout"
                     },
@@ -39,7 +72,7 @@ return function(screen, programs)
                 shape = function(cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, 10)
                 end,
-                bg = colors.color["Grey900"],
+                bg = color["Grey900"],
                 widget = wibox.container.background,
                 id = "background"
             },
@@ -47,7 +80,13 @@ return function(screen, programs)
             widget = wibox.container.margin
         }
 
-        Hover_signal(dock_element.background, colors.color["Grey800"], colors.color["White"])
+        for k, c in ipairs(client.get()) do
+            if string.lower(c.class):match(program) and c == client.focus then
+                dock_element.background.bg = color["Grey800"]
+            end
+        end
+
+        Hover_signal(dock_element.background, color["Grey800"], color["White"])
 
         dock_element:connect_signal(
             "button::press",
@@ -68,52 +107,17 @@ return function(screen, programs)
             margins = dpi(10)
         }
 
-        local function create_indicator()
-            local color = ""
-            local indicators
-            local t = 1
-            --[[ for indicator_screen in screen do
-                for j, indicator_client in ipairs(indicator_screen.get_clients()) do
-                    if indicator_client.class == program then
-                        if indicator_client.maximized then
-                            color = colors.color["Green200"]
-                        elseif indicator_client.fullscreen then
-                            color = colors.color["Red200"]
-                        elseif indicator_client.focus then
-                            color = colors.color["Blue200"]
-                        elseif indicator_client.minimised then
-                            color = colors.color["Pink200"]
-                        else
-                            color = colors.color["White"]
-                        end
-
-                        local indicator = wibox.widget {
-                            widget = wibox.container.background,
-                            shape = gears.shape.circle,
-                            forced_height = dpi(50),
-                            bg = color
-                        }
-                        indicators.add(indicator)
-                        t = t + 1
-                    end
-                end
-            end ]]
-            return indicators
-        end
-
-        dock_element.background.margin.dock_layout.indicator = create_indicator()
-
         return dock_element
     end
 
     local dock = awful.popup {
         widget = wibox.container.background,
         ontop = true,
-        bg = colors.color["Grey900"],
+        bg = color["Grey900"],
         visible = true,
         screen = screen,
         type = "dock",
-        height = user_vars.vars.dock_icon_size + 10,
+        height = user_vars.dock_icon_size + 10,
         placement = function(c) awful.placement.bottom(c, { margins = dpi(10) }) end,
         shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, 15)
@@ -136,7 +140,7 @@ return function(screen, programs)
         local dock_elements = { layout = wibox.layout.fixed.horizontal }
 
         for i, p in ipairs(pr) do
-            dock_elements[i] = create_dock_element(p[1], p[2], p[3], user_vars.vars.dock_icon_size)
+            dock_elements[i] = create_dock_element(p[1], p[2], p[3], user_vars.dock_icon_size)
         end
 
         return dock_elements
@@ -148,7 +152,7 @@ return function(screen, programs)
         for i = 0, amount, 1 do
             fake_elements[i] = wibox.widget {
                 bg = '00000000',
-                forced_width = user_vars.vars.dock_icon_size + dpi(20),
+                forced_width = user_vars.dock_icon_size + dpi(20),
                 forced_height = dpi(10),
                 widget = wibox.container.background
             }
@@ -161,28 +165,26 @@ return function(screen, programs)
         layout = wibox.layout.fixed.vertical
     }
 
-    --TODO: Replace with fake elements
     fakedock:setup {
         get_fake_elements(#programs),
+        type = 'dock',
         layout = wibox.layout.fixed.vertical
     }
-    local naughty = require("naughty")
-    --[[ TODO: This function runs every 0.1 second, it can be optimized by
-    calling it every time the mouse is over the dock, a client changes it states ...
-    but im too lazy rn ]]
-    -- TODO: draw a invisible non clickable fake dock and check of mouse if over that
-    local function check_for_dock_hide(s)
-        if s == mouse.screen then
-            --local mx, my = mouse.coords().x * 100 / screen.geometry.width, mouse.coords().y * 100 / screen.geometry.height
 
+    local function check_for_dock_hide(s)
+        if #s:get_clients() < 1 then
+            dock.visible = true
+            return
+        end
+        if s == mouse.screen then
             if mouse.current_widget then
                 dock.visible = true
                 return
             end
-            for j, c in ipairs(screen.get_clients()) do
+            for j, c in ipairs(screen.selected_tag:clients()) do
                 local y = c:geometry().y
                 local h = c.height
-                if (y + h) >= screen.geometry.height - user_vars.vars.dock_icon_size - 35 then
+                if (y + h) >= screen.geometry.height - user_vars.dock_icon_size - 35 then
                     dock.visible = false
                 else
                     dock.visible = true
@@ -197,6 +199,32 @@ return function(screen, programs)
         "manage",
         function()
             check_for_dock_hide(screen)
+            dock:setup {
+                get_dock_elements(programs),
+                layout = wibox.layout.fixed.vertical
+            }
+        end
+    )
+
+    client.connect_signal(
+        "unmanage",
+        function()
+            check_for_dock_hide(screen)
+            dock:setup {
+                get_dock_elements(programs),
+                layout = wibox.layout.fixed.vertical
+            }
+        end
+    )
+
+    client.connect_signal(
+        "focus",
+        function()
+            check_for_dock_hide(screen)
+            dock:setup {
+                get_dock_elements(programs),
+                layout = wibox.layout.fixed.vertical
+            }
         end
     )
 
