@@ -10,60 +10,22 @@ local wibox = require("wibox")
 
 return function(screen, programs)
 
-    local function create_dock_element(program, name, is_steam, size)
+    local function create_dock_element(class, program, name, is_steam, size)
+        if program == nil or class == nil then
+            return
+        end
         is_steam = is_steam or false
-
-        if program:match("com.*%a.Client") ~= nil then
-            program = program:gsub("com.", ""):gsub(".Client", ""):gsub("flatpak", ""):gsub("run", ""):gsub(" ", "")
-        end
-
-        local function create_indicator()
-            local col = "#fff"
-            local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
-            for i, c in ipairs(client.get()) do
-                if string.lower(c.class):match(program or name) then
-                    if c == client.focus then
-                        col = color["YellowA200"]
-                    elseif c.urgent then
-                        col = color["RedA200"]
-                    elseif c.maximized then
-                        col = color["GreenA200"]
-                    elseif c.minimized then
-                        col = color["BlueA200"]
-                    elseif c.fullscreen then
-                        col = color["PinkA200"]
-                    else
-                        col = color["Grey600"]
-                    end
-                    local indicator = wibox.widget {
-                        widget = wibox.container.background,
-                        shape = gears.shape.rounded_rect,
-                        forced_height = dpi(3),
-                        spacing_widget = dpi(5),
-                        spacing = dpi(5),
-                        bg = col
-                    }
-                    indicators[i] = indicator
-                end
-            end
-            return indicators
-        end
 
         local dock_element = wibox.widget {
             {
                 {
                     {
-                        {
-                            resize = true,
-                            forced_width = size,
-                            forced_height = size,
-                            image = Get_icon(user_vars.icon_theme, program, is_steam),
-                            widget = wibox.widget.imagebox,
-                            id = "icon"
-                        },
-                        create_indicator(),
-                        layout = wibox.layout.align.vertical,
-                        id = "dock_layout"
+                        resize = true,
+                        forced_width = size,
+                        forced_height = size,
+                        image = Get_icon(user_vars.icon_theme, nil, program, class, is_steam),
+                        widget = wibox.widget.imagebox,
+                        id = "icon"
                     },
                     margins = dpi(5),
                     widget = wibox.container.margin,
@@ -76,7 +38,9 @@ return function(screen, programs)
                 widget = wibox.container.background,
                 id = "background"
             },
-            margins = dpi(5),
+            top = dpi(5),
+            left = dpi(5),
+            right = dpi(5),
             widget = wibox.container.margin
         }
 
@@ -140,11 +104,13 @@ return function(screen, programs)
         local dock_elements = { layout = wibox.layout.fixed.horizontal }
 
         for i, p in ipairs(pr) do
-            dock_elements[i] = create_dock_element(p[1], p[2], p[3], user_vars.dock_icon_size)
+            dock_elements[i] = create_dock_element(p[1], p[2], p[3], p[4], user_vars.dock_icon_size)
         end
 
         return dock_elements
     end
+
+    local dock_elements = get_dock_elements(programs)
 
     local function get_fake_elements(amount)
         local fake_elements = { layout = wibox.layout.fixed.horizontal }
@@ -160,10 +126,52 @@ return function(screen, programs)
         return fake_elements
     end
 
-    dock:setup {
-        get_dock_elements(programs),
-        layout = wibox.layout.fixed.vertical
-    }
+    local function create_incicator_widget(prog)
+        local container = { layout = wibox.layout.flex.horizontal }
+        local clients = client.get()
+        for index, pr in ipairs(prog) do
+            local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
+            local col = color["Grey600"]
+            for i, c in ipairs(clients) do
+                if string.lower(c.class or c.name):match(string.lower(pr[1]) or string.lower(pr[2])) then
+                    if c == client.focus then
+                        col = color["YellowA200"]
+                    elseif c.urgent then
+                        col = color["RedA200"]
+                    elseif c.maximized then
+                        col = color["GreenA200"]
+                    elseif c.minimized then
+                        col = color["BlueA200"]
+                    elseif c.fullscreen then
+                        col = color["PinkA200"]
+                    else
+                        col = color["Grey600"]
+                    end
+                    indicators[i] = wibox.widget {
+                        widget = wibox.container.background,
+                        shape = gears.shape.rounded_rect,
+                        forced_height = dpi(3),
+                        bg = col,
+                        forced_width = dpi(5),
+                    }
+                end
+            end
+            container[index] = wibox.widget {
+                indicators,
+                forced_height = dpi(5),
+                forced_width = dpi(50),
+                left = dpi(5),
+                right = dpi(5),
+                widget = wibox.container.margin,
+            }
+        end
+
+        return wibox.widget {
+            container,
+            bottom = dpi(5),
+            widget = wibox.container.margin,
+        }
+    end
 
     fakedock:setup {
         get_fake_elements(#programs),
@@ -200,7 +208,8 @@ return function(screen, programs)
         function()
             check_for_dock_hide(screen)
             dock:setup {
-                get_dock_elements(programs),
+                dock_elements,
+                create_incicator_widget(programs),
                 layout = wibox.layout.fixed.vertical
             }
         end
@@ -211,7 +220,8 @@ return function(screen, programs)
         function()
             check_for_dock_hide(screen)
             dock:setup {
-                get_dock_elements(programs),
+                dock_elements,
+                create_incicator_widget(programs),
                 layout = wibox.layout.fixed.vertical
             }
         end
@@ -222,7 +232,8 @@ return function(screen, programs)
         function()
             check_for_dock_hide(screen)
             dock:setup {
-                get_dock_elements(programs),
+                dock_elements,
+                create_incicator_widget(programs),
                 layout = wibox.layout.fixed.vertical
             }
         end
@@ -250,4 +261,10 @@ return function(screen, programs)
             dock_intelligent_hide:again()
         end
     )
+
+    dock:setup {
+        get_dock_elements(programs),
+        create_incicator_widget(programs),
+        layout = wibox.layout.fixed.vertical
+    }
 end

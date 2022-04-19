@@ -42,7 +42,7 @@ user_vars = {
     },
 
     -- This is your default Terminal
-    terminal = "alacritty -o font.size=14",
+    terminal = "alacritty",
 
     -- This is the modkey 'mod4' = Super/Mod/WindowsKey, 'mod3' = alt...
     modkey = "Mod4",
@@ -68,22 +68,24 @@ user_vars = {
     -- Add your programs exactly like in this example.
     -- First entry has to be how you would start the program in the terminal (just try it if you dont know yahoo it)
     -- Second can be what ever the fuck you want it to be (will be the displayed name if you hover over it)
-    -- For steam games please use this format {"394360", "Name", true} true will tell the func that it's a steam game
-    -- TODO: Add appimage support
-    -- Theoretically you can put the appimage path as the first argument and it *should* work
+    -- For steam games please use this format (look in .local/share/applications for the .desktop file, that will contain the number you need)
+    -- {"394360", "Name", true} true will tell the func that it's a steam game
+    -- Use xprop | grep WM_CLASS and use the *SECOND* string
+    -- { WM_CLASS, program, name, isSteam }
     dock_programs = {
-        { "alacritty", "Alacritty" },
-        { "firefox", "Firefox" },
-        { "discord", "Discord" },
-        { "flatpak run com.spotify.Client", "Spotify" },
-        { "code", "Visual Studio Code" },
-        { "arduino", "Arduino IDE" },
-        { "zoom", "Zoom" },
-        { "thunderbird", "Thunderbird" },
-        { "mattermost-desktop", "Mattermost" },
-        { "blender", "Blender" },
-        { "steam", "Steams" },
-        { "freecad", "Freecad" },
-        { "nemo", "Dateien" }
+        { "Alacritty", "alacritty", "Alacritty" },
+        { "firefox", "firefox", "Firefox" },
+        { "discord", "discord", "Discord" },
+        { "Spotify", "flatpak run com.spotify.Client", "Spotify" },
+        { "Code", "code", "Visual Studio Code" },
+        { "processing-app-Base", "arduino", "Arduino IDE" },
+        { "zoom", "zoom", "Zoom" },
+        { "Thunderbird", "thunderbird", "Thunderbird" },
+        { "Mattermost", "mattermost-desktop", "Mattermost" },
+        { "Blender", "blender", "Blender" },
+        { "Steam", "steam", "Steams" },
+        { "FreeCAD", "freecad", "Freecad" },
+        { "Nemo", "nemo", "Dateien" },
+        { "Paradox Launcher", "394360", "Hearts of Iron 4", true }
     }
 }

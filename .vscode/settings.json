@@ -7,6 +7,8 @@
     "client",
     "screen",
     "mouse",
-    "double_click_timer"
+    "double_click_timer",
+    "vim",
+    "lspSymbol"
   ]
 }

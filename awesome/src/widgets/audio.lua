@@ -60,8 +60,7 @@ return function()
         awful.spawn.easy_async_with_shell(
             [[ 
                 SINK="$(pacmd stat | awk -F": " '/^Default sink name: /{print $2}')"
-
-echo $(pacmd list-sinks | awk '/^\s+name: /{indefault = $2 == "<'$SINK'>"} /^\s+volume: / && indefault {print $5; exit}')
+                echo $(pacmd list-sinks | awk '/^\s+name: /{indefault = $2 == "<'$SINK'>"} /^\s+volume: / && indefault {print $5; exit}')
             ]],
             function(stdout)
                 local icon = icondir .. "volume"

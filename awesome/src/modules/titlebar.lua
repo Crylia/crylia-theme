@@ -60,19 +60,6 @@ local create_click_events = function(c)
     return buttons
 end
 
-local createresize_click_events = function(c)
-    local buttons = gears.table.join(
-        awful.button(
-            {},
-            1,
-            function()
-                c:activate { context = 'titlebar', action = 'mouse_resize' }
-            end
-        )
-    )
-    return buttons
-end
-
 local create_titlebar = function(c, bg, size)
     local titlebar = awful.titlebar(c, {
         position = "left",
@@ -191,55 +178,8 @@ local create_titlebar_dialog = function(c, bg, size)
     Hover_signal(titlebar.main.margin.spacing.minimizebutton, color["Green200"])
 end
 
-local create_titlebar_borderhack = function(c, bg, position)
-    local borderhack = awful.titlebar(c, {
-        position = position,
-        bg = bg,
-        size = "4"
-    })
-    borderhack:setup {
-        {
-            bg = bg,
-            widget = wibox.container.background
-        },
-        {
-            buttons = createresize_click_events(c),
-            layout = wibox.layout.flex.vertical
-        },
-        nil,
-        layout = wibox.layout.align.vertical
-    }
-
-    local old_wibox, old_cursor
-    borderhack:connect_signal(
-        "mouse::enter",
-        function()
-            local w = mouse.current_client
-            if w then
-                old_cursor, old_wibox = w.cursor, w
-                w.cursor = "hand1"
-            end
-        end
-    )
-
-    borderhack:connect_signal(
-        "mouse::leave",
-        function()
-            if old_wibox then
-                old_wibox.cursor = old_cursor
-                old_wibox = nil
-            end
-        end
-    )
-
-end
-
 local draw_titlebar = function(c)
     if c.type == 'normal' and not c.requests_no_titlebar then
-        create_titlebar_borderhack(c, "#121212AA", "right")
-        create_titlebar_borderhack(c, "#121212AA", "top")
-        create_titlebar_borderhack(c, "#121212AA", "bottom")
-
         if c.class == 'Firefox' then
             create_titlebar(c, '#121212AA', 35)
         elseif c.name == "Steam" then
@@ -253,15 +193,6 @@ local draw_titlebar = function(c)
         end
     elseif c.type == 'dialog' then
         create_titlebar_dialog(c, '#121212AA', 35)
-        create_titlebar_borderhack(c, "#121212AA", "right")
-        create_titlebar_borderhack(c, "#121212AA", "top")
-        create_titlebar_borderhack(c, "#121212AA", "bottom")
-    elseif c.type == 'modal' then
-    else
-        create_titlebar_borderhack(c, "#121212AA", "right")
-        create_titlebar_borderhack(c, "#121212AA", "top")
-        create_titlebar_borderhack(c, "#121212AA", "bottom")
-        create_titlebar_borderhack(c, "#121212AA", "left")
     end
 end
 
@@ -313,9 +244,6 @@ client.connect_signal(
                 awful.titlebar.hide(c, 'bottom')
             else
                 awful.titlebar.show(c, 'left')
-                awful.titlebar.show(c, 'right')
-                awful.titlebar.show(c, 'top')
-                awful.titlebar.show(c, 'bottom')
             end
         else
             awful.titlebar.hide(c, 'left')

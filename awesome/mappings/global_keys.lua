@@ -207,7 +207,7 @@ return gears.table.join(
         {},
         "XF86AudioLowerVolume",
         function(c)
-            awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ -2%")
+            awful.spawn.easy_async("pactl set-sink-volume @DEFAULT_SINK@ -2%")
             awesome.emit_signal("widget::volume")
             awesome.emit_signal("module::volume_osd:show", true)
             awesome.emit_signal("module::slider:update")
@@ -219,15 +219,7 @@ return gears.table.join(
         {},
         "XF86AudioRaiseVolume",
         function(c)
-            awful.spawn.easy_async_with_shell(
-                [[ pacmd list-sinks | grep "volume: front" | awk '{print $5}' ]],
-                function(stdout)
-                    stdout = stdout:gsub("%%", "")
-                    local volume = tonumber(stdout) or 0
-                    if volume <= 98 then
-                        awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ +2%")
-                    end
-                end)
+            awful.spawn.easy_async("pactl set-sink-volume @DEFAULT_SINK@ +2%")
             awesome.emit_signal("widget::volume")
             awesome.emit_signal("module::volume_osd:show", true)
             awesome.emit_signal("module::slider:update")

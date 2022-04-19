@@ -304,9 +304,10 @@ return function(s)
     awesome.connect_signal(
         "module::powermenu:show",
         function()
-            powermenu_container.visible = false
-            powermenu_container.visible = true
-            powermenu_keygrabber:start()
+            if s == mouse.screen then
+                powermenu_container.visible = true
+                powermenu_keygrabber:start()
+            end
         end
     )
 
