@@ -20,7 +20,7 @@ If you feel lost, got a problem or just have a question, please check out the wi
 ### [Installation](https://github.com/Crylia/crylia-theme/wiki/Guide)
 
 Installing this theme is rather easy, just copy the repo and put the awesome folder to ~/.config/
-But in order for it to work as seen you need some dependencies installed along the way. Here are the main components, but in order for everything to work go [here]().
+But in order for it to work as seen you need some dependencies installed along the way. Here are the main components, but in order for everything to work go [here](https://github.com/Crylia/crylia-theme/wiki/Guide).
 
 ||Arch|Ubuntu|Why?|
 |:-:|:-:|:-:|:-:|
