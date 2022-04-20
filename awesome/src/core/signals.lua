@@ -1,6 +1,7 @@
 -- Awesome Libs
 local awful = require("awful")
 local beautiful = require("beautiful")
+local gears = require("gears")
 
 screen.connect_signal(
     "added",
@@ -21,6 +22,9 @@ client.connect_signal(
     function(c)
         if awesome.startup and not c.size_hints.user_porition and not c.size_hints.program_position then
             awful.placement.no_offscreen(c)
+        end
+        c.shape = function(cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, 10)
         end
     end
 )

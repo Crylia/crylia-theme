@@ -120,6 +120,7 @@ return function(screen, programs)
                 bg = '00000000',
                 forced_width = user_vars.dock_icon_size + dpi(20),
                 forced_height = dpi(10),
+                id = "fake",
                 widget = wibox.container.background
             }
         end
@@ -186,16 +187,20 @@ return function(screen, programs)
         end
         if s == mouse.screen then
             if mouse.current_widget then
-                dock.visible = true
-                return
+                if tostring(mouse.current_widget):match("fake") then
+                    dock.visible = true
+                    return
+                end
             end
             for j, c in ipairs(screen.selected_tag:clients()) do
                 local y = c:geometry().y
                 local h = c.height
                 if (y + h) >= screen.geometry.height - user_vars.dock_icon_size - 35 then
                     dock.visible = false
+                    return
                 else
                     dock.visible = true
+                    return
                 end
             end
         else
