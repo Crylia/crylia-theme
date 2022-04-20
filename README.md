@@ -17,16 +17,16 @@ If you feel lost, got a problem or just have a question, please check out the wi
 
 ---
 
-### [Installation]()
+### [Installation](https://github.com/Crylia/crylia-theme/wiki/Guide)
 
 Installing this theme is rather easy, just copy the repo and put the awesome folder to ~/.config/
-But in order for it to work as seen you need some dependencies installed along the way. Here are the main components, but in order for everything to work go [here]().
+But in order for it to work as seen you need some dependencies installed along the way. Here are the main components, but in order for everything to work go [here](https://github.com/Crylia/crylia-theme/wiki/Guide).
 
 ||Arch|Ubuntu|Why?|
 |:-:|:-:|:-:|:-:|
-|AwesomeWM|awesome|[Guide here]()|Its your Window Manager lol|
-|Rofi|rofi|[Guide here]()|For the application launcher|
-|Picom|picom-ibhagwan-git<sup>aur</sup>|[Guide here]()|Compositor, needed for transparency/blur/effects/animations etc|
+|AwesomeWM|awesome|[Guide here](https://github.com/awesomeWM/awesome)|Its your Window Manager lol|
+|Rofi|rofi|[Guide here](https://github.com/davatorium/rofi)|For the application launcher|
+|Picom|picom-ibhagwan-git<sup>aur</sup>|[Guide here](https://github.com/jonaburg/picom/security)|Compositor, needed for transparency/blur/effects/animations etc|
 |||||
 
 ## Features
