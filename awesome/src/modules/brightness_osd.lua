@@ -12,7 +12,17 @@ local wibox = require("wibox")
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/brightness/"
 
--- TODO: fix backlight keys and osd not working correctly
+BACKLIGHT_MAX_BRIGHTNESS = 0
+BACKLIGHT_SEPS = 0
+awful.spawn.easy_async_with_shell(
+    "pkexec xfpm-power-backlight-helper --get-max-brightness",
+    function(stdout)
+        BACKLIGHT_MAX_BRIGHTNESS = tonumber(stdout)
+        BACKLIGHT_SEPS = BACKLIGHT_MAX_BRIGHTNESS / 100
+        BACKLIGHT_SEPS = math.floor(BACKLIGHT_SEPS)
+    end
+)
+
 return function(s)
 
     local brightness_osd_widget = wibox.widget {
@@ -102,41 +112,46 @@ return function(s)
     brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:connect_signal(
         "property::value",
         function()
-            local brightness_value = brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:get_value()
-            -- Performance is horrible, or it overrides and executes at the same time as the keymappings
-            --awful.spawn("xbacklight -set " .. brightness_value, false)
-            brightness_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text(brightness_value .. "%")
+            awful.spawn.easy_async_with_shell(
+                "pkexec xfpm-power-backlight-helper --get-brightness",
+                function(stdout)
+                    local brightness_value = math.floor((tonumber(stdout) - 1) / (BACKLIGHT_MAX_BRIGHTNESS - 1) * 100)
+                    -- Performance is horrible, or it overrides and executes at the same time as the keymappings
+                    --awful.spawn("xbacklight -set " .. brightness_value, false)
+                    brightness_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text(tostring(brightness_value) .. "%")
 
-            awesome.emit_signal(
-                "widget::brightness:update",
-                brightness_value
+                    awesome.emit_signal(
+                        "widget::brightness:update",
+                        brightness_value
+                    )
+
+                    if awful.screen.focused().show_brightness_osd then
+                        awesome.emit_signal(
+                            "module::brightness_osd:show",
+                            true
+                        )
+                    end
+
+                    local icon = icondir .. "brightness"
+                    if brightness_value >= 0 and brightness_value < 34 then
+                        icon = icon .. "-low"
+                    elseif brightness_value >= 34 and brightness_value < 67 then
+                        icon = icon .. "-medium"
+                    elseif brightness_value >= 67 then
+                        icon = icon .. "-high"
+                    end
+                    brightness_osd_widget.container.osd_layout.icon_slider_layout.icon_margin1.icon_margin2.icon:set_image(icon .. ".svg")
+                end
             )
-
-            if awful.screen.focused().show_brightness_osd then
-                awesome.emit_signal(
-                    "module::brightness_osd:show",
-                    true
-                )
-            end
-
-            local icon = icondir .. "brightness"
-            if brightness_value >= 0 and brightness_value < 34 then
-                icon = icon .. "-low"
-            elseif brightness_value >= 34 and brightness_value < 67 then
-                icon = icon .. "-medium"
-            elseif brightness_value >= 67 then
-                icon = icon .. "-high"
-            end
-            brightness_osd_widget.container.osd_layout.icon_slider_layout.icon_margin1.icon_margin2.icon:set_image(icon .. ".svg")
         end
     )
 
     local update_slider = function()
         awful.spawn.easy_async_with_shell(
-            [[ sleep 0.1 && xbacklight -get ]],
+            [[ pkexec xfpm-power-backlight-helper --get-brightness ]],
             function(stdout)
-                stdout = stdout:sub(1, -9)
-                brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:set_value(tonumber(stdout))
+                stdout = math.floor((tonumber(stdout) - 1) / (BACKLIGHT_MAX_BRIGHTNESS - 1) * 100)
+                brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:set_value(stdout)
             end
         )
     end

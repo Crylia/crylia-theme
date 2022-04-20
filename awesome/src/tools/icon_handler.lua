@@ -19,16 +19,14 @@ function Get_icon(theme, client, program_string, class_string, is_steam)
             clientName = "steam_icon_" .. tostring(client) .. ".svg"
         elseif client then
             if client.class then
-                clientName = string.lower(client.class) .. ".svg"
+                clientName = string.lower(client.class:gsub(" ", "")) .. ".svg"
             elseif client.name then
-                clientName = string.lower(client.name) .. ".svg"
-            elseif type(client) == "string" then
-                clientName = client .. ".svg"
+                clientName = string.lower(client.name:gsub(" ", "")) .. ".svg"
             else
-                if client.icon == nil then
-                    return "/usr/share/icons/Papirus-Dark/128x128/apps/application-default-icon.svg"
-                else
+                if client.icon then
                     return client.icon
+                else
+                    return "/usr/share/icons/Papirus-Dark/128x128/apps/application-default-icon.svg"
                 end
             end
         else
@@ -59,6 +57,8 @@ function Get_icon(theme, client, program_string, class_string, is_steam)
                 if ioStream ~= nil then
                     icon_cache[#icon_cache + 1] = iconDir .. clientName
                     return iconDir .. clientName
+                elseif not class_string then
+                    return "/usr/share/icons/Papirus-Dark/128x128/apps/application-default-icon.svg"
                 else
                     clientName = class_string .. ".svg"
                     iconDir = "/usr/share/icons/" .. theme .. "/" .. res .. "/apps/"
@@ -73,7 +73,7 @@ function Get_icon(theme, client, program_string, class_string, is_steam)
             end
         end
         if client then
-            return client:Get_icon(1)
+            return "/usr/share/icons/Papirus-Dark/128x128/apps/application-default-icon.svg"
         end
     end
 end

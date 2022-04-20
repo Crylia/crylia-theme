@@ -207,11 +207,12 @@ return gears.table.join(
         {},
         "XF86AudioLowerVolume",
         function(c)
-            awful.spawn.easy_async("pactl set-sink-volume @DEFAULT_SINK@ -2%")
-            awesome.emit_signal("widget::volume")
-            awesome.emit_signal("module::volume_osd:show", true)
-            awesome.emit_signal("module::slider:update")
-            awesome.emit_signal("widget::volume_osd:rerun")
+            awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ -2%", function()
+                awesome.emit_signal("widget::volume")
+                awesome.emit_signal("module::volume_osd:show", true)
+                awesome.emit_signal("module::slider:update")
+                awesome.emit_signal("widget::volume_osd:rerun")
+            end)
         end,
         { description = "Lower volume", group = "System" }
     ),
@@ -219,11 +220,12 @@ return gears.table.join(
         {},
         "XF86AudioRaiseVolume",
         function(c)
-            awful.spawn.easy_async("pactl set-sink-volume @DEFAULT_SINK@ +2%")
-            awesome.emit_signal("widget::volume")
-            awesome.emit_signal("module::volume_osd:show", true)
-            awesome.emit_signal("module::slider:update")
-            awesome.emit_signal("widget::volume_osd:rerun")
+            awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ +2%", function()
+                awesome.emit_signal("widget::volume")
+                awesome.emit_signal("module::volume_osd:show", true)
+                awesome.emit_signal("module::slider:update")
+                awesome.emit_signal("widget::volume_osd:rerun")
+            end)
         end,
         { description = "Increase volume", group = "System" }
     ),
@@ -243,10 +245,18 @@ return gears.table.join(
         {},
         "XF86MonBrightnessUp",
         function(c)
-            awful.spawn("xbacklight -time 100 -inc 10%+")
-            awesome.emit_signal("module::brightness_osd:show", true)
-            awesome.emit_signal("module::brightness_slider:update")
-            awesome.emit_signal("widget::brightness_osd:rerun")
+            --awful.spawn("xbacklight -time 100 -inc 10%+")
+            awful.spawn.easy_async_with_shell(
+                "pkexec xfpm-power-backlight-helper --get-brightness",
+                function(stdout)
+                    awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) + BACKLIGHT_SEPS), function(stdou2)
+
+                    end)
+                    awesome.emit_signal("module::brightness_osd:show", true)
+                    awesome.emit_signal("module::brightness_slider:update")
+                    awesome.emit_signal("widget::brightness_osd:rerun")
+                end
+            )
         end,
         { description = "Raise backlight brightness", group = "System" }
     ),
@@ -254,10 +264,17 @@ return gears.table.join(
         {},
         "XF86MonBrightnessDown",
         function(c)
-            awful.spawn("xbacklight -time 100 -dec 10%-")
-            awesome.emit_signal("widget::brightness_osd:rerun")
-            awesome.emit_signal("module::brightness_osd:show", true)
-            awesome.emit_signal("module::brightness_slider:update")
+            awful.spawn.easy_async_with_shell(
+                "pkexec xfpm-power-backlight-helper --get-brightness",
+                function(stdout)
+                    awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) - BACKLIGHT_SEPS), function(stdout2)
+
+                    end)
+                    awesome.emit_signal("module::brightness_osd:show", true)
+                    awesome.emit_signal("module::brightness_slider:update")
+                    awesome.emit_signal("widget::brightness_osd:rerun")
+                end
+            )
         end,
         { description = "Lower backlight brightness", group = "System" }
     ),

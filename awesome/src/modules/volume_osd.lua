@@ -100,33 +100,38 @@ return function(s)
     }
 
     local function update_osd()
-        local volume_level = volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:get_value()
-        awesome.emit_signal("widget::volume")
-        volume_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text(volume_level .. "%")
+        awful.spawn.easy_async_with_shell(
+            "pacmd list-sinks|grep -A 15 '* index'| awk '/volume: front/{ print $5 }' | sed 's/[%|,]//g'",
+            function(stdout)
+                local volume_level = stdout:gsub("\n", "")
+                awesome.emit_signal("widget::volume")
+                volume_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text(volume_level .. "%")
 
-        awesome.emit_signal(
-            "widget::volume:update",
-            volume_level
+                awesome.emit_signal(
+                    "widget::volume:update",
+                    volume_level
+                )
+
+                if awful.screen.focused().show_volume_osd then
+                    awesome.emit_signal(
+                        "module::volume_osd:show",
+                        true
+                    )
+                end
+                volume_level = tonumber(volume_level)
+                local icon = icondir .. "volume"
+                if volume_level < 1 then
+                    icon = icon .. "-mute"
+                elseif volume_level >= 1 and volume_level < 34 then
+                    icon = icon .. "-low"
+                elseif volume_level >= 34 and volume_level < 67 then
+                    icon = icon .. "-medium"
+                elseif volume_level >= 67 then
+                    icon = icon .. "-high"
+                end
+                volume_osd_widget.container.osd_layout.icon_slider_layout.icon_margin1.icon_margin2.icon:set_image(icon .. ".svg")
+            end
         )
-
-        if awful.screen.focused().show_volume_osd then
-            awesome.emit_signal(
-                "module::volume_osd:show",
-                true
-            )
-        end
-
-        local icon = icondir .. "volume"
-        if volume_level < 1 then
-            icon = icon .. "-mute"
-        elseif volume_level >= 1 and volume_level < 34 then
-            icon = icon .. "-low"
-        elseif volume_level >= 34 and volume_level < 67 then
-            icon = icon .. "-medium"
-        elseif volume_level >= 67 then
-            icon = icon .. "-high"
-        end
-        volume_osd_widget.container.osd_layout.icon_slider_layout.icon_margin1.icon_margin2.icon:set_image(icon .. ".svg")
     end
 
     volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:connect_signal(
@@ -146,12 +151,10 @@ return function(s)
                 else
                     awful.spawn.easy_async_with_shell(
                         [[ 
-                SINK="$(pacmd stat | awk -F": " '/^Default sink name: /{print $2}')"
-
-echo $(pacmd list-sinks | awk '/^\s+name: /{indefault = $2 == "<'$SINK'>"} /^\s+volume: / && indefault {print $5; exit}')
+                            pacmd list-sinks|grep -A 15 '* index'| awk '/volume: front/{ print $5 }' | sed 's/[%|,]//g'
                         ]],
                         function(stdout2)
-                            stdout2 = stdout2:sub(1, -3)
+                            stdout2 = stdout2:gsub("\n", "")
                             volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:set_value(tonumber(stdout2))
                             update_osd()
                         end
