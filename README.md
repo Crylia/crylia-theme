@@ -69,8 +69,5 @@ Battery, Network (Wifi, Ethernet), Bluetooth, Volume, Keyboardlayout, Date (with
 - The dock may not work with most flatpaks, snaps, appimages and Icons wont work when a path instead of a program is specified
 - The Volume and Backlight keys will be really laggy when changed too fast
 - Not every program will use the Icon's pack icon in the taglist and tasklist
-- Rounded corners have a transparent corner, this is because of picom
-- The dock may or may not hide and show properly, sometimes even jitters
 - The Volume OSD wont go over 100% even if the volume is higher(the regular widget works)
-- The dock, Volume OSD and Backlight OSD all have very bad implementations and might cause performance issues
 - The systay will stay even when empty since there is no way to check how many clients are in the systray
