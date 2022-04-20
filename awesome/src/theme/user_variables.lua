@@ -83,8 +83,8 @@ user_vars = {
         { "Thunderbird", "thunderbird", "Thunderbird" },
         { "Mattermost", "mattermost-desktop", "Mattermost" },
         { "Blender", "blender", "Blender" },
-        { "Steam", "steam", "Steams" },
-        { "FreeCAD", "freecad", "Freecad" },
+        { "Steam", "steam", "Steam" },
+        { "FreeCAD", "freecad", "FreeCAD" },
         { "Nemo", "nemo", "Dateien" },
         { "Paradox Launcher", "394360", "Hearts of Iron 4", true }
     }

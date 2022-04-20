@@ -236,15 +236,11 @@ client.connect_signal(
 client.connect_signal(
     'property::floating',
     function(c)
-        if c.floating and not c.maximized then
-            if c.class == "Steam" then
-                awful.titlebar.hide(c, 'left')
-                awful.titlebar.hide(c, 'right')
-                awful.titlebar.hide(c, 'top')
-                awful.titlebar.hide(c, 'bottom')
-            else
-                awful.titlebar.show(c, 'left')
-            end
+        if c.floating or (c.floating and c.maximized) then
+            awful.titlebar.show(c, 'left')
+            awful.titlebar.hide(c, 'right')
+            awful.titlebar.hide(c, 'top')
+            awful.titlebar.hide(c, 'bottom')
         else
             awful.titlebar.hide(c, 'left')
             awful.titlebar.hide(c, 'right')

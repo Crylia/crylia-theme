@@ -5,6 +5,7 @@
 -- Awesome Libs
 local awful = require("awful")
 local beautiful = require("beautiful")
+local ruled = require("ruled")
 
 awful.rules.rules = {
     {
@@ -48,3 +49,17 @@ awful.rules.rules = {
         properties = { titlebars_enabled = true }
     }
 }
+
+awful.spawn.easy_async_with_shell(
+    "cat ~/.config/awesome/src/assets/rules.txt",
+    function(stdout)
+        for class in stdout:gmatch("%a+") do
+            ruled.client.append_rule {
+                rule = { class = class },
+                properties = {
+                    floating = true
+                },
+            }
+        end
+    end
+)

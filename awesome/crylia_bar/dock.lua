@@ -181,32 +181,60 @@ return function(screen, programs)
     }
 
     local function check_for_dock_hide(s)
-        if #s:get_clients() < 1 then
+        local naughty = require("naughty")
+        if #s.selected_tag:clients() < 1 then
             dock.visible = true
             return
         end
         if s == mouse.screen then
-            if mouse.current_widget then
+            --[[ if mouse.current_widget then
                 if tostring(mouse.current_widget):match("fake") then
                     dock.visible = true
                     return
                 end
-            end
-            for j, c in ipairs(screen.selected_tag:clients()) do
+            end ]]
+            local visible = false
+            for j, c in ipairs(s.selected_tag:clients()) do
+
+                --naughty.notify({ title = tostring(c.class) })
+                if c.maximized or c.fullscreen then
+                    dock.visible = false
+                    return
+                end
                 local y = c:geometry().y
                 local h = c.height
-                if (y + h) >= screen.geometry.height - user_vars.dock_icon_size - 35 then
+                if (y + h) >= s.geometry.height - user_vars.dock_icon_size - 35 then
                     dock.visible = false
                     return
                 else
                     dock.visible = true
-                    return
                 end
+                --[[ if visible then
+                    dock.visible = visible
+                    return
+                end ]]
             end
         else
             dock.visible = false
         end
     end
+
+    local dock_intelligent_hide = gears.timer {
+        timeout = 1,
+        autostart = true,
+        call_now = true,
+        callback = function()
+            check_for_dock_hide(screen)
+        end
+    }
+
+    fakedock:connect_signal(
+        "mouse::enter",
+        function()
+            dock_intelligent_hide:stop()
+            dock.visible = true
+        end
+    )
 
     client.connect_signal(
         "manage",
@@ -243,15 +271,6 @@ return function(screen, programs)
             }
         end
     )
-
-    local dock_intelligent_hide = gears.timer {
-        timeout = 1,
-        autostart = true,
-        call_now = true,
-        callback = function()
-            check_for_dock_hide(screen)
-        end
-    }
 
     dock:connect_signal(
         "mouse::enter",

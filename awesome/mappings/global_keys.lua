@@ -2,6 +2,7 @@
 local gears = require("gears")
 local awful = require("awful")
 local hotkeys_popup = require("awful.hotkeys_popup")
+local ruled = require("ruled")
 
 local modkey = user_vars.modkey
 
@@ -309,5 +310,75 @@ return gears.table.join(
             awesome.emit_signal("kblayout::toggle")
         end,
         { description = "Toggle keyboard layout", group = "System" }
+    ),
+    awful.key(
+        { modkey },
+        "#22",
+        function()
+            awful.spawn.easy_async_with_shell(
+                [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
+                function(stdout)
+                    if stdout then
+                        ruled.client.append_rule {
+                            rule = { class = stdout:gsub("\n", "") },
+                            properties = {
+                                floating = true
+                            },
+                        }
+                        awful.spawn.easy_async_with_shell(
+                            "cat ~/.config/awesome/src/assets/rules.txt",
+                            function(stdout2)
+                                for class in stdout2:gmatch("%a+") do
+                                    if class:match(stdout:gsub("\n", "")) then
+                                        return
+                                    end
+                                end
+                                awful.spawn.with_shell("echo -n '" .. stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/rules.txt")
+                                local c = mouse.screen.selected_tag:clients()
+                                for j, client in ipairs(c) do
+                                    if client.class:match(stdout:gsub("\n", "")) then
+                                        client.floating = true
+                                    end
+                                end
+                            end
+                        )
+                    end
+                end
+            )
+        end
+    ),
+    awful.key(
+        { modkey, "Shift" },
+        "#22",
+        function()
+            awful.spawn.easy_async_with_shell(
+                [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
+                function(stdout)
+                    if stdout then
+                        ruled.client.append_rule {
+                            rule = { class = stdout:gsub("\n", "") },
+                            properties = {
+                                floating = false
+                            },
+                        }
+                        awful.spawn.easy_async_with_shell(
+                            [[
+                                REMOVE="]] .. stdout:gsub("\n", "") .. [[;"
+                                STR=$(cat ~/.config/awesome/src/assets/rules.txt)
+                                echo -n ${STR//$REMOVE/} > ~/.config/awesome/src/assets/rules.txt
+                            ]],
+                            function(stdout2)
+                                local c = mouse.screen.selected_tag:clients()
+                                for j, client in ipairs(c) do
+                                    if client.class:match(stdout:gsub("\n", "")) then
+                                        client.floating = false
+                                    end
+                                end
+                            end
+                        )
+                    end
+                end
+            )
+        end
     )
 )
