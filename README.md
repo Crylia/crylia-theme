@@ -70,4 +70,3 @@ Battery, Network (Wifi, Ethernet), Bluetooth, Volume, Keyboardlayout, Date (with
 - The Volume and Backlight keys will be really laggy when changed too fast
 - Not every program will use the Icon's pack icon in the taglist and tasklist
 - The Volume OSD wont go over 100% even if the volume is higher(the regular widget works)
-- The systay will stay even when empty since there is no way to check how many clients are in the systray
