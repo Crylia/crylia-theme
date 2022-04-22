@@ -9,10 +9,6 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
-local capi = {
-    awesome = awesome,
-}
-
 require("src.core.signals")
 
 return function(s)
@@ -20,7 +16,6 @@ return function(s)
         {
             {
                 wibox.widget.systray(),
-                margins = dpi(0),
                 widget = wibox.container.margin,
                 id = 'st'
             },
@@ -37,11 +32,11 @@ return function(s)
     -- Signals
     Hover_signal(systray.container, color["Red200"])
 
-    capi.awesome.connect_signal("systray::update", function()
-        local num_entries = capi.awesome.systray()
+    awesome.connect_signal("systray::update", function()
+        local num_entries = awesome.systray()
 
         if num_entries == 0 then
-            systray.container.st:set_margins(dpi(0))
+            systray.container.st:set_margins(0)
         else
             systray.container.st:set_margins(dpi(6))
         end
