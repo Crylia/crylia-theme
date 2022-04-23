@@ -81,11 +81,11 @@ return function()
                 else
                     rem_time = "Minutes"
                 end
+                local bat_time = stdout:match("%d+,%d") or stdout:match("%d+.%d") or ""
                 if stdout:match("empty") then
-                    battery_tooltip:set_text("Remaining battery time: " .. stdout:match("%d+,%d") .. " " .. rem_time)
+                    battery_tooltip:set_text("Remaining battery time: " .. bat_time .. " " .. rem_time)
                 elseif stdout:match("time to full") then
-
-                    battery_tooltip:set_text("Battery fully charged in: " .. stdout:match("%d+,%d") .. " " .. rem_time)
+                    battery_tooltip:set_text("Battery fully charged in: " .. bat_time .. " " .. rem_time)
                 end
             end
         )
