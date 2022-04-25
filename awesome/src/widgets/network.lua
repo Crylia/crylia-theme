@@ -297,7 +297,7 @@ return function()
                 }
                 function print_network_mode(){
                     check_network_directory
-                    print "${network_mode}"
+                    printf "${network_mode}"
                 }
                 print_network_mode
             ]=],
