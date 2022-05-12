@@ -24,7 +24,11 @@ client.connect_signal(
             awful.placement.no_offscreen(c)
         end
         c.shape = function(cr, width, height)
-            gears.shape.rounded_rect(cr, width, height, 10)
+            if c.fullscreen or c.maximized then
+                gears.shape.rectangle(cr, width, height)
+            else
+                gears.shape.rounded_rect(cr, width, height, 10)
+            end
         end
     end
 )
