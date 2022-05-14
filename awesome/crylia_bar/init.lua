@@ -23,7 +23,6 @@ awful.screen.connect_for_each_screen(
   require("src.modules.volume_osd")(s)
   require("src.modules.brightness_osd")(s)
   require("src.modules.titlebar")
-  require("src.modules.volume_controller")(s)
 
   -- Widgets
   s.battery = require("src.widgets.battery")()
