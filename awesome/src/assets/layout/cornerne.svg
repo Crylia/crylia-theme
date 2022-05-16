@@ -1,0 +1,14 @@
+<svg width="260" height="260" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <title>Layer 1</title>
+  <g transform="rotate(90, 130, 130)" id="svg_11">
+   <rect fill="#212121" stroke="#424242" x="180" y="20" width="60" height="60" id="svg_2" rx="12" stroke-width="0"/>
+   <rect fill="#212121" stroke="#424242" x="180" y="100" width="60" height="60" id="svg_3" rx="12" stroke-width="0"/>
+   <rect fill="#212121" stroke="#424242" x="180" y="180" width="60" height="60" id="svg_4" rx="12" stroke-width="0"/>
+   <rect fill="#212121" stroke="#424242" x="20" y="20" width="140" height="140" id="svg_5" rx="12" stroke-width="0"/>
+   <rect fill="#212121" stroke="#424242" x="20" y="180" width="60" height="60" id="svg_9" rx="12" stroke-width="0"/>
+   <rect fill="#212121" stroke="#424242" x="100" y="180" width="60" height="60" id="svg_10" rx="12" stroke-width="0"/>
+  </g>
+ </g>
+
+</svg>

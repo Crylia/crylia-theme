@@ -40,31 +40,22 @@ Theme.menu_fg_focus = color["White"]
 Theme.menu_border_color = color["Grey800"]
 Theme.menu_border_width = dpi(0)
 Theme.menu_shape = function(cr, width, heigth)
-    gears.shape.rounded_rect(cr, width, heigth, 5)
+  gears.shape.rounded_rect(cr, width, heigth, 5)
 end
 
 Theme.taglist_fg_focus = color["Grey900"]
 Theme.taglist_bg_focus = color["White"]
 
-Theme.tooltip_border_color = color["Grey900"]
-Theme.tooltip_bg = color["Grey800"]
-Theme.tooltip_fg = color["White"]
-Theme.tooltip_border_width = dpi(0)
+Theme.tooltip_border_color = color["Grey800"]
+Theme.tooltip_bg = color["Grey900"]
+Theme.tooltip_fg = color["YellowA200"]
+Theme.tooltip_border_width = dpi(4)
+Theme.tooltip_gaps = dpi(15)
 Theme.tooltip_shape = function(cr, width, heigth)
-    gears.shape.rounded_rect(cr, width, heigth, 5)
+  gears.shape.rounded_rect(cr, width, heigth, 5)
 end
 
-Theme.notification_bg = color["Grey900"]
-Theme.notification_fg = color["White"]
-Theme.notification_border_width = dpi(0)
-Theme.notification_border_color = color["Grey900"]
-Theme.notification_shape = function(cr, width, heigth)
-    gears.shape.rounded_rect(cr, width, heigth, 10)
-end
-Theme.notification_margin = dpi(10)
-Theme.notification_max_width = dpi(400)
-Theme.notification_max_height = dpi(1000)
-Theme.notification_icon_size = dpi(40)
+Theme.notification_spacing = dpi(20)
 
 Theme.titlebar_close_button_normal = icondir .. "close.svg"
 Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
@@ -79,7 +70,7 @@ Theme.hotkeys_bg = color["Grey900"]
 Theme.hotkeys_fg = color["White"]
 Theme.hotkeys_border_width = 0
 Theme.hotkeys_shape = function(cr, width, height)
-    gears.shape.rounded_rect(cr, width, height, 10)
+  gears.shape.rounded_rect(cr, width, height, 10)
 end
 Theme.hotkeys_description_font = user_vars.font.bold
 
@@ -87,9 +78,14 @@ Theme.hotkeys_description_font = user_vars.font.bold
 local layout_path = Theme_path .. "../assets/layout/"
 
 -- Here are the icons for the layouts defined, if you want to add more layouts go to main/layouts.lua
-Theme.layout_floating = gears.color.recolor_image(layout_path .. "floating.svg", color["Grey900"])
-Theme.layout_tile = gears.color.recolor_image(layout_path .. "tile.svg", color["Grey900"])
---Theme.layout_dwindle = gears.color.recolor_image(layout_path .. "dwindle.svg", color["Grey900"])
---Theme.layout_fairh = gears.color.recolor_image(layout_path .. "fairh.svg", color["Grey900"])
---Theme.layout_fullscreen = gears.color.recolor_image(layout_path .. "fullscreen.svg", color["Grey900"])
---Theme.layout_max = gears.color.recolor_image(layout_path .. "max.svg", color["Grey900"])
+Theme.layout_floating = layout_path .. "floating.svg"
+Theme.layout_tile = layout_path .. "tile.svg"
+Theme.layout_dwindle = layout_path .. "dwindle.svg"
+Theme.layout_fairh = layout_path .. "fairh.svg"
+Theme.layout_fairv = layout_path .. "fairv.svg"
+Theme.layout_fullscreen = layout_path .. "fullscreen.svg"
+Theme.layout_max = layout_path .. "max.svg"
+Theme.layout_cornerne = layout_path .. "cornerne.svg"
+Theme.layout_cornernw = layout_path .. "cornernw.svg"
+Theme.layout_cornerse = layout_path .. "cornerse.svg"
+Theme.layout_cornersw = layout_path .. "cornersw.svg"

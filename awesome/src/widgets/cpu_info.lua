@@ -7,7 +7,6 @@ local awful = require("awful")
 local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
-local naughty = require("naughty")
 local watch = awful.widget.watch
 local wibox = require("wibox")
 require("src.core.signals")

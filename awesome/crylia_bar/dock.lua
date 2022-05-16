@@ -10,12 +10,12 @@ local wibox = require("wibox")
 
 return function(screen, programs)
 
-  local function create_dock_element(class, program, name, is_steam, size)
+  local function create_dock_element(class, program, name, user_icon, is_steam, size)
     if program == nil or class == nil then
       return
     end
     is_steam = is_steam or false
-
+    user_icon = user_icon or nil
     local dock_element = wibox.widget {
       {
         {
@@ -23,9 +23,9 @@ return function(screen, programs)
             resize = true,
             forced_width = size,
             forced_height = size,
-            image = Get_icon(user_vars.icon_theme, nil, program, class, is_steam),
+            image = user_icon or Get_icon(user_vars.icon_theme, nil, program, class, is_steam),
             widget = wibox.widget.imagebox,
-            id = "icon"
+            id = "icon",
           },
           margins = dpi(5),
           widget = wibox.container.margin,
@@ -104,7 +104,7 @@ return function(screen, programs)
     local dock_elements = { layout = wibox.layout.fixed.horizontal }
 
     for i, p in ipairs(pr) do
-      dock_elements[i] = create_dock_element(p[1], p[2], p[3], p[4], user_vars.dock_icon_size)
+      dock_elements[i] = create_dock_element(p[1], p[2], p[3], p[4], p[5], user_vars.dock_icon_size)
     end
 
     return dock_elements
@@ -181,22 +181,14 @@ return function(screen, programs)
   }
 
   local function check_for_dock_hide(s)
-    local naughty = require("naughty")
     if #s.selected_tag:clients() < 1 then
       dock.visible = true
       return
     end
     if s == mouse.screen then
-      --[[ if mouse.current_widget then
-                if tostring(mouse.current_widget):match("fake") then
-                    dock.visible = true
-                    return
-                end
-            end ]]
       local visible = false
       for j, c in ipairs(s.selected_tag:clients()) do
 
-        --naughty.notify({ title = tostring(c.class) })
         if c.maximized or c.fullscreen then
           dock.visible = false
           return
@@ -209,10 +201,6 @@ return function(screen, programs)
         else
           dock.visible = true
         end
-        --[[ if visible then
-                    dock.visible = visible
-                    return
-                end ]]
       end
     else
       dock.visible = false

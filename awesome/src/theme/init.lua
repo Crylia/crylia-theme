@@ -23,15 +23,14 @@ beautiful.wallpaper = user_vars.wallpaper
 screen.connect_signal(
   'request::wallpaper',
   function(s)
-    -- If wallpaper is a function, call it with the screen
-    if beautiful.wallpaper then
-      if type(beautiful.wallpaper) == 'string' then
-        gears.wallpaper.maximized(beautiful.wallpaper, s)
-      else
-        beautiful.wallpaper(s)
-      end
+  if beautiful.wallpaper then
+    if type(beautiful.wallpaper) == 'string' then
+      gears.wallpaper.maximized(beautiful.wallpaper, s)
+    else
+      beautiful.wallpaper(s)
     end
   end
+end
 )
 
 beautiful.init(Theme)

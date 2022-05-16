@@ -6,9 +6,7 @@ local color = require('src.theme.colors')
 
 local list_update = function(widget, buttons, label, data, objects)
 	widget:reset()
-	local count
-	for i, object in ipairs(objects) do
-		count = i
+	for _, object in ipairs(objects) do
 		local task_widget = wibox.widget {
 			{
 				{
@@ -56,7 +54,10 @@ local list_update = function(widget, buttons, label, data, objects)
 		local task_tool_tip = awful.tooltip {
 			objects = { task_widget },
 			mode = "inside",
-			align = "right",
+			preferred_alignments = "middle",
+			preferred_positions = "bottom",
+			margins = dpi(10),
+			gaps = 0,
 			delay_show = 1
 		}
 
@@ -115,51 +116,51 @@ local list_update = function(widget, buttons, label, data, objects)
 		task_widget:connect_signal(
 			"mouse::enter",
 			function()
-				old_bg = task_widget.bg
-				if object == client.focus then
-					task_widget.bg = '#dddddddd'
-				else
-					task_widget.bg = '#3A475Cdd'
-				end
-				local w = mouse.current_wibox
-				if w then
-					old_cursor, old_wibox = w.cursor, w
-					w.cursor = "hand1"
-				end
+			old_bg = task_widget.bg
+			if object == client.focus then
+				task_widget.bg = '#dddddddd'
+			else
+				task_widget.bg = '#3A475Cdd'
 			end
+			local w = mouse.current_wibox
+			if w then
+				old_cursor, old_wibox = w.cursor, w
+				w.cursor = "hand1"
+			end
+		end
 		)
 
 		task_widget:connect_signal(
 			"button::press",
 			function()
-				if object == client.focus then
-					task_widget.bg = "#ffffffaa"
-				else
-					task_widget.bg = '#3A475Caa'
-				end
+			if object == client.focus then
+				task_widget.bg = "#ffffffaa"
+			else
+				task_widget.bg = '#3A475Caa'
 			end
+		end
 		)
 
 		task_widget:connect_signal(
 			"button::release",
 			function()
-				if object == client.focus then
-					task_widget.bg = "#ffffffdd"
-				else
-					task_widget.bg = '#3A475Cdd'
-				end
+			if object == client.focus then
+				task_widget.bg = "#ffffffdd"
+			else
+				task_widget.bg = '#3A475Cdd'
 			end
+		end
 		)
 
 		task_widget:connect_signal(
 			"mouse::leave",
 			function()
-				task_widget.bg = old_bg
-				if old_wibox then
-					old_wibox.cursor = old_cursor
-					old_wibox = nil
-				end
+			task_widget.bg = old_bg
+			if old_wibox then
+				old_wibox.cursor = old_cursor
+				old_wibox = nil
 			end
+		end
 		)
 	end
 	return widget
@@ -174,24 +175,24 @@ local tasklist = function(s)
 				{},
 				1,
 				function(c)
-					if c == client.focus then
-						c.minimized = true
-					else
-						c.minimized = false
-						if not c:isvisible() and c.first_tag then
-							c.first_tag:view_only()
-						end
-						c:emit_signal('request::activate')
-						c:raise()
+				if c == client.focus then
+					c.minimized = true
+				else
+					c.minimized = false
+					if not c:isvisible() and c.first_tag then
+						c.first_tag:view_only()
 					end
+					c:emit_signal('request::activate')
+					c:raise()
 				end
+			end
 			),
 			awful.button(
 				{},
 				3,
 				function(c)
-					c:kill()
-				end
+				c:kill()
+			end
 			)
 		),
 		{},

@@ -16,77 +16,77 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/date/"
 -- Returns the date widget
 return function()
 
-    local date_widget = wibox.widget {
+  local date_widget = wibox.widget {
+    {
+      {
         {
+          {
             {
-                {
-                    {
-                        {
-                            id = "icon",
-                            image = gears.color.recolor_image(icondir .. "calendar.svg", color["Grey900"]),
-                            widget = wibox.widget.imagebox,
-                            resize = false
-                        },
-                        id = "icon_layout",
-                        widget = wibox.container.place
-                    },
-                    id = "icon_margin",
-                    top = dpi(2),
-                    widget = wibox.container.margin
-                },
-                spacing = dpi(10),
-                {
-                    id = "label",
-                    align = "center",
-                    valign = "center",
-                    widget = wibox.widget.textbox
-                },
-                id = "date_layout",
-                layout = wibox.layout.fixed.horizontal
+              id = "icon",
+              image = gears.color.recolor_image(icondir .. "calendar.svg", color["Grey900"]),
+              widget = wibox.widget.imagebox,
+              resize = false
             },
-            id = "container",
-            left = dpi(8),
-            right = dpi(8),
-            widget = wibox.container.margin
+            id = "icon_layout",
+            widget = wibox.container.place
+          },
+          id = "icon_margin",
+          top = dpi(2),
+          widget = wibox.container.margin
         },
-        bg = color["Teal200"],
-        fg = color["Grey900"],
-        shape = function(cr, width, height)
-            gears.shape.rounded_rect(cr, width, height, 5)
-        end,
-        widget = wibox.container.background
-    }
+        spacing = dpi(10),
+        {
+          id = "label",
+          align = "center",
+          valign = "center",
+          widget = wibox.widget.textbox
+        },
+        id = "date_layout",
+        layout = wibox.layout.fixed.horizontal
+      },
+      id = "container",
+      left = dpi(8),
+      right = dpi(8),
+      widget = wibox.container.margin
+    },
+    bg = color["Teal200"],
+    fg = color["Grey900"],
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, 5)
+    end,
+    widget = wibox.container.background
+  }
 
-    local set_date = function()
-        date_widget.container.date_layout.label:set_text(os.date("%a, %b %d"))
+  local set_date = function()
+    date_widget.container.date_layout.label:set_text(os.date("%a, %b %d"))
+  end
+
+  -- Updates the date every minute, dont blame me if you miss silvester
+  gears.timer {
+    timeout = 60,
+    autostart = true,
+    call_now = true,
+    callback = function()
+      set_date()
     end
+  }
 
-    -- Updates the date every minute, dont blame me if you miss silvester
-    local date_updater = gears.timer {
-        timeout = 60,
-        autostart = true,
-        call_now = true,
-        callback = function()
-            set_date()
-        end
-    }
+  -- Signals
+  Hover_signal(date_widget, color["Teal200"])
 
-    -- Signals
-    Hover_signal(date_widget, color["Teal200"])
+  date_widget:connect_signal(
+    "mouse::enter",
+    function()
+    awesome.emit_signal("widget::calendar_osd:stop", true)
+  end
+  )
 
-    date_widget:connect_signal(
-        "mouse::enter",
-        function()
-            awesome.emit_signal("widget::calendar_osd:stop", true)
-        end
-    )
+  date_widget:connect_signal(
+    "mouse::leave",
+    function()
+    awesome.emit_signal("widget::calendar_osd:rerun", true)
+  end
+  )
 
-    date_widget:connect_signal(
-        "mouse::leave",
-        function()
-            awesome.emit_signal("widget::calendar_osd:rerun", true)
-        end
-    )
-
-    return date_widget
+  return date_widget
 end
