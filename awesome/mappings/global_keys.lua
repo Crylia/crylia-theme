@@ -49,14 +49,6 @@ return gears.table.join(
     { description = "Focus previous client by index", group = "Client" }
   ),
   awful.key(
-    { modkey },
-    "#25",
-    function()
-      user_vars.main_menu:show()
-    end,
-    { description = "Show context menu", group = "Awesome" }
-  ),
-  awful.key(
     { modkey, "Shift" },
     "#44",
     function()
@@ -247,13 +239,13 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-        awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) + BACKLIGHT_SEPS), function(stdou2)
+          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) + BACKLIGHT_SEPS), function(stdou2)
 
-        end)
-        awesome.emit_signal("module::brightness_osd:show", true)
-        awesome.emit_signal("module::brightness_slider:update")
-        awesome.emit_signal("widget::brightness_osd:rerun")
-      end
+          end)
+          awesome.emit_signal("module::brightness_osd:show", true)
+          awesome.emit_signal("module::brightness_slider:update")
+          awesome.emit_signal("widget::brightness_osd:rerun")
+        end
       )
     end,
     { description = "Raise backlight brightness", group = "System" }
@@ -265,13 +257,13 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-        awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) - BACKLIGHT_SEPS), function(stdout2)
+          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) - BACKLIGHT_SEPS), function(stdout2)
 
-        end)
-        awesome.emit_signal("module::brightness_osd:show", true)
-        awesome.emit_signal("module::brightness_slider:update")
-        awesome.emit_signal("widget::brightness_osd:rerun")
-      end
+          end)
+          awesome.emit_signal("module::brightness_osd:show", true)
+          awesome.emit_signal("module::brightness_slider:update")
+          awesome.emit_signal("widget::brightness_osd:rerun")
+        end
       )
     end,
     { description = "Lower backlight brightness", group = "System" }
@@ -312,70 +304,70 @@ return gears.table.join(
     { modkey },
     "#22",
     function()
-    awful.spawn.easy_async_with_shell(
-      [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
-      function(stdout)
-      if stdout then
-        ruled.client.append_rule {
-          rule = { class = stdout:gsub("\n", "") },
-          properties = {
-            floating = true
-          },
-        }
-        awful.spawn.easy_async_with_shell(
-          "cat ~/.config/awesome/src/assets/rules.txt",
-          function(stdout2)
-          for class in stdout2:gmatch("%a+") do
-            if class:match(stdout:gsub("\n", "")) then
-              return
-            end
-          end
-          awful.spawn.with_shell("echo -n '" .. stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/rules.txt")
-          local c = mouse.screen.selected_tag:clients()
-          for j, client in ipairs(c) do
-            if client.class:match(stdout:gsub("\n", "")) then
-              client.floating = true
-            end
+      awful.spawn.easy_async_with_shell(
+        [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
+        function(stdout)
+          if stdout then
+            ruled.client.append_rule {
+              rule = { class = stdout:gsub("\n", "") },
+              properties = {
+                floating = true
+              },
+            }
+            awful.spawn.easy_async_with_shell(
+              "cat ~/.config/awesome/src/assets/rules.txt",
+              function(stdout2)
+                for class in stdout2:gmatch("%a+") do
+                  if class:match(stdout:gsub("\n", "")) then
+                    return
+                  end
+                end
+                awful.spawn.with_shell("echo -n '" .. stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/rules.txt")
+                local c = mouse.screen.selected_tag:clients()
+                for j, client in ipairs(c) do
+                  if client.class:match(stdout:gsub("\n", "")) then
+                    client.floating = true
+                  end
+                end
+              end
+            )
           end
         end
-        )
-      end
+      )
     end
-    )
-  end
   ),
   awful.key(
     { modkey, "Shift" },
     "#22",
     function()
-    awful.spawn.easy_async_with_shell(
-      [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
-      function(stdout)
-      if stdout then
-        ruled.client.append_rule {
-          rule = { class = stdout:gsub("\n", "") },
-          properties = {
-            floating = false
-          },
-        }
-        awful.spawn.easy_async_with_shell(
-          [[
+      awful.spawn.easy_async_with_shell(
+        [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
+        function(stdout)
+          if stdout then
+            ruled.client.append_rule {
+              rule = { class = stdout:gsub("\n", "") },
+              properties = {
+                floating = false
+              },
+            }
+            awful.spawn.easy_async_with_shell(
+              [[
                                 REMOVE="]] .. stdout:gsub("\n", "") .. [[;"
                                 STR=$(cat ~/.config/awesome/src/assets/rules.txt)
                                 echo -n ${STR//$REMOVE/} > ~/.config/awesome/src/assets/rules.txt
                             ]],
-          function(stdout2)
-          local c = mouse.screen.selected_tag:clients()
-          for j, client in ipairs(c) do
-            if client.class:match(stdout:gsub("\n", "")) then
-              client.floating = false
-            end
+              function(stdout2)
+                local c = mouse.screen.selected_tag:clients()
+                for j, client in ipairs(c) do
+                  if client.class:match(stdout:gsub("\n", "")) then
+                    client.floating = false
+                  end
+                end
+              end
+            )
           end
         end
-        )
-      end
+      )
     end
-    )
-  end
   )
 )
