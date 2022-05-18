@@ -21,7 +21,6 @@ window {
     background-color:               @background;
     text-color:                     @foreground;
 	border:							0px;
-	border-color:					@border;
     border-radius:                  0px;
 	width:							100%;
 	height:							100%;

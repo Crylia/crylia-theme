@@ -22,7 +22,6 @@ window {
     background-color:               #21212188;
     text-color:                     @foreground;
 	border:							1px;
-	border-color:					@border;
     border-radius:                  25px;
 	//width:							26%;
     location:                       center;
