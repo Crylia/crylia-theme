@@ -405,13 +405,13 @@ naughty.connect_signal(
 )
 
 -- Test notification
-naughty.notification {
+--[[naughty.notification {
   app_name = "System Notification",
-  title    = "A notification 2",
+  title    = "A notification 3",
   message  = "This is very informative and overflowing",
   icon     = "/home/crylia/.config/awesome/src/assets/userpfp/crylia.png",
   urgency  = "normal",
-  timeout  = 0,
+  timeout  = 1,
   actions  = {
     naughty.action {
       name = "Accept",
@@ -423,7 +423,7 @@ naughty.notification {
       name = "Ignore",
     },
   }
-}
+}--]]
 
 naughty.connect_signal(
   "invoked",
