@@ -67,13 +67,13 @@ return function()
         awful.spawn.easy_async_with_shell(
           './.config/awesome/src/scripts/bt.sh',
           function(stdout2)
-          if stdout2 == nil or stdout2:gsub("\n", "") == "" then
-            bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently not connected")
-          else
-            connected_device = stdout2:gsub("%(", ""):gsub("%)", "")
-            bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently connected to:\n" .. connected_device)
+            if stdout2 == nil or stdout2:gsub("\n", "") == "" then
+              bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently not connected")
+            else
+              connected_device = stdout2:gsub("%(", ""):gsub("%)", "")
+              bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently connected to:\n" .. connected_device)
+            end
           end
-        end
         )
       end
       bluetooth_widget.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icon .. ".svg", color["Grey900"]))
@@ -82,49 +82,49 @@ return function()
   )
 
   -- Signals
-  Hover_signal(bluetooth_widget, color["Blue200"])
+  Hover_signal(bluetooth_widget, color["Blue200"], color["Grey900"])
 
   bluetooth_widget:connect_signal(
     "button::press",
     function()
-    awful.spawn.easy_async_with_shell(
-      "rfkill list bluetooth",
-      function(stdout)
-      if stdout:gsub("\n", "") ~= '' then
-        if bluetooth_state == "off" then
-          awful.spawn.easy_async_with_shell(
-            [[
+      awful.spawn.easy_async_with_shell(
+        "rfkill list bluetooth",
+        function(stdout)
+          if stdout:gsub("\n", "") ~= '' then
+            if bluetooth_state == "off" then
+              awful.spawn.easy_async_with_shell(
+                [[
               rfkill unblock bluetooth
               sleep 1
               bluetoothctl power on
-            ]],
-            function()
-            naughty.notification {
-              title = "System Notification",
-              app_name = "Bluetooth",
-              message = "Bluetooth activated"
-            }
-          end
-          )
-        else
-          awful.spawn.easy_async_with_shell(
-            [[
+            ]]   ,
+                function()
+                  naughty.notification {
+                    title = "System Notification",
+                    app_name = "Bluetooth",
+                    message = "Bluetooth activated"
+                  }
+                end
+              )
+            else
+              awful.spawn.easy_async_with_shell(
+                [[
               bluetoothctl power off
               rfkill block bluetooth
-            ]],
-            function()
-            naughty.notification {
-              title = "System Notification",
-              app_name = "Bluetooth",
-              message = "Bluetooth deactivated"
-            }
+            ]]   ,
+                function()
+                  naughty.notification {
+                    title = "System Notification",
+                    app_name = "Bluetooth",
+                    message = "Bluetooth deactivated"
+                  }
+                end
+              )
+            end
           end
-          )
         end
-      end
+      )
     end
-    )
-  end
   )
 
   return bluetooth_widget

@@ -30,7 +30,7 @@ return function(s)
     bg = color["BlueGrey800"]
   }
   -- Signals
-  Hover_signal(systray.container, color["Red200"])
+  Hover_signal(systray.container, color["Red200"], color["Grey900"])
 
   awesome.connect_signal("systray::update", function()
     local num_entries = awesome.systray()

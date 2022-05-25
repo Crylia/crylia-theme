@@ -50,13 +50,13 @@ return function()
   }
 
   -- Signals
-  Hover_signal(power_widget, color["Red200"])
+  Hover_signal(power_widget, color["Red200"], color["Grey900"])
 
   power_widget:connect_signal(
     "button::release",
     function()
-    awesome.emit_signal("module::powermenu:show")
-  end
+      awesome.emit_signal("module::powermenu:show")
+    end
   )
 
   return power_widget

@@ -37,14 +37,14 @@ function Get_icon(theme, client, program_string, class_string, is_steam)
       end
     end
 
-    for index, icon in ipairs(icon_cache) do
+    for _, icon in ipairs(icon_cache) do
       if icon:match(clientName) then
         return icon
       end
     end
 
     local resolutions = { "128x128", "96x96", "64x64", "48x48", "42x42", "32x32", "24x24", "16x16" }
-    for i, res in ipairs(resolutions) do
+    for _, res in ipairs(resolutions) do
       local iconDir = "/usr/share/icons/" .. theme .. "/" .. res .. "/apps/"
       local ioStream = io.open(iconDir .. clientName, "r")
       if ioStream ~= nil then

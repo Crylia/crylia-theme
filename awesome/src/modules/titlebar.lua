@@ -26,9 +26,9 @@ local double_click_event_handler = function(double_click_event)
   double_click_timer = gears.timer.start_new(
     0.20,
     function()
-    double_click_timer = nil
-    return false
-  end
+      double_click_timer = nil
+      return false
+    end
   )
 end
 
@@ -38,23 +38,23 @@ local create_click_events = function(c)
       {},
       1,
       function()
-      double_click_event_handler(function()
-        if c.floating then
-          c.float = false
-          return
-        end
-        c.maximized = not c.maximized
-        c:raise()
-      end)
-      c:activate { context = 'titlebar', action = 'mouse_move' }
-    end
+        double_click_event_handler(function()
+          if c.floating then
+            c.float = false
+            return
+          end
+          c.maximized = not c.maximized
+          c:raise()
+        end)
+        c:activate { context = 'titlebar', action = 'mouse_move' }
+      end
     ),
     awful.button(
       {},
       3,
       function()
-      c:activate { context = 'titlebar', action = 'mouse_resize' }
-    end
+        c:activate { context = 'titlebar', action = 'mouse_resize' }
+      end
     )
   )
   return buttons
@@ -119,9 +119,9 @@ local create_titlebar = function(c, bg, size)
     layout = wibox.layout.align.vertical,
     id = "main"
   }
-  Hover_signal(titlebar.main.margin.spacing.closebutton, color["Red200"])
-  Hover_signal(titlebar.main.margin.spacing.maximizebutton, color["Yellow200"])
-  Hover_signal(titlebar.main.margin.spacing.minimizebutton, color["Green200"])
+  Hover_signal(titlebar.main.margin.spacing.closebutton, color["Red200"], color["Grey900"])
+  Hover_signal(titlebar.main.margin.spacing.maximizebutton, color["Yellow200"], color["Grey900"])
+  Hover_signal(titlebar.main.margin.spacing.minimizebutton, color["Green200"], color["Grey900"])
 end
 
 local create_titlebar_dialog = function(c, bg, size)
@@ -174,8 +174,8 @@ local create_titlebar_dialog = function(c, bg, size)
     layout = wibox.layout.align.vertical,
     id = "main"
   }
-  Hover_signal(titlebar.main.margin.spacing.closebutton, color["Red200"])
-  Hover_signal(titlebar.main.margin.spacing.minimizebutton, color["Green200"])
+  Hover_signal(titlebar.main.margin.spacing.closebutton, color["Red200"], color["Grey900"])
+  Hover_signal(titlebar.main.margin.spacing.minimizebutton, color["Green200"], color["Grey900"])
 end
 
 local draw_titlebar = function(c)
@@ -199,54 +199,54 @@ end
 client.connect_signal(
   "property::maximized",
   function(c)
-  if c.maximized then
-    Theme.titlebar_maximized_button_normal = icondir .. "unmaximize.svg"
-    Theme.titlebar_maximized_button_active = icondir .. "unmaximize.svg"
-    Theme.titlebar_maximized_button_inactive = icondir .. "unmaximize.svg"
-  elseif not c.minimized then
-    Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
-    Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
-    Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
+    if c.maximized then
+      Theme.titlebar_maximized_button_normal = icondir .. "unmaximize.svg"
+      Theme.titlebar_maximized_button_active = icondir .. "unmaximize.svg"
+      Theme.titlebar_maximized_button_inactive = icondir .. "unmaximize.svg"
+    elseif not c.minimized then
+      Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
+      Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
+      Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
+    end
   end
-end
 )
 
 client.connect_signal(
   "request::titlebars",
   function(c)
-  if c.maximized then
-    Theme.titlebar_maximized_button_normal = icondir .. "unmaximize.svg"
-    Theme.titlebar_maximized_button_active = icondir .. "unmaximize.svg"
-    Theme.titlebar_maximized_button_inactive = icondir .. "unmaximize.svg"
-    draw_titlebar(c)
-  elseif not c.minimized then
-    Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
-    Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
-    Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
-    draw_titlebar(c)
+    if c.maximized then
+      Theme.titlebar_maximized_button_normal = icondir .. "unmaximize.svg"
+      Theme.titlebar_maximized_button_active = icondir .. "unmaximize.svg"
+      Theme.titlebar_maximized_button_inactive = icondir .. "unmaximize.svg"
+      draw_titlebar(c)
+    elseif not c.minimized then
+      Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
+      Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
+      Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
+      draw_titlebar(c)
+    end
+    if not c.floating or c.maximized then
+      awful.titlebar.hide(c, 'left')
+      awful.titlebar.hide(c, 'right')
+      awful.titlebar.hide(c, 'top')
+      awful.titlebar.hide(c, 'bottom')
+    end
   end
-  if not c.floating or c.maximized then
-    awful.titlebar.hide(c, 'left')
-    awful.titlebar.hide(c, 'right')
-    awful.titlebar.hide(c, 'top')
-    awful.titlebar.hide(c, 'bottom')
-  end
-end
 )
 
 client.connect_signal(
   'property::floating',
   function(c)
-  if c.floating or (c.floating and c.maximized) then
-    awful.titlebar.show(c, 'left')
-    awful.titlebar.hide(c, 'right')
-    awful.titlebar.hide(c, 'top')
-    awful.titlebar.hide(c, 'bottom')
-  else
-    awful.titlebar.hide(c, 'left')
-    awful.titlebar.hide(c, 'right')
-    awful.titlebar.hide(c, 'top')
-    awful.titlebar.hide(c, 'bottom')
+    if c.floating or (c.floating and c.maximized) then
+      awful.titlebar.show(c, 'left')
+      awful.titlebar.hide(c, 'right')
+      awful.titlebar.hide(c, 'top')
+      awful.titlebar.hide(c, 'bottom')
+    else
+      awful.titlebar.hide(c, 'left')
+      awful.titlebar.hide(c, 'right')
+      awful.titlebar.hide(c, 'top')
+      awful.titlebar.hide(c, 'bottom')
+    end
   end
-end
 )

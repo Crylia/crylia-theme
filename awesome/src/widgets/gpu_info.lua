@@ -54,7 +54,7 @@ return function(widget)
     end,
     widget = wibox.container.background
   }
-  Hover_signal(gpu_usage_widget, color["Green200"])
+  Hover_signal(gpu_usage_widget, color["Green200"], color["Grey900"])
 
   local gpu_temp_widget = wibox.widget {
     {
@@ -102,8 +102,8 @@ return function(widget)
     [[ bash -c "nvidia-smi -q -d UTILIZATION | grep Gpu | awk '{print $3}'"]],
     3,
     function(_, stdout)
-    gpu_usage_widget.container.gpu_layout.label.text = stdout:gsub("\n", "") .. "%"
-  end
+      gpu_usage_widget.container.gpu_layout.label.text = stdout:gsub("\n", "") .. "%"
+    end
   )
 
   -- GPU Temperature
@@ -112,26 +112,26 @@ return function(widget)
     3,
     function(_, stdout)
 
-    local temp_icon
-    local temp_color
-    local temp_num = tonumber(stdout)
+      local temp_icon
+      local temp_color
+      local temp_num = tonumber(stdout)
 
-    if temp_num < 50 then
-      temp_color = color["Green200"]
-      temp_icon = icon_dir .. "thermometer-low.svg"
-    elseif temp_num >= 50 and temp_num < 80 then
-      temp_color = color["Orange200"]
-      temp_icon = icon_dir .. "thermometer.svg"
-    elseif temp_num >= 80 then
-      temp_color = color["Red200"]
-      temp_icon = icon_dir .. "thermometer-high.svg"
+      if temp_num < 50 then
+        temp_color = color["Green200"]
+        temp_icon = icon_dir .. "thermometer-low.svg"
+      elseif temp_num >= 50 and temp_num < 80 then
+        temp_color = color["Orange200"]
+        temp_icon = icon_dir .. "thermometer.svg"
+      elseif temp_num >= 80 then
+        temp_color = color["Red200"]
+        temp_icon = icon_dir .. "thermometer-high.svg"
+      end
+
+      Hover_signal(gpu_temp_widget, temp_color, color["Grey900"])
+      gpu_temp_widget.container.gpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
+      gpu_temp_widget:set_bg(temp_color)
+      gpu_temp_widget.container.gpu_layout.label.text = tostring(temp_num) .. "°C"
     end
-
-    Hover_signal(gpu_temp_widget, temp_color)
-    gpu_temp_widget.container.gpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
-    gpu_temp_widget:set_bg(temp_color)
-    gpu_temp_widget.container.gpu_layout.label.text = tostring(temp_num) .. "°C"
-  end
   )
 
   if widget == "usage" then

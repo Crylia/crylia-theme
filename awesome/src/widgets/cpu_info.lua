@@ -145,21 +145,21 @@ return function(widget, clock_mode)
     [[ cat "/proc/stat" | grep '^cpu ' ]],
     3,
     function(_, stdout)
-    local user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice =
-    stdout:match("(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s")
+      local user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice =
+      stdout:match("(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s")
 
-    local total = user + nice + system + idle + iowait + irq + softirq + steal
+      local total = user + nice + system + idle + iowait + irq + softirq + steal
 
-    local diff_idle = idle - idle_prev
-    local diff_total = total - total_prev
-    local diff_usage = (1000 * (diff_total - diff_idle) / diff_total + 5) / 10
+      local diff_idle = idle - idle_prev
+      local diff_total = total - total_prev
+      local diff_usage = (1000 * (diff_total - diff_idle) / diff_total + 5) / 10
 
-    cpu_usage_widget.container.cpu_layout.label.text = tostring(math.floor(diff_usage)) .. "%"
+      cpu_usage_widget.container.cpu_layout.label.text = tostring(math.floor(diff_usage)) .. "%"
 
-    total_prev = total
-    idle_prev = idle
-    collectgarbage("collect")
-  end
+      total_prev = total
+      idle_prev = idle
+      collectgarbage("collect")
+    end
   )
 
   watch(
@@ -167,53 +167,53 @@ return function(widget, clock_mode)
     3,
     function(_, stdout)
 
-    local temp_icon
-    local temp_color
+      local temp_icon
+      local temp_color
 
-    local temp_num = tonumber(stdout:match("%d+"))
-    if temp_num < 50 then
-      temp_color = color["Green200"]
-      temp_icon = icon_dir .. "thermometer-low.svg"
-    elseif temp_num >= 50 and temp_num < 80 then
-      temp_color = color["Orange200"]
-      temp_icon = icon_dir .. "thermometer.svg"
-    elseif temp_num >= 80 then
-      temp_color = color["Red200"]
-      temp_icon = icon_dir .. "thermometer-high.svg"
+      local temp_num = tonumber(stdout:match("%d+"))
+      if temp_num < 50 then
+        temp_color = color["Green200"]
+        temp_icon = icon_dir .. "thermometer-low.svg"
+      elseif temp_num >= 50 and temp_num < 80 then
+        temp_color = color["Orange200"]
+        temp_icon = icon_dir .. "thermometer.svg"
+      elseif temp_num >= 80 then
+        temp_color = color["Red200"]
+        temp_icon = icon_dir .. "thermometer-high.svg"
+      end
+      Hover_signal(cpu_temp, temp_color, color["Grey900"])
+      cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
+      cpu_temp:set_bg(temp_color)
+      cpu_temp.container.cpu_layout.label.text = math.floor(temp_num) .. "°C"
     end
-    Hover_signal(cpu_temp, temp_color)
-    cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
-    cpu_temp:set_bg(temp_color)
-    cpu_temp.container.cpu_layout.label.text = math.floor(temp_num) .. "°C"
-  end
   )
 
   watch(
     [[ bash -c "cat /proc/cpuinfo | grep "MHz" | awk '{print int($4)}'" ]],
     3,
     function(_, stdout)
-    local cpu_freq = {}
+      local cpu_freq = {}
 
-    for value in stdout:gmatch("%d+") do
-      table.insert(cpu_freq, value)
-    end
-
-    local average = 0
-
-    if clock_mode == "average" then
-      for i = 1, #cpu_freq do
-        average = average + cpu_freq[i]
+      for value in stdout:gmatch("%d+") do
+        table.insert(cpu_freq, value)
       end
-      average = math.floor(average / #cpu_freq)
-      cpu_clock.container.cpu_layout.label.text = tonumber(average) .. "Mhz"
-    elseif clock_mode then
-      cpu_clock.container.cpu_layout.label.text = tonumber(cpu_freq[clock_mode]) .. "Mhz"
+
+      local average = 0
+
+      if clock_mode == "average" then
+        for i = 1, #cpu_freq do
+          average = average + cpu_freq[i]
+        end
+        average = math.floor(average / #cpu_freq)
+        cpu_clock.container.cpu_layout.label.text = tonumber(average) .. "Mhz"
+      elseif clock_mode then
+        cpu_clock.container.cpu_layout.label.text = tonumber(cpu_freq[clock_mode]) .. "Mhz"
+      end
     end
-  end
   )
 
-  Hover_signal(cpu_usage_widget, color["Blue200"])
-  Hover_signal(cpu_clock, color["Purple200"])
+  Hover_signal(cpu_usage_widget, color["Blue200"], color["Grey900"])
+  Hover_signal(cpu_clock, color["Purple200"], color["Grey900"])
 
   if widget == "usage" then
     return cpu_usage_widget

@@ -55,17 +55,17 @@ return function()
     widget = wibox.container.background
   }
 
-  Hover_signal(ram_widget, color["Red200"])
+  Hover_signal(ram_widget, color["Red200"], color["Grey900"])
 
   watch(
     [[ bash -c "cat /proc/meminfo| grep Mem | awk '{print $2}'" ]],
     3,
     function(_, stdout)
 
-    local MemTotal, MemFree, MemAvailable = stdout:match("(%d+)\n(%d+)\n(%d+)\n")
+      local MemTotal, MemFree, MemAvailable = stdout:match("(%d+)\n(%d+)\n(%d+)\n")
 
-    ram_widget.container.ram_layout.label.text = tostring(string.format("%.1f", ((MemTotal - MemAvailable) / 1024 / 1024)) .. "/" .. string.format("%.1f", (MemTotal / 1024 / 1024)) .. "GB"):gsub(",", ".")
-  end
+      ram_widget.container.ram_layout.label.text = tostring(string.format("%.1f", ((MemTotal - MemAvailable) / 1024 / 1024)) .. "/" .. string.format("%.1f", (MemTotal / 1024 / 1024)) .. "GB"):gsub(",", ".")
+    end
   )
 
   return ram_widget

@@ -7,6 +7,7 @@ local awful = require("awful")
 local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
+local naughty = require("naughty")
 local wibox = require("wibox")
 require("src.core.signals")
 
@@ -16,6 +17,7 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/audio/"
 -- Returns the volume controller
 return function(s)
 
+  -- Function to create source/sink devices
   local function create_device(name, node, sink)
     local device = wibox.widget {
       {
@@ -53,10 +55,10 @@ return function(s)
       device:connect_signal(
         "button::press",
         function()
-        awful.spawn.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
+          awful.spawn.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
 
-        awesome.emit_signal("update::background:vol", node)
-      end
+          awesome.emit_signal("update::background:vol", node)
+        end
       )
 
       --#region Signal Functions
@@ -146,47 +148,47 @@ return function(s)
       awesome.connect_signal(
         "update::background:vol",
         function(new_node)
-        if node == new_node then
-          old_bg = color["Purple200"]
-          old_fg = color["Grey900"]
-          bg = color["Purple200"]
-          fg = color["Grey900"]
-          device.background:set_bg(color["Purple200"])
-          device.background:set_fg(color["Grey900"])
-        else
-          fg = color["Purple200"]
-          bg = color["Grey700"]
-          device.background:set_fg(color["Purple200"])
-          device.background:set_bg(color["Grey700"])
+          if node == new_node then
+            old_bg = color["Purple200"]
+            old_fg = color["Grey900"]
+            bg = color["Purple200"]
+            fg = color["Grey900"]
+            device.background:set_bg(color["Purple200"])
+            device.background:set_fg(color["Grey900"])
+          else
+            fg = color["Purple200"]
+            bg = color["Grey700"]
+            device.background:set_fg(color["Purple200"])
+            device.background:set_bg(color["Grey700"])
+          end
         end
-      end
       )
       awful.spawn.easy_async_with_shell(
         [[ pactl get-default-sink ]],
         function(stdout)
-        local node_active = stdout:gsub("\n", "")
-        if node == node_active then
-          bg = color["Purple200"]
-          fg = color["Grey900"]
-          device.background:set_bg(color["Purple200"])
-          device.background:set_fg(color["Grey900"])
-        else
-          fg = color["Purple200"]
-          bg = color["Grey700"]
-          device.background:set_fg(color["Purple200"])
-          device.background:set_bg(color["Grey700"])
+          local node_active = stdout:gsub("\n", "")
+          if node == node_active then
+            bg = color["Purple200"]
+            fg = color["Grey900"]
+            device.background:set_bg(color["Purple200"])
+            device.background:set_fg(color["Grey900"])
+          else
+            fg = color["Purple200"]
+            bg = color["Grey700"]
+            device.background:set_fg(color["Purple200"])
+            device.background:set_bg(color["Grey700"])
+          end
         end
-      end
       )
     else
 
       device:connect_signal(
         "button::press",
         function()
-        awful.spawn.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
+          awful.spawn.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
 
-        awesome.emit_signal("update::background:mic", node)
-      end
+          awesome.emit_signal("update::background:mic", node)
+        end
       )
 
       --#region Signal Functions
@@ -276,42 +278,43 @@ return function(s)
       awesome.connect_signal(
         "update::background:mic",
         function(new_node)
-        if node == new_node then
-          old_bg = color["Blue200"]
-          old_fg = color["Grey900"]
-          bg = color["Blue200"]
-          fg = color["Grey900"]
-          device.background:set_bg(color["Blue200"])
-          device.background:set_fg(color["Grey900"])
-        else
-          fg = color["Blue200"]
-          bg = color["Grey700"]
-          device.background:set_fg(color["Blue200"])
-          device.background:set_bg(color["Grey700"])
+          if node == new_node then
+            old_bg = color["Blue200"]
+            old_fg = color["Grey900"]
+            bg = color["Blue200"]
+            fg = color["Grey900"]
+            device.background:set_bg(color["Blue200"])
+            device.background:set_fg(color["Grey900"])
+          else
+            fg = color["Blue200"]
+            bg = color["Grey700"]
+            device.background:set_fg(color["Blue200"])
+            device.background:set_bg(color["Grey700"])
+          end
         end
-      end
       )
       awful.spawn.easy_async_with_shell(
         [[ pactl get-default-source ]],
         function(stdout)
-        local node_active = stdout:gsub("\n", "")
-        if node == node_active then
-          bg = color["Blue200"]
-          fg = color["Grey900"]
-          device.background:set_bg(color["Blue200"])
-          device.background:set_fg(color["Grey900"])
-        else
-          fg = color["Blue200"]
-          bg = color["Grey700"]
-          device.background:set_fg(color["Blue200"])
-          device.background:set_bg(color["Grey700"])
+          local node_active = stdout:gsub("\n", "")
+          if node == node_active then
+            bg = color["Blue200"]
+            fg = color["Grey900"]
+            device.background:set_bg(color["Blue200"])
+            device.background:set_fg(color["Grey900"])
+          else
+            fg = color["Blue200"]
+            bg = color["Grey700"]
+            device.background:set_fg(color["Blue200"])
+            device.background:set_bg(color["Grey700"])
+          end
         end
-      end
       )
     end
     return device
   end
 
+  -- Container for the source devices
   local dropdown_list_volume = wibox.widget {
     {
       {
@@ -330,6 +333,7 @@ return function(s)
     widget = wibox.container.margin
   }
 
+  -- Container for the sink devices
   local dropdown_list_microphone = wibox.widget {
     {
       {
@@ -550,19 +554,19 @@ return function(s)
   audio_selector_margin:connect_signal(
     "button::press",
     function()
-    volume_list.visible = not volume_list.visible
-    if volume_list.visible then
-      audio_bg.shape = function(cr, width, height)
-        gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
+      volume_list.visible = not volume_list.visible
+      if volume_list.visible then
+        audio_bg.shape = function(cr, width, height)
+          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
+        end
+        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Teal200"]))
+      else
+        audio_bg.shape = function(cr, width, height)
+          gears.shape.rounded_rect(cr, width, height, 4)
+        end
+        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Teal200"]))
       end
-      audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Teal200"]))
-    else
-      audio_bg.shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 4)
-      end
-      audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Teal200"]))
     end
-  end
   )
 
   -- Variables for easier access and better readability
@@ -575,19 +579,19 @@ return function(s)
   mic_selector_margin:connect_signal(
     "button::press",
     function()
-    mic_list.visible = not mic_list.visible
-    if mic_list.visible then
-      mic_selector_margin.mic_bg.shape = function(cr, width, height)
-        gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
+      mic_list.visible = not mic_list.visible
+      if mic_list.visible then
+        mic_selector_margin.mic_bg.shape = function(cr, width, height)
+          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
+        end
+        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Teal200"]))
+      else
+        mic_bg.shape = function(cr, width, height)
+          gears.shape.rounded_rect(cr, width, height, 4)
+        end
+        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Teal200"]))
       end
-      mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Teal200"]))
-    else
-      mic_bg.shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 4)
-      end
-      mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Teal200"]))
     end
-  end
   )
 
   local audio_slider_margin = volume_controller:get_children_by_id("audio_volume_margin")[1].audio_volume.slider_margin.slider
@@ -596,9 +600,9 @@ return function(s)
   audio_slider_margin:connect_signal(
     "property::value",
     function()
-    local volume = audio_slider_margin.value
-    awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ " .. tonumber(volume) .. "%")
-  end
+      local volume = audio_slider_margin.value
+      awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ " .. tonumber(volume) .. "%")
+    end
   )
 
   local mic_slider_margin = volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider
@@ -607,10 +611,10 @@ return function(s)
   mic_slider_margin:connect_signal(
     "property::value",
     function()
-    local volume = mic_slider_margin.value
-    awful.spawn("pactl set-source-volume @DEFAULT_SOURCE@ " .. tonumber(volume) .. "%")
-    awesome.emit_signal("get::mic_volume", volume)
-  end
+      local volume = mic_slider_margin.value
+      awful.spawn("pactl set-source-volume @DEFAULT_SOURCE@ " .. tonumber(volume) .. "%")
+      awesome.emit_signal("get::mic_volume", volume)
+    end
   )
 
   -- Main container
@@ -627,87 +631,98 @@ return function(s)
     end
   }
 
-  -- Get all audio devices from all sinks
-  local function get_devices()
+  -- Get all source devices
+  local function get_source_devices()
     awful.spawn.easy_async_with_shell(
       [[ pactl list sinks | grep -E 'node.name|alsa.card_name' | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]],
 
       function(stdout)
-      local i, j = 1, 1
-      local device_list = { layout = wibox.layout.fixed.vertical }
+        local i, j = 1, 1
+        local device_list = { layout = wibox.layout.fixed.vertical }
 
-      local node_names, alsa_names = {}, {}
-      for node_name in stdout:gmatch("[^\n]+") do
-        if (i % 2) == 0 then
-          table.insert(node_names, node_name)
+        local node_names, alsa_names = {}, {}
+        for node_name in stdout:gmatch("[^\n]+") do
+          if (i % 2) == 0 then
+            table.insert(node_names, node_name)
+          end
+          i = i + 1
         end
-        i = i + 1
-      end
 
-      for alsa_name in stdout:gmatch("[^\n]+") do
-        if (j % 2) == 1 then
-          table.insert(alsa_names, alsa_name)
+        for alsa_name in stdout:gmatch("[^\n]+") do
+          if (j % 2) == 1 then
+            table.insert(alsa_names, alsa_name)
+          end
+          j = j + 1
         end
-        j = j + 1
-      end
 
-      for k = 1, #alsa_names, 1 do
-        device_list[#device_list + 1] = create_device(alsa_names[k], node_names[k], true)
+        for k = 1, #alsa_names, 1 do
+          device_list[#device_list + 1] = create_device(alsa_names[k], node_names[k], true)
+        end
+        dropdown_list_volume.volume_device_background.volume_device_list.children = device_list
       end
-      dropdown_list_volume.volume_device_background.volume_device_list.children = device_list
-    end
     )
   end
 
-  get_devices()
+  get_source_devices()
 
-  -- Get all input devices from all sources
+  -- Get all input devices
   local function get_input_devices()
     awful.spawn.easy_async_with_shell(
       [[ pactl list sources | grep -E "node.name|alsa.card_name" | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]],
 
       function(stdout)
-      local i, j = 1, 1
-      local device_list = { layout = wibox.layout.fixed.vertical }
+        local i, j = 1, 1
+        local device_list = { layout = wibox.layout.fixed.vertical }
 
-      local node_names, alsa_names = {}, {}
-      for node_name in stdout:gmatch("[^\n]+") do
-        if (i % 2) == 0 then
-          table.insert(node_names, node_name)
+        local node_names, alsa_names = {}, {}
+        for node_name in stdout:gmatch("[^\n]+") do
+          if (i % 2) == 0 then
+            table.insert(node_names, node_name)
+          end
+          i = i + 1
         end
-        i = i + 1
-      end
 
-      for alsa_name in stdout:gmatch("[^\n]+") do
-        if (j % 2) == 1 then
-          table.insert(alsa_names, alsa_name)
+        for alsa_name in stdout:gmatch("[^\n]+") do
+          if (j % 2) == 1 then
+            table.insert(alsa_names, alsa_name)
+          end
+          j = j + 1
         end
-        j = j + 1
-      end
 
-      for k = 1, #alsa_names, 1 do
-        device_list[#device_list + 1] = create_device(alsa_names[k], node_names[k], false)
+        for k = 1, #alsa_names, 1 do
+          device_list[#device_list + 1] = create_device(alsa_names[k], node_names[k], false)
+        end
+        dropdown_list_microphone.volume_device_background.volume_device_list.children = device_list
       end
-      dropdown_list_microphone.volume_device_background.volume_device_list.children = device_list
-    end
     )
   end
 
   get_input_devices()
+
+  -- Event watcher, detects when device is addes/removed
+  awful.spawn.with_line_callback(
+    [[bash -c "LC_ALL=C pactl subscribe | grep --line-buffered 'on server'"]],
+    {
+      stdout = function(line)
+        get_input_devices()
+        get_source_devices()
+      end
+    }
+  )
 
   -- Get microphone volume
   local function get_mic_volume()
     awful.spawn.easy_async_with_shell(
       "./.config/awesome/src/scripts/mic.sh volume",
       function(stdout)
-      local volume = stdout:gsub("%%", ""):gsub("\n", "")
-      volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(volume))
-      if volume > 0 then
-        volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone.svg", color["LightBlue200"]))
-      else
-        volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+        local volume = stdout:gsub("%%", ""):gsub("\n", "")
+        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(volume))
+        if volume > 0 then
+          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone.svg", color["LightBlue200"]))
+        else
+          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+        end
       end
-    end
     )
   end
 
@@ -718,75 +733,122 @@ return function(s)
     awful.spawn.easy_async_with_shell(
       "./.config/awesome/src/scripts/mic.sh mute",
       function(stdout)
-      if stdout:match("yes") then
-        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(0))
-        volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
-      else
-        get_mic_volume()
+        if stdout:match("yes") then
+          volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(0))
+          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+        else
+          get_mic_volume()
+        end
       end
-    end
     )
   end
 
   get_mic_mute()
 
+  -- When the mouse leaves the popup it stops the mousegrabber and hides the popup.
+  volume_controller_container:connect_signal(
+    "mouse::leave",
+    function()
+      mousegrabber.run(
+        function()
+          awesome.emit_signal("volume_controller::toggle", s)
+          mousegrabber.stop()
+          return true
+        end,
+        "arrow"
+      )
+    end
+  )
+
+  volume_controller_container:connect_signal(
+    "mouse::enter",
+    function()
+      mousegrabber.stop()
+    end
+  )
+
+  -- Grabs all keys and hides popup when anything is pressed
+  -- TODO: Make it possible to navigate and select using the kb
+  local volume_controller_keygrabber = awful.keygrabber {
+    autostart = false,
+    stop_event = 'release',
+    keypressed_callback = function(self, mod, key, command)
+      awesome.emit_signal("volume_controller::toggle", s)
+      mousegrabber.stop()
+    end
+  }
+
+  -- Draw the popup
   volume_controller_container:setup {
     volume_controller,
     layout = wibox.layout.fixed.horizontal
   }
 
-  -- Global signal called from src.widgets.audio.lua
+  --[[ awesome.connect_signal(
+    "volume_controller::toggle:keygrabber",
+    function()
+      if awful.keygrabber.is_running then
+        volume_controller_keygrabber:stop()
+      else
+        volume_controller_keygrabber:start()
+      end
+
+    end
+  ) ]]
+
+  -- Set the volume and icon
   awesome.connect_signal(
     "get::volume",
     function(volume)
-    volume = tonumber(volume)
-    local icon = icondir .. "volume"
-    if volume < 1 then
-      icon = icon .. "-mute"
+      volume = tonumber(volume)
+      local icon = icondir .. "volume"
+      if volume < 1 then
+        icon = icon .. "-mute"
 
-    elseif volume >= 1 and volume < 34 then
-      icon = icon .. "-low"
-    elseif volume >= 34 and volume < 67 then
-      icon = icon .. "-medium"
-    elseif volume >= 67 then
-      icon = icon .. "-high"
+      elseif volume >= 1 and volume < 34 then
+        icon = icon .. "-low"
+      elseif volume >= 34 and volume < 67 then
+        icon = icon .. "-medium"
+      elseif volume >= 67 then
+        icon = icon .. "-high"
+      end
+
+      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.slider_margin.slider:set_value(volume)
+      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.recolor_image(icon .. ".svg", color["Purple200"]))
     end
-
-    volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.slider_margin.slider:set_value(volume)
-    volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.recolor_image(icon .. ".svg", color["Purple200"]))
-  end
   )
 
-  -- Global signal called from src.widgets.audio.lua
+  -- Check if the volume is muted
   awesome.connect_signal(
     "get::volume_mute",
     function(mute)
-    if mute then
-      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "volume-mute.svg", color["Purple200"]))
+      if mute then
+        volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "volume-mute.svg", color["Purple200"]))
+      end
     end
-  end
   )
 
+  -- Set the microphone volume
   awesome.connect_signal(
     "get::mic_volume",
     function(volume)
-    if volume > 0 then
-      volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone.svg", color["LightBlue200"]))
-    else
-      volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+      if volume > 0 then
+        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone.svg", color["LightBlue200"]))
+      else
+        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+      end
     end
-  end
   )
 
   -- Toggle container visibility
   awesome.connect_signal(
     "volume_controller::toggle",
     function(scr)
-    if scr == s then
-      volume_controller_container.visible = not volume_controller_container.visible
-    end
+      if scr == s then
+        volume_controller_container.visible = not volume_controller_container.visible
+      end
 
-  end
+    end
   )
 
 end

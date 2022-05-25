@@ -40,67 +40,28 @@ return function(s)
   -- TODO: If the user doesnt have AccountsService look into $HOME/.faces
   local update_profile_picture = function()
     awful.spawn.easy_async_with_shell(
-      [=[ 
-                iconPath="/var/lib/AccountsService/icons/${USER}"
-                userIconPath="${HOME}/.config/awesome/src/assets/userpfp/"
-                if [[ -f "${userIconPath}" ]];
-                then
-                    if [[ -f "${iconPath}" ]];
-                    then
-                        if ! cmp --silent "${userIconPath}.png" "${iconPath}";
-                        then
-                            cp "${iconPath}" "${userIconPath}${USER}.png"
-                        fi
-                        printf "${userIconPath}.png"
-                    else
-                        printf "${userIconPath}.png"
-                    fi
-                    exit;
-                else
-                    if [[ -f "${iconPath}" ]];
-                    then
-                        cp "${iconPath}" "${userIconPath}${USER}.png"
-                        printf "${userIconPath}${USER}.png"
-                        exit;
-                    fi
-                fi
-             ]=],
+      "./.config/awesome/src/scripts/pfp.sh 'userPfp'",
       function(stdout)
-      if stdout then
-        profile_picture:set_image(stdout:gsub("\n", ""))
-      else
-        profile_picture:set_image(icondir .. "defaultpfp.svg")
+        if stdout then
+          profile_picture:set_image(stdout:gsub("\n", ""))
+        else
+          profile_picture:set_image(icondir .. "defaultpfp.svg")
+        end
       end
-    end
     )
   end
   update_profile_picture()
 
-  -- Will determin the display style
-  local namestyle = user_vars.namestyle
   -- Get the full username(if set) and the username + hostname
   local update_user_name = function()
     awful.spawn.easy_async_with_shell(
-      [=[
-                fullname="$(getent passwd `whoami` | cut -d ':' -f 5)"
-                user="$(whoami)"
-                host="$(hostname)"
-                if [[ "]=] .. namestyle .. [=[" == "userhost" ]];
-                then
-                    printf "$user@$host"
-                elif [[ "]=] .. namestyle .. [=[" == "fullname" ]];
-                then
-                    printf "$fullname"
-                else
-                    printf "Rick Astley"
-                fi
-            ]=],
+      "./.config/awesome/src/scripts/pfp.sh 'userName' '" .. user_vars.namestyle .. "'",
       function(stdout)
-      if stdout:gsub("\n", "") == "Rick Astley" then
-        profile_picture:set_image(awful.util.getdir("config") .. "src/assets/userpfp/" .. "rickastley.jpg")
+        if stdout:gsub("\n", "") == "Rick Astley" then
+          profile_picture:set_image(awful.util.getdir("config") .. "src/assets/userpfp/" .. "rickastley.jpg")
+        end
+        profile_name:set_text(stdout)
       end
-      profile_name:set_text(stdout)
-    end
     )
   end
   update_user_name()
@@ -154,8 +115,8 @@ return function(s)
     item:connect_signal(
       "button::release",
       function()
-      callback()
-    end
+        callback()
+      end
     )
 
     return item
@@ -163,7 +124,7 @@ return function(s)
 
   -- Create the power menu actions
   local suspend_command = function()
-    awful.spawn("dm-tool lock & systemctl suspend")
+    awful.spawn("systemctl suspend")
     awesome.emit_signal("module::powermenu:hide")
   end
 
@@ -194,11 +155,11 @@ return function(s)
   local lock_button = button("Lock", icondir .. "lock.svg", color["Orange200"], lock_command)
 
   -- Signals to change color on hover
-  Hover_signal(shutdown_button.background, color["Blue200"])
-  Hover_signal(reboot_button.background, color["Red200"])
-  Hover_signal(suspend_button.background, color["Yellow200"])
-  Hover_signal(logout_button.background, color["Green200"])
-  Hover_signal(lock_button.background, color["Orange200"])
+  Hover_signal(shutdown_button.background, color["Blue200"], color["Grey900"])
+  Hover_signal(reboot_button.background, color["Red200"], color["Grey900"])
+  Hover_signal(suspend_button.background, color["Yellow200"], color["Grey900"])
+  Hover_signal(logout_button.background, color["Green200"], color["Grey900"])
+  Hover_signal(lock_button.background, color["Orange200"], color["Grey900"])
 
   -- The powermenu widget
   local powermenu = wibox.widget {
@@ -283,8 +244,8 @@ return function(s)
         {},
         3,
         function()
-        awesome.emit_signal("module::powermenu:hide")
-      end
+          awesome.emit_signal("module::powermenu:hide")
+        end
       )
     )
   )
@@ -304,18 +265,18 @@ return function(s)
   awesome.connect_signal(
     "module::powermenu:show",
     function()
-    if s == mouse.screen then
-      powermenu_container.visible = true
-      powermenu_keygrabber:start()
+      if s == mouse.screen then
+        powermenu_container.visible = true
+        powermenu_keygrabber:start()
+      end
     end
-  end
   )
 
   awesome.connect_signal(
     "module::powermenu:hide",
     function()
-    powermenu_keygrabber:stop()
-    powermenu_container.visible = false
-  end
+      powermenu_keygrabber:stop()
+      powermenu_container.visible = false
+    end
   )
 end

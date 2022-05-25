@@ -44,7 +44,7 @@ return function(screen, programs)
       widget = wibox.container.margin
     }
 
-    for k, c in ipairs(client.get()) do
+    for _, c in ipairs(client.get()) do
       if string.lower(c.class):match(program) and c == client.focus then
         dock_element.background.bg = color["Grey800"]
       end
@@ -55,12 +55,12 @@ return function(screen, programs)
     dock_element:connect_signal(
       "button::press",
       function()
-      if is_steam then
-        awful.spawn("steam steam://rungameid/" .. program)
-      else
-        awful.spawn(program)
+        if is_steam then
+          awful.spawn("steam steam://rungameid/" .. program)
+        else
+          awful.spawn(program)
+        end
       end
-    end
     )
 
     awful.tooltip {
@@ -181,13 +181,20 @@ return function(screen, programs)
   }
 
   local function check_for_dock_hide(s)
+    for _, client in ipairs(s.selected_tag:clients()) do
+      if client.fullscreen then
+        dock.visible = false
+        fakedock.visible = false
+      else
+        fakedock.visible = true
+      end
+    end
     if #s.selected_tag:clients() < 1 then
       dock.visible = true
       return
     end
     if s == mouse.screen then
-      local visible = false
-      for j, c in ipairs(s.selected_tag:clients()) do
+      for _, c in ipairs(s.selected_tag:clients()) do
 
         if c.maximized or c.fullscreen then
           dock.visible = false
@@ -219,63 +226,63 @@ return function(screen, programs)
   fakedock:connect_signal(
     "mouse::enter",
     function()
-    for index, c in ipairs(screen.clients) do
-      if not c.fullscreen then
-        dock_intelligent_hide:stop()
-        dock.visible = true
+      for _, c in ipairs(screen.clients) do
+        if not c.fullscreen then
+          dock_intelligent_hide:stop()
+          dock.visible = true
+        end
       end
     end
-  end
   )
 
   client.connect_signal(
     "manage",
     function()
-    check_for_dock_hide(screen)
-    dock:setup {
-      dock_elements,
-      create_incicator_widget(programs),
-      layout = wibox.layout.fixed.vertical
-    }
-  end
+      check_for_dock_hide(screen)
+      dock:setup {
+        dock_elements,
+        create_incicator_widget(programs),
+        layout = wibox.layout.fixed.vertical
+      }
+    end
   )
 
   client.connect_signal(
     "unmanage",
     function()
-    check_for_dock_hide(screen)
-    dock:setup {
-      dock_elements,
-      create_incicator_widget(programs),
-      layout = wibox.layout.fixed.vertical
-    }
-  end
+      check_for_dock_hide(screen)
+      dock:setup {
+        dock_elements,
+        create_incicator_widget(programs),
+        layout = wibox.layout.fixed.vertical
+      }
+    end
   )
 
   client.connect_signal(
     "focus",
     function()
-    check_for_dock_hide(screen)
-    dock:setup {
-      dock_elements,
-      create_incicator_widget(programs),
-      layout = wibox.layout.fixed.vertical
-    }
-  end
+      check_for_dock_hide(screen)
+      dock:setup {
+        dock_elements,
+        create_incicator_widget(programs),
+        layout = wibox.layout.fixed.vertical
+      }
+    end
   )
 
   dock:connect_signal(
     "mouse::enter",
     function()
-    dock_intelligent_hide:stop()
-  end
+      dock_intelligent_hide:stop()
+    end
   )
 
   dock:connect_signal(
     "mouse::leave",
     function()
-    dock_intelligent_hide:again()
-  end
+      dock_intelligent_hide:again()
+    end
   )
 
   dock:setup {

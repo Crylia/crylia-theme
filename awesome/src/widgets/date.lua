@@ -72,20 +72,20 @@ return function()
   }
 
   -- Signals
-  Hover_signal(date_widget, color["Teal200"])
+  Hover_signal(date_widget, color["Teal200"], color["Grey900"])
 
   date_widget:connect_signal(
     "mouse::enter",
     function()
-    awesome.emit_signal("widget::calendar_osd:stop", true)
-  end
+      awesome.emit_signal("widget::calendar_osd:stop", true)
+    end
   )
 
   date_widget:connect_signal(
     "mouse::leave",
     function()
-    awesome.emit_signal("widget::calendar_osd:rerun", true)
-  end
+      awesome.emit_signal("widget::calendar_osd:rerun", true)
+    end
   )
 
   return date_widget

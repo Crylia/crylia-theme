@@ -131,21 +131,21 @@ return function()
       awful.spawn.easy_async_with_shell(
         [[ iw dev ]] .. interfaces.wlan_interface .. [[ link ]],
         function(stdout)
-        local essid = stdout:match("SSID: (.-)\n") or "N/A"
-        local bitrate = stdout:match("tx bitrate: (.+/s)") or "N/A"
-        local message = "Connected to <b>" .. essid .. "</b>\nSignal strength <b>" .. tostring(wifi_strength) .. "%</b>\n" .. "Bit rate <b>" .. tostring(bitrate) .. "</b>"
+          local essid = stdout:match("SSID: (.-)\n") or "N/A"
+          local bitrate = stdout:match("tx bitrate: (.+/s)") or "N/A"
+          local message = "Connected to <b>" .. essid .. "</b>\nSignal strength <b>" .. tostring(wifi_strength) .. "%</b>\n" .. "Bit rate <b>" .. tostring(bitrate) .. "</b>"
 
-        if healthy then
-          update_tooltip(message)
-        else
-          update_tooltip("You are connected but have no internet" .. message)
-        end
+          if healthy then
+            update_tooltip(message)
+          else
+            update_tooltip("You are connected but have no internet" .. message)
+          end
 
-        if reconnect_startup or startup then
-          notify_connected(essid)
-          update_reconnect_startup(false)
+          if reconnect_startup or startup then
+            notify_connected(essid)
+            update_reconnect_startup(false)
+          end
         end
-      end
       )
     end
 
@@ -153,20 +153,20 @@ return function()
       awful.spawn.easy_async_with_shell(
         check_for_internet,
         function(stdout)
-        local icon = "wifi-strength"
-        if not stdout:match("Connected but no internet") then
-          if startup or reconnect_startup then
-            awesome.emit_signal("system::network_connected")
+          local icon = "wifi-strength"
+          if not stdout:match("Connected but no internet") then
+            if startup or reconnect_startup then
+              awesome.emit_signal("system::network_connected")
+            end
+            icon = icon .. '-' .. tostring(strength)
+            update_wireless_data(true)
+          else
+            icon = icon .. "-" .. tostring(strength)
+            update_wireless_data(false)
           end
-          icon = icon .. '-' .. tostring(strength)
-          update_wireless_data(true)
-        else
-          icon = icon .. "-" .. tostring(strength)
-          update_wireless_data(false)
+          network_widget.container.network_layout.spacing = dpi(8)
+          network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. icon .. ".svg", color["Grey900"]))
         end
-        network_widget.container.network_layout.spacing = dpi(8)
-        network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. icon .. ".svg", color["Grey900"]))
-      end
       )
     end
 
@@ -174,16 +174,16 @@ return function()
       awful.spawn.easy_async_with_shell(
         [[ awk 'NR==3 {printf "%3.0f", ($3/70)*100}' /proc/net/wireless ]],
         function(stdout)
-        if not tonumber(stdout) then
-          return
+          if not tonumber(stdout) then
+            return
+          end
+          wifi_strength = tonumber(stdout)
+          network_widget.container.network_layout.spacing = dpi(8)
+          network_widget.container.network_layout.label.visible = true
+          network_widget.container.network_layout.label:set_text(tostring(wifi_strength .. "%"))
+          local wifi_strength_rounded = math.floor(wifi_strength / 25 + 0.5)
+          update_wireless_icon(wifi_strength_rounded)
         end
-        wifi_strength = tonumber(stdout)
-        network_widget.container.network_layout.spacing = dpi(8)
-        network_widget.container.network_layout.label.visible = true
-        network_widget.container.network_layout.label:set_text(tostring(wifi_strength .. "%"))
-        local wifi_strength_rounded = math.floor(wifi_strength / 25 + 0.5)
-        update_wireless_icon(wifi_strength_rounded)
-      end
       )
     end
 
@@ -205,26 +205,26 @@ return function()
     awful.spawn.easy_async_with_shell(
       check_for_internet,
       function(stdout)
-      local icon = "ethernet"
+        local icon = "ethernet"
 
-      if stdout:match("Connected but no internet") then
-        icon = "no-internet"
-        update_tooltip(
-        "No internet"
-        )
-      else
-        update_tooltip("You are connected to:\nEthernet Interface <b>" .. interfaces.lan_interface .. "</b>")
-        if startup or reconnect_startup then
-          awesome.emit_signal("system::network_connected")
-          notify_connected()
-          update_startup()
+        if stdout:match("Connected but no internet") then
+          icon = "no-internet"
+          update_tooltip(
+            "No internet"
+          )
+        else
+          update_tooltip("You are connected to:\nEthernet Interface <b>" .. interfaces.lan_interface .. "</b>")
+          if startup or reconnect_startup then
+            awesome.emit_signal("system::network_connected")
+            notify_connected()
+            update_startup()
+          end
+          update_reconnect_startup(false)
         end
-        update_reconnect_startup(false)
+        network_widget.container.network_layout.label.visible = false
+        network_widget.container.network_layout.spacing = dpi(0)
+        network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(icondir .. icon .. ".svg")
       end
-      network_widget.container.network_layout.label.visible = false
-      network_widget.container.network_layout.spacing = dpi(0)
-      network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(icondir .. icon .. ".svg")
-    end
     )
 
   end
@@ -302,15 +302,15 @@ return function()
                 print_network_mode
             ]=],
       function(stdout)
-      local mode = stdout:gsub("%\n", "")
-      if stdout:match("No internet connected") then
-        update_disconnected()
-      elseif stdout:match("wireless") then
-        update_wireless()
-      elseif stdout:match("wired") then
-        update_wired()
+        local mode = stdout:gsub("%\n", "")
+        if stdout:match("No internet connected") then
+          update_disconnected()
+        elseif stdout:match("wireless") then
+          update_wireless()
+        elseif stdout:match("wired") then
+          update_wired()
+        end
       end
-    end
     )
   end
 
@@ -324,13 +324,13 @@ return function()
   }
 
   -- Signals
-  Hover_signal(network_widget, color["Red200"])
+  Hover_signal(network_widget, color["Red200"], color["Grey900"])
 
   network_widget:connect_signal(
     "button::press",
     function()
-    awful.spawn("gnome-control-center wlan")
-  end
+      awful.spawn("gnome-control-center wlan")
+    end
   )
 
   return network_widget

@@ -39,7 +39,8 @@ return function()
           id = "label",
           align = "center",
           valign = "center",
-          widget = wibox.widget.textbox
+          format = "%H:%M",
+          widget = wibox.widget.textclock
         },
         id = "clock_layout",
         layout = wibox.layout.fixed.horizontal
@@ -57,22 +58,7 @@ return function()
     widget = wibox.container.background
   }
 
-  local set_clock = function()
-    clock_widget.container.clock_layout.label:set_text(os.date("%H:%M"))
-  end
-
-  -- Updates the clock every 5 seconds, worst case you are 5 seconds behind
-  -- ¯\_(ツ)_/¯
-  gears.timer {
-    timeout = 5,
-    autostart = true,
-    call_now = true,
-    callback = function()
-      set_clock()
-    end
-  }
-
-  Hover_signal(clock_widget, color["Orange200"])
+  Hover_signal(clock_widget, color["Orange200"], color["Grey900"])
 
   return clock_widget
 end

@@ -59,10 +59,10 @@ return function(s)
     awful.spawn.easy_async_with_shell(
       [[ setxkbmap -query | grep layout | awk '{print $2}' ]],
       function(stdout)
-      local layout = stdout:gsub("\n", "")
-      kblayout_widget.container.kblayout_layout.label.text = layout
-      awesome.emit_signal("update::background:kblayout")
-    end
+        local layout = stdout:gsub("\n", "")
+        kblayout_widget.container.kblayout_layout.label.text = layout
+        awesome.emit_signal("update::background:kblayout")
+      end
     )
   end
 
@@ -72,12 +72,12 @@ return function(s)
 
     local xkeyboard_country_code = {
       { "af", "أفغانيش(Afghanistan)", "AFG" }, -- Afghanistan
-      { "al", "shqip(Albania)", "ALB" }, -- Albania
-      { "am", "հայերեն(Armenia)", "ARM" }, -- Armenia
+      { "al", "Shqip(Albania)", "ALB" }, -- Albania
+      { "am", "Hայերեն(Armenia)", "ARM" }, -- Armenia
       { "ara", "عربي(Arab)", "ARB" }, -- Arabic
       { "at", "Österreichisch (Austria)", "AUT" }, -- Austria
       { "az", "Azərbaycan(Azerbaijan)", "AZE" }, -- Azerbaijan
-      { "ba", "bosanski(Bosnia and Herzegovina)", "BIH" }, -- Bosnia and Herzegovina
+      { "ba", "Bosanski(Bosnia and Herzegovina)", "BIH" }, -- Bosnia and Herzegovina
       { "bd", "", "BGD" }, -- Bangladesh
       { "be", "", "BEL" }, -- Belgium
       { "bg", "", "BGR" }, -- Bulgaria
@@ -219,22 +219,22 @@ return function(s)
     awesome.connect_signal(
       "update::background:kblayout",
       function()
-      awful.spawn.easy_async_with_shell(
-        [[ setxkbmap -query | grep layout | awk '{print $2}' ]],
-        function(stdout)
-        local layout = stdout:gsub("\n", "")
-        if kb_layout_item.keymap == layout then
-          kb_layout_item.bg = color["DeepPurple200"]
-          kb_layout_item:get_children_by_id("background2")[1].fg = color["Grey900"]
-          kb_layout_item:get_children_by_id("background1")[1].fg = color["Grey900"]
-        else
-          kb_layout_item.bg = color["Grey800"]
-          kb_layout_item:get_children_by_id("background2")[1].fg = color["Red200"]
-          kb_layout_item:get_children_by_id("background1")[1].fg = color["Purple200"]
-        end
+        awful.spawn.easy_async_with_shell(
+          [[ setxkbmap -query | grep layout | awk '{print $2}' ]],
+          function(stdout)
+            local layout = stdout:gsub("\n", "")
+            if kb_layout_item.keymap == layout then
+              kb_layout_item.bg = color["DeepPurple200"]
+              kb_layout_item:get_children_by_id("background2")[1].fg = color["Grey900"]
+              kb_layout_item:get_children_by_id("background1")[1].fg = color["Grey900"]
+            else
+              kb_layout_item.bg = color["Grey800"]
+              kb_layout_item:get_children_by_id("background2")[1].fg = color["Red200"]
+              kb_layout_item:get_children_by_id("background1")[1].fg = color["Purple200"]
+            end
+          end
+        )
       end
-      )
-    end
     )
 
     get_kblayout()
@@ -242,15 +242,15 @@ return function(s)
     kb_layout_item:connect_signal(
       "button::press",
       function()
-      awful.spawn.easy_async_with_shell(
-        "setxkbmap " .. keymap,
-        function()
-        awesome.emit_signal("kblayout::hide:kbmenu")
-        mousegrabber.stop()
-        get_kblayout()
+        awful.spawn.easy_async_with_shell(
+          "setxkbmap " .. keymap,
+          function()
+            awesome.emit_signal("kblayout::hide:kbmenu")
+            mousegrabber.stop()
+            get_kblayout()
+          end
+        )
       end
-      )
-    end
     )
     return kb_layout_item
   end
@@ -294,25 +294,23 @@ return function(s)
   kb_menu_widget:connect_signal(
     "mouse::leave",
     function()
-    mousegrabber.run(
-      function()
-        kblayout_widget.bg = color["Green200"]
-        if mouse.is_left_mouse_button_pressed then
+      mousegrabber.run(
+        function()
+          kblayout_widget.bg = color["Green200"]
           awesome.emit_signal("kblayout::hide:kbmenu")
           mousegrabber.stop()
-        end
-        return true
-      end,
-      "arrow"
-    )
-  end
+          return true
+        end,
+        "arrow"
+      )
+    end
   )
 
   kb_menu_widget:connect_signal(
     "mouse::enter",
     function()
-    mousegrabber.stop()
-  end
+      mousegrabber.stop()
+    end
   )
 
   kb_menu_widget:setup(
@@ -323,38 +321,38 @@ return function(s)
     awful.spawn.easy_async_with_shell(
       "setxkbmap -query | grep layout: | awk '{print $2}'",
       function(stdout)
-      for j, n in ipairs(user_vars.kblayout) do
-        if stdout:match(n) then
-          if j == #user_vars.kblayout then
-            awful.spawn.easy_async_with_shell(
-              "setxkbmap " .. user_vars.kblayout[1],
-              function()
-              get_kblayout()
+        for j, n in ipairs(user_vars.kblayout) do
+          if stdout:match(n) then
+            if j == #user_vars.kblayout then
+              awful.spawn.easy_async_with_shell(
+                "setxkbmap " .. user_vars.kblayout[1],
+                function()
+                  get_kblayout()
+                end
+              )
+            else
+              awful.spawn.easy_async_with_shell(
+                "setxkbmap " .. user_vars.kblayout[j + 1],
+                function()
+                  get_kblayout()
+                end
+              )
             end
-            )
-          else
-            awful.spawn.easy_async_with_shell(
-              "setxkbmap " .. user_vars.kblayout[j + 1],
-              function()
-              get_kblayout()
-            end
-            )
           end
         end
       end
-    end
     )
   end
 
   awesome.connect_signal(
     "kblayout::toggle",
     function()
-    toggle_kb_layout()
-  end
+      toggle_kb_layout()
+    end
   )
 
   -- Signals
-  Hover_signal(kblayout_widget, color["Green200"])
+  Hover_signal(kblayout_widget, color["Green200"], color["Grey900"])
 
   local kblayout_keygrabber = awful.keygrabber {
     autostart = false,
@@ -368,23 +366,23 @@ return function(s)
   kblayout_widget:connect_signal(
     "button::press",
     function()
-    mousegrabber.stop()
-    if kb_menu_widget.visible then
-      kb_menu_widget.visible = false
-      kblayout_keygrabber:stop()
-    else
-      kb_menu_widget.visible = true
-      kblayout_keygrabber:start()
+      mousegrabber.stop()
+      if kb_menu_widget.visible then
+        kb_menu_widget.visible = false
+        kblayout_keygrabber:stop()
+      else
+        kb_menu_widget.visible = true
+        kblayout_keygrabber:start()
+      end
     end
-  end
   )
 
   awesome.connect_signal(
     "kblayout::hide:kbmenu",
     function()
-    kb_menu_widget.visible = false
-    kblayout_keygrabber:stop()
-  end
+      kb_menu_widget.visible = false
+      kblayout_keygrabber:stop()
+    end
   )
 
   get_kblayout()
