@@ -7,6 +7,7 @@
 -- ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝ ╚═╝     ╚═╝ --
 -----------------------------------------------------------------------------------------
 -- Initialising, order is important!
+require("src.tools.icon_handler").init()
 require("src.theme.user_variables")
 require("src.theme.init")
 require("src.core.error_handling")
