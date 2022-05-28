@@ -29,6 +29,7 @@ user_vars = {
 
   -- Icon theme from /usr/share/icons
   icon_theme = "Papirus-Dark",
+  application_default_icon = nil,
 
   -- Write the terminal command to start anything here
   autostart = {

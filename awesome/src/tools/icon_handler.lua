@@ -1,12 +1,14 @@
 -----------------------------------------------------
 -- Helper to get icons from a program/program name --
 -----------------------------------------------------
+local awful = require("awful")
+
 local LIP = require("src.lib.LIP.LIP")
 
 local icon_finder = {}
 
 local icon_extensions = { "png", "svg", "xmp" }
-local default_icon = "/usr/share/icons/Papirus-Dark/128x128/apps/application-default-icon.svg"
+local default_icon = user_vars.application_default_icon or awful.util.getdir("config") .. "src/assets/icons/application-default-icon.svg"
 local icon_cache = {}
 local fallback_icon_dirs = {}
 
