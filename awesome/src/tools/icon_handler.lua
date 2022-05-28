@@ -1,7 +1,7 @@
 -----------------------------------------------------
 -- Helper to get icons from a program/program name --
 -----------------------------------------------------
-local LIP = require("src.tools.LIP")
+local LIP = require("src.lib.LIP.LIP")
 
 local icon_finder = {}
 
