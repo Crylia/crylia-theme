@@ -194,20 +194,28 @@ return function(screen, programs)
       return
     end
     if s == mouse.screen then
+      local minimized
       for _, c in ipairs(s.selected_tag:clients()) do
-
+        if c.minimized then
+          minimized = true
+        end
         if c.maximized or c.fullscreen then
           dock.visible = false
           return
         end
-        local y = c:geometry().y
-        local h = c.height
-        if (y + h) >= s.geometry.height - user_vars.dock_icon_size - 35 then
-          dock.visible = false
-          return
-        else
-          dock.visible = true
+        if not c.minimized then
+          local y = c:geometry().y
+          local h = c.height
+          if (y + h) >= s.geometry.height - user_vars.dock_icon_size - 35 then
+            dock.visible = false
+            return
+          else
+            dock.visible = true
+          end
         end
+      end
+      if minimized then
+        dock.visible = true
       end
     else
       dock.visible = false
@@ -237,6 +245,18 @@ return function(screen, programs)
 
   client.connect_signal(
     "manage",
+    function()
+      check_for_dock_hide(screen)
+      dock:setup {
+        dock_elements,
+        create_incicator_widget(programs),
+        layout = wibox.layout.fixed.vertical
+      }
+    end
+  )
+
+  client.connect_signal(
+    "property::minimized",
     function()
       check_for_dock_hide(screen)
       dock:setup {
