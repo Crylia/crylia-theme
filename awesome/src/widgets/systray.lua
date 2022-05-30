@@ -20,7 +20,7 @@ return function(s)
         id = 'st'
       },
       strategy = "exact",
-      layout = wibox.container.constraint,
+      widget = wibox.container.constraint,
       id = "container"
     },
     widget = wibox.container.background,

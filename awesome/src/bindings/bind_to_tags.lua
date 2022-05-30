@@ -1,7 +1,7 @@
 -- Awesome Libs
 local awful = require("awful")
 local gears = require("gears")
-local globalkeys = require("../mappings/global_keys")
+local globalkeys = require("src.bindings.global_keys")
 local modkey = user_vars.modkey
 
 for i = 1, 9 do

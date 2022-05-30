@@ -64,7 +64,10 @@ return function()
 
       local MemTotal, MemFree, MemAvailable = stdout:match("(%d+)\n(%d+)\n(%d+)\n")
 
-      ram_widget.container.ram_layout.label.text = tostring(string.format("%.1f", ((MemTotal - MemAvailable) / 1024 / 1024)) .. "/" .. string.format("%.1f", (MemTotal / 1024 / 1024)) .. "GB"):gsub(",", ".")
+      local ram_string = tostring(string.format("%.1f", ((MemTotal - MemAvailable) / 1024 / 1024)) .. "/" .. string.format("%.1f", (MemTotal / 1024 / 1024)) .. "GB"):gsub(",", ".")
+
+      ram_widget.container.ram_layout.label.text = ram_string
+      awesome.emit_signal("update::ram_widget", math.floor(((MemTotal - MemAvailable) / MemTotal * 100) + 0.5))
     end
   )
 

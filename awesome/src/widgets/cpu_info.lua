@@ -155,6 +155,7 @@ return function(widget, clock_mode)
       local diff_usage = (1000 * (diff_total - diff_idle) / diff_total + 5) / 10
 
       cpu_usage_widget.container.cpu_layout.label.text = tostring(math.floor(diff_usage)) .. "%"
+      awesome.emit_signal("update::cpu_usage_widget", math.floor(diff_usage + 0.5))
 
       total_prev = total
       idle_prev = idle
@@ -185,6 +186,7 @@ return function(widget, clock_mode)
       cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
       cpu_temp:set_bg(temp_color)
       cpu_temp.container.cpu_layout.label.text = math.floor(temp_num) .. "°C"
+      awesome.emit_signal("update::cpu_temp_widget", temp_num, temp_icon)
     end
   )
 
@@ -205,9 +207,9 @@ return function(widget, clock_mode)
           average = average + cpu_freq[i]
         end
         average = math.floor(average / #cpu_freq)
-        cpu_clock.container.cpu_layout.label.text = tonumber(average) .. "Mhz"
+        cpu_clock.container.cpu_layout.label.text = average .. "Mhz"
       elseif clock_mode then
-        cpu_clock.container.cpu_layout.label.text = tonumber(cpu_freq[clock_mode]) .. "Mhz"
+        cpu_clock.container.cpu_layout.label.text = cpu_freq[clock_mode] .. "Mhz"
       end
     end
   )

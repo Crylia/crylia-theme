@@ -103,6 +103,7 @@ return function(widget)
     3,
     function(_, stdout)
       gpu_usage_widget.container.gpu_layout.label.text = stdout:gsub("\n", "") .. "%"
+      awesome.emit_signal("update::gpu_usage_widget", tonumber(stdout))
     end
   )
 
@@ -131,6 +132,7 @@ return function(widget)
       gpu_temp_widget.container.gpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
       gpu_temp_widget:set_bg(temp_color)
       gpu_temp_widget.container.gpu_layout.label.text = tostring(temp_num) .. "°C"
+      awesome.emit_signal("update::gpu_temp_widget", temp_num, temp_icon)
     end
   )
 

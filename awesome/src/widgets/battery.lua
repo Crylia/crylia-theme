@@ -163,7 +163,7 @@ return function()
 
         battery_widget.container.battery_layout.icon_margin.icon_layout.icon:set_image(gears.surface.load_uncached(
           gears.color.recolor_image(icondir .. icon .. '.svg', "#212121")))
-
+        awesome.emit_signal("update::battery_widget", battery_percentage, icondir .. icon .. ".svg")
       end
     )
   end

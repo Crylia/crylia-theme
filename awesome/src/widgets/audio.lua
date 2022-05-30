@@ -79,6 +79,7 @@ return function(s)
         audio_widget.container.audio_layout.icon_margin.icon_layout.icon:set_image(
           gears.color.recolor_image(icon .. ".svg", color["Grey900"]))
         awesome.emit_signal("get::volume", volume)
+        awesome.emit_signal("update::volume_widget", volume, icon .. ".svg")
       end
     )
   end

@@ -8,6 +8,17 @@ local home = os.getenv("HOME")
 -- If you want different default programs, wallpaper path or modkey; edit this file.
 user_vars = {
 
+  -- Uses the openweather api https://home.openweathermap.org/api_keys
+  -- City ID is also from there
+  weather_secrets = {
+    key = "e71b00168ca7219563dde4514a425b14",
+    city_id = "2864118",
+    unit = "metric" -- "metric" or "imperial"
+  },
+
+  -- Do not Disturb will turn off all notifications but keep the notification-list in the notification-center
+  dnd = false,
+
   -- Autotiling layouts
   layouts = {
     awful.layout.suit.tile,
@@ -38,7 +49,8 @@ user_vars = {
     "flatpak run com.spotify.Client",
     "discord",
     "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
-    "setxkbmap -option caps:swapescape"
+    "setxkbmap -option caps:swapescape",
+    "whatsdesk"
   },
 
   -- Type 'ip a' and check your wlan and ethernet name

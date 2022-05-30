@@ -706,8 +706,16 @@ return function(s)
       stdout = function(line)
         get_input_devices()
         get_source_devices()
+        awful.spawn.with_shell("pkill pactl && pkill grep")
       end
     }
+  )
+
+  awesome.connect_signal(
+    "exit",
+    function()
+      awful.spawn.with_shell("pkill pactl && pkill grep")
+    end
   )
 
   -- Get microphone volume
@@ -834,8 +842,10 @@ return function(s)
     function(volume)
       if volume > 0 then
         volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone.svg", color["LightBlue200"]))
+        awesome.emit_signal("update::microphone_widget", tonumber(volume), icondir .. "microphone.svg")
       else
         volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+        awesome.emit_signal("update::microphone_widget", tonumber(volume), icondir .. "microphone-off.svg")
       end
     end
   )
