@@ -8,11 +8,39 @@ local home = os.getenv("HOME")
 -- If you want different default programs, wallpaper path or modkey; edit this file.
 user_vars = {
 
+  -- The battery that should be displayed in the battery widget.
+  --[[
+    You can choose from one of these values (default is internal battery):
+      "UNKNOWN"
+      "LINE_POWER"
+      "TABLET"
+      "COMPUTER"
+      "GAMING_INPUT"
+      "LAST"
+      "BATTERY"
+      "UPS"
+      "MONITOR"
+      "MOUSE"
+      "KEYBOARD"
+      "PDA"
+      "PHONE"
+      "MEDIA_PLAYER"
+      More information at: https://lazka.github.io/pgi-docs/UPowerGlib-1.0/enums.html#UPowerGlib.DeviceKind.KEYBOARD
+  ]]
+  battery_kind = "BATTERY",
+
+  -- Here you can specify a battery to use. e.g. "/org/freedesktop/UPower/devices/battery_BAT0"
+  -- Default is nil (use the internal battery)
+  battery_path = nil,
+
+  -- This is opened when clicked on the battery icon, set it to whatever you like
+  energy_manager = "xfce4-power-manager-settings",
+
   -- Uses the openweather api https://home.openweathermap.org/api_keys
   -- City ID is also from there
   weather_secrets = {
-    key = "e71b00168ca7219563dde4514a425b14",
-    city_id = "2864118",
+    key = "",
+    city_id = "",
     unit = "metric" -- "metric" or "imperial"
   },
 
