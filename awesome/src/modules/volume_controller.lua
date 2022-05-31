@@ -55,7 +55,9 @@ return function(s)
       device:connect_signal(
         "button::press",
         function()
-          awful.spawn.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
+          if node then
+            awful.spawn.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
+          end
 
           awesome.emit_signal("update::background:vol", node)
         end
@@ -185,7 +187,9 @@ return function(s)
       device:connect_signal(
         "button::press",
         function()
-          awful.spawn.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
+          if node then
+            awful.spawn.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
+          end
 
           awesome.emit_signal("update::background:mic", node)
         end
@@ -634,25 +638,26 @@ return function(s)
   -- Get all source devices
   local function get_source_devices()
     awful.spawn.easy_async_with_shell(
-      [[ pactl list sinks | grep -E 'node.name|alsa.card_name' | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]],
+      [[ pactl list sinks | grep -E 'node.name|device.description|alsa.card_name' | awk '{gsub(/"/, ""); for(i = 1;i < NF;i++) printf $i " "; print $NF}' ]],
 
       function(stdout)
-        local i, j = 1, 1
         local device_list = { layout = wibox.layout.fixed.vertical }
-
+        local was_alsa = false
         local node_names, alsa_names = {}, {}
-        for node_name in stdout:gmatch("[^\n]+") do
-          if (i % 2) == 0 then
-            table.insert(node_names, node_name)
+        for val in stdout:gmatch("[^\n]+") do
+          if val:match("alsa%.card_name") then
+            table.insert(alsa_names, val:match("alsa%.card_name%s=%s(.*)"))
+            was_alsa = true
+          elseif val:match("device%.description") and not was_alsa then
+            table.insert(alsa_names, val:match("device%.description%s=%s(.*)"))
+            was_alsa = false
+          else
+            was_alsa = false
           end
-          i = i + 1
-        end
 
-        for alsa_name in stdout:gmatch("[^\n]+") do
-          if (j % 2) == 1 then
-            table.insert(alsa_names, alsa_name)
+          if val:match("node%.name") then
+            table.insert(node_names, val:match("node%.name%s=%s(.*)"))
           end
-          j = j + 1
         end
 
         for k = 1, #alsa_names, 1 do
@@ -668,25 +673,27 @@ return function(s)
   -- Get all input devices
   local function get_input_devices()
     awful.spawn.easy_async_with_shell(
-      [[ pactl list sources | grep -E "node.name|alsa.card_name" | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]],
+      [[ pactl list sources | grep -E "node.name|device.description|alsa.card_name" | awk '{gsub(/"/, ""); for(i = 1;i < NF;i++) printf $i " "; print $NF}' ]],
 
       function(stdout)
-        local i, j = 1, 1
         local device_list = { layout = wibox.layout.fixed.vertical }
-
+        local was_alsa = false
         local node_names, alsa_names = {}, {}
-        for node_name in stdout:gmatch("[^\n]+") do
-          if (i % 2) == 0 then
-            table.insert(node_names, node_name)
-          end
-          i = i + 1
-        end
 
-        for alsa_name in stdout:gmatch("[^\n]+") do
-          if (j % 2) == 1 then
-            table.insert(alsa_names, alsa_name)
+        for val in stdout:gmatch("[^\n]+") do
+          if val:match("alsa%.card_name") then
+            table.insert(alsa_names, val:match("alsa%.card_name%s=%s(.*)"))
+            was_alsa = true
+          elseif val:match("device%.description") and not was_alsa then
+            table.insert(alsa_names, val:match("device%.description%s=%s(.*)"))
+            was_alsa = false
+          else
+            was_alsa = false
           end
-          j = j + 1
+
+          if val:match("node%.name") then
+            table.insert(node_names, val:match("node%.name%s=%s(.*)"))
+          end
         end
 
         for k = 1, #alsa_names, 1 do
