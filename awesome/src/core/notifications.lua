@@ -161,6 +161,11 @@ naughty.connect_signal(
         widget = naughty.list.actions
       }
 
+      local arc_start = n.timeout
+      if n.timeout == 0 then
+        arc_start = 10
+      end
+
       local w_template = wibox.widget {
         {
           {
@@ -218,8 +223,8 @@ naughty.connect_signal(
                             start_angle = 4.71239,
                             thickness = dpi(2),
                             min_value = 0,
-                            max_value = n.timeout or 10,
-                            value = n.timeout or 10,
+                            max_value = arc_start,
+                            value = arc_start,
                             widget = wibox.container.arcchart,
                             id = "arc_chart"
                           },
