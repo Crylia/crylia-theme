@@ -40,90 +40,21 @@ return function()
     end,
     widget = wibox.container.background
   }
-
-  local bluetooth_tooltip = awful.tooltip {
-    objects = { bluetooth_widget },
-    text = "",
-    mode = "inside",
-    preferred_alignments = "middle",
-    margins = dpi(10)
-  }
-
-  local bluetooth_state = "off"
-  local connected_device = "nothing"
-
-  awful.widget.watch(
-    "rfkill list bluetooth",
-    5,
-    function(_, stdout)
-      local icon = icondir .. "bluetooth"
-      if stdout:match('Soft blocked: yes') or stdout:gsub("\n", "") == '' then
-        icon = icon .. "-off"
-        bluetooth_state = "off"
-        bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n")
-      else
-        icon = icon .. "-on"
-        bluetooth_state = "on"
-        awful.spawn.easy_async_with_shell(
-          './.config/awesome/src/scripts/bt.sh',
-          function(stdout2)
-            if stdout2 == nil or stdout2:gsub("\n", "") == "" then
-              bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently not connected")
-            else
-              connected_device = stdout2:gsub("%(", ""):gsub("%)", "")
-              bluetooth_tooltip:set_text("Bluetooth is turned " .. bluetooth_state .. "\n" .. "You are currently connected to:\n" .. connected_device)
-            end
-          end
-        )
-      end
-      bluetooth_widget.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icon .. ".svg", color["Grey900"]))
-    end,
-    bluetooth_widget
-  )
-
-  -- Signals
+  -- Hover signal to change color when mouse is over
   Hover_signal(bluetooth_widget, color["Blue200"], color["Grey900"])
+
+  awesome.connect_signal("state", function(state)
+    if state then
+      bluetooth_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icondir .. "bluetooth-on.svg", color["Grey900"]))
+    else
+      bluetooth_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icondir .. "bluetooth-off.svg", color["Grey900"]))
+    end
+  end)
 
   bluetooth_widget:connect_signal(
     "button::press",
     function()
-      awful.spawn.easy_async_with_shell(
-        "rfkill list bluetooth",
-        function(stdout)
-          if stdout:gsub("\n", "") ~= '' then
-            if bluetooth_state == "off" then
-              awful.spawn.easy_async_with_shell(
-                [[
-              rfkill unblock bluetooth
-              sleep 1
-              bluetoothctl power on
-            ]]   ,
-                function()
-                  naughty.notification {
-                    title = "System Notification",
-                    app_name = "Bluetooth",
-                    message = "Bluetooth activated"
-                  }
-                end
-              )
-            else
-              awful.spawn.easy_async_with_shell(
-                [[
-              bluetoothctl power off
-              rfkill block bluetooth
-            ]]   ,
-                function()
-                  naughty.notification {
-                    title = "System Notification",
-                    app_name = "Bluetooth",
-                    message = "Bluetooth deactivated"
-                  }
-                end
-              )
-            end
-          end
-        end
-      )
+      awesome.emit_signal("toggle_bluetooth")
     end
   )
 
