@@ -32,13 +32,7 @@ user_vars = {
 
   -- Write the terminal command to start anything here
   autostart = {
-    "picom --experimental-backends",
-    "xfce4-power-manager",
-    "light-locker --lock-on-suspend --lock-on-lid &",
-    "flatpak run com.spotify.Client",
-    "discord",
-    "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
-    "setxkbmap -option caps:swapescape"
+    ""
   },
 
   -- Type 'ip a' and check your wlan and ethernet name
