@@ -192,7 +192,7 @@ return function(s)
             {
               { -- Album art
                 {
-                  image = "default image",
+                  image = icondir .. "spotify.svg",
                   resize = true,
                   clip_shape = function(cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, dpi(8))
@@ -211,6 +211,7 @@ return function(s)
                   {
                     {
                       { --Title
+                        markup = "Title",
                         halign = "center",
                         align = "center",
                         widget = wibox.widget.textbox,
@@ -233,6 +234,7 @@ return function(s)
                   {
                     {
                       { --Artist
+                        markup = "Artist",
                         halign = "center",
                         align = "center",
                         widget = wibox.widget.textbox,
@@ -302,7 +304,7 @@ return function(s)
                 color = color["Purple200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(5),
                 shape = function(cr, width)
                   gears.shape.rounded_bar(cr, width, dpi(5))
@@ -378,7 +380,7 @@ return function(s)
             function(stdout2)
               local tit = stdout2:gsub("\n", "")
               title = tit
-              music_widget:get_children_by_id("textbox4")[1].text = tit
+              music_widget:get_children_by_id("textbox4")[1].text = tit or "Title"
             end
           )
 
@@ -388,7 +390,7 @@ return function(s)
             function(stdout2)
               local art = stdout2:gsub("\n", "")
               artist = art
-              music_widget:get_children_by_id("textbox3")[1].text = art
+              music_widget:get_children_by_id("textbox3")[1].text = art or "Artist"
             end
           )
 
