@@ -32,7 +32,7 @@ user_vars = {
 
   -- Write the terminal command to start anything here
   autostart = {
-    ""
+    "picom --experimental-backends"
   },
 
   -- Type 'ip a' and check your wlan and ethernet name
