@@ -9,13 +9,12 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local naughty = require("naughty")
 local wibox = require("wibox")
-require("src.core.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/bluetooth/"
 
 -- Returns the bluetooth widget
-return function()
+return function(s)
   local bluetooth_widget = wibox.widget {
     {
       {
@@ -53,8 +52,12 @@ return function()
 
   bluetooth_widget:connect_signal(
     "button::press",
-    function()
-      awesome.emit_signal("toggle_bluetooth")
+    function(c, d, e, key)
+      if key == 1 then
+        awesome.emit_signal("bluetooth_controller::toggle", s)
+      else
+        awesome.emit_signal("toggle_bluetooth")
+      end
     end
   )
 

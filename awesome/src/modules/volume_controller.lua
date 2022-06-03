@@ -9,7 +9,8 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local naughty = require("naughty")
 local wibox = require("wibox")
-require("src.core.signals")
+
+local rubato = require("src.lib.rubato")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/audio/"
@@ -23,145 +24,53 @@ return function(s)
       {
         {
           {
-            {
-              image = "",
-              id = "icon",
-              resize = false,
-              widget = wibox.widget.imagebox
-            },
-            {
-              text = name,
-              id = "node",
-              widget = wibox.widget.textbox
-            },
-            id = "device_layout",
-            layout = wibox.layout.align.horizontal
+            id = "icon",
+            resize = false,
+            widget = wibox.widget.imagebox
           },
-          id = "device_margin",
-          margins = dpi(5),
-          widget = wibox.container.margin
+          spacing = dpi(10),
+          {
+            text = name,
+            id = "node",
+            widget = wibox.widget.textbox
+          },
+          id = "device_layout",
+          layout = wibox.layout.fixed.horizontal
         },
-        id = "background",
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, 4)
-        end,
-        widget = wibox.container.background
+        id = "device_margin",
+        margins = dpi(9),
+        widget = wibox.container.margin
       },
-      margins = dpi(5),
-      widget = wibox.container.margin
+      id = "background",
+      bg = color["Grey900"],
+      border_color = color["Grey800"],
+      border_width = dpi(2),
+      shape = function(cr, width, height)
+        gears.shape.rounded_rect(cr, width, height, 4)
+      end,
+      widget = wibox.container.background
     }
-
     if sink == true then
       device:connect_signal(
         "button::press",
         function()
           if node then
-            awful.spawn.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
+            awful.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
           end
-
-          awesome.emit_signal("update::background:vol", node)
+          awesome.emit_signal("update::bg_sink", node)
         end
       )
-
-      --#region Signal Functions
-      local old_wibox, old_cursor, old_bg, old_fg
-      local bg = ""
-      local fg = ""
-      local mouse_enter = function()
-        if bg then
-          old_bg = device.background.bg
-          device.background.bg = bg .. 'dd'
-        end
-        if fg then
-          old_fg = device.background.fg
-          device.background.fg = fg
-        end
-        local w = mouse.current_wibox
-        if w then
-          old_cursor, old_wibox = w.cursor, w
-          w.cursor = "hand1"
-        end
-      end
-
-      local button_press = function()
-        if bg then
-          if bg then
-            if string.len(bg) == 7 then
-              device.background.bg = bg .. 'bb'
-            else
-              device.background.bg = bg
-            end
-          end
-        end
-        if fg then
-          device.background.fg = fg
-        end
-      end
-
-      local button_release = function()
-        if bg then
-          if bg then
-            if string.len(bg) == 7 then
-              device.background.bg = bg .. 'dd'
-            else
-              device.background.bg = bg
-            end
-          end
-        end
-        if fg then
-          device.background.fg = fg
-        end
-      end
-
-      local mouse_leave = function()
-        if bg then
-          device.background.bg = old_bg
-        end
-        if fg then
-          device.background.fg = old_fg
-        end
-        if old_wibox then
-          old_wibox.cursor = old_cursor
-          old_wibox = nil
-        end
-      end
-
-      device:connect_signal(
-        "mouse::enter",
-        mouse_enter
-      )
-
-      device:connect_signal(
-        "button::press",
-        button_press
-      )
-
-      device:connect_signal(
-        "button::release",
-        button_release
-      )
-
-      device:connect_signal(
-        "mouse::leave",
-        mouse_leave
-      )
-      --#endregion
-
       awesome.connect_signal(
-        "update::background:vol",
+        "update::bg_sink",
         function(new_node)
           if node == new_node then
-            old_bg = color["Purple200"]
-            old_fg = color["Grey900"]
-            bg = color["Purple200"]
-            fg = color["Grey900"]
-            device.background:set_bg(color["Purple200"])
-            device.background:set_fg(color["Grey900"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg", color["Grey900"])
+            device.bg = color["Purple200"]
+            device.fg = color["Grey900"]
           else
-            fg = color["Purple200"]
-            bg = color["Grey700"]
-            device.background:set_fg(color["Purple200"])
-            device.background:set_bg(color["Grey700"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg", color["Purple200"])
+            device.bg = color["Grey900"]
+            device.fg = color["Purple200"]
           end
         end
       )
@@ -170,130 +79,40 @@ return function(s)
         function(stdout)
           local node_active = stdout:gsub("\n", "")
           if node == node_active then
-            bg = color["Purple200"]
-            fg = color["Grey900"]
-            device.background:set_bg(color["Purple200"])
-            device.background:set_fg(color["Grey900"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg", color["Grey900"])
+            device.bg = color["Purple200"]
+            device.fg = color["Grey900"]
           else
-            fg = color["Purple200"]
-            bg = color["Grey700"]
-            device.background:set_fg(color["Purple200"])
-            device.background:set_bg(color["Grey700"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg", color["Purple200"])
+            device.bg = color["Grey900"]
+            device.fg = color["Purple200"]
           end
         end
       )
+      awesome.emit_signal("update::bg_sink", node)
+      --Hover_signal(device, "#313131", color["Purple200"])
     else
 
       device:connect_signal(
         "button::press",
         function()
           if node then
-            awful.spawn.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
+            awful.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
           end
-
-          awesome.emit_signal("update::background:mic", node)
+          awesome.emit_signal("update::bg_source", node)
         end
       )
-
-      --#region Signal Functions
-      local old_wibox, old_cursor, old_bg, old_fg
-      local bg = ""
-      local fg = ""
-      local mouse_enter = function()
-        if bg then
-          old_bg = device.background.bg
-          device.background.bg = bg .. 'dd'
-        end
-        if fg then
-          old_fg = device.background.fg
-          device.background.fg = fg
-        end
-        local w = mouse.current_wibox
-        if w then
-          old_cursor, old_wibox = w.cursor, w
-          w.cursor = "hand1"
-        end
-      end
-
-      local button_press = function()
-        if bg then
-          if bg then
-            if string.len(bg) == 7 then
-              device.background.bg = bg .. 'bb'
-            else
-              device.background.bg = bg
-            end
-          end
-        end
-        if fg then
-          device.background.fg = fg
-        end
-      end
-
-      local button_release = function()
-        if bg then
-          if bg then
-            if string.len(bg) == 7 then
-              device.background.bg = bg .. 'dd'
-            else
-              device.background.bg = bg
-            end
-          end
-        end
-        if fg then
-          device.background.fg = fg
-        end
-      end
-
-      local mouse_leave = function()
-        if bg then
-          device.background.bg = old_bg
-        end
-        if fg then
-          device.background.fg = old_fg
-        end
-        if old_wibox then
-          old_wibox.cursor = old_cursor
-          old_wibox = nil
-        end
-      end
-
-      device:connect_signal(
-        "mouse::enter",
-        mouse_enter
-      )
-
-      device:connect_signal(
-        "button::press",
-        button_press
-      )
-
-      device:connect_signal(
-        "button::release",
-        button_release
-      )
-
-      device:connect_signal(
-        "mouse::leave",
-        mouse_leave
-      )
-      --#endregion
-
       awesome.connect_signal(
-        "update::background:mic",
+        "update::bg_source",
         function(new_node)
           if node == new_node then
-            old_bg = color["Blue200"]
-            old_fg = color["Grey900"]
-            bg = color["Blue200"]
-            fg = color["Grey900"]
-            device.background:set_bg(color["Blue200"])
-            device.background:set_fg(color["Grey900"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg", color["Grey900"])
+            device.bg = color["Blue200"]
+            device.fg = color["Grey900"]
           else
-            fg = color["Blue200"]
-            bg = color["Grey700"]
-            device.background:set_fg(color["Blue200"])
-            device.background:set_bg(color["Grey700"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg", color["Blue200"])
+            device.bg = color["Grey900"]
+            device.fg = color["Blue200"]
           end
         end
       )
@@ -302,18 +121,19 @@ return function(s)
         function(stdout)
           local node_active = stdout:gsub("\n", "")
           if node == node_active then
-            bg = color["Blue200"]
-            fg = color["Grey900"]
-            device.background:set_bg(color["Blue200"])
-            device.background:set_fg(color["Grey900"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg", color["Grey900"])
+            device.bg = color["Blue200"]
+            device.fg = color["Grey900"]
+            Hover_signal(device, "#313131", color["Blue200"])
           else
-            fg = color["Blue200"]
-            bg = color["Grey700"]
-            device.background:set_fg(color["Blue200"])
-            device.background:set_bg(color["Grey700"])
+            device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg", color["Blue200"])
+            device.bg = color["Grey900"]
+            device.fg = color["Blue200"]
+            Hover_signal(device, "#313131", color["Blue200"])
           end
         end
       )
+      awesome.emit_signal("update::bg_source", node)
     end
     return device
   end
@@ -322,11 +142,26 @@ return function(s)
   local dropdown_list_volume = wibox.widget {
     {
       {
-        layout = wibox.layout.fixed.vertical,
-        id = "volume_device_list"
+        {
+          {
+            spacing = dpi(10),
+            layout = wibox.layout.overflow.vertical,
+            scrollbar_width = 0,
+            step = dpi(50),
+            id = "volume_device_list",
+          },
+          id = "margin",
+          margins = dpi(10),
+          widget = wibox.container.margin
+        },
+        id = "place",
+        height = dpi(200),
+        strategy = "max",
+        widget = wibox.container.constraint
       },
+      border_color = color["Grey800"],
+      border_width = dpi(2),
       id = "volume_device_background",
-      bg = color["Grey800"],
       shape = function(cr, width, height)
         gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, 4)
       end,
@@ -341,11 +176,26 @@ return function(s)
   local dropdown_list_microphone = wibox.widget {
     {
       {
-        layout = wibox.layout.fixed.vertical,
-        id = "volume_device_list"
+        {
+          {
+            spacing = dpi(10),
+            layout = wibox.layout.overflow.vertical,
+            id = "volume_device_list",
+            scrollbar_width = 0,
+            step = dpi(50),
+          },
+          id = "margin",
+          margins = dpi(10),
+          widget = wibox.container.margin
+        },
+        id = "place",
+        height = dpi(200),
+        strategy = "max",
+        widget = wibox.container.constraint
       },
       id = "volume_device_background",
-      bg = color["Grey800"],
+      border_color = color["Grey800"],
+      border_width = dpi(2),
       shape = function(cr, width, height)
         gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, 4)
       end,
@@ -404,7 +254,7 @@ return function(s)
         {
           id = "volume_list",
           widget = dropdown_list_volume,
-          visible = false
+          forced_height = 0
         },
         -- Microphone selector
         {
@@ -451,7 +301,7 @@ return function(s)
         {
           id = "mic_list",
           widget = dropdown_list_microphone,
-          visible = false
+          forced_height = 0
         },
         -- Audio volume slider
         {
@@ -558,17 +408,28 @@ return function(s)
   audio_selector_margin:connect_signal(
     "button::press",
     function()
-      volume_list.visible = not volume_list.visible
-      if volume_list.visible then
+      local rubato_timer = rubato.timed {
+        duration = 0.4,
+        intro = 0.1,
+        outro = 0.1,
+        pos = volume_list.forced_height,
+        easing = rubato.linear,
+        subscribed = function(v)
+          volume_list.forced_height = v
+        end
+      }
+      if volume_list.forced_height == 0 then
+        rubato_timer.target = dpi(200)
         audio_bg.shape = function(cr, width, height)
           gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
         end
-        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Teal200"]))
+        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Purple200"]))
       else
+        rubato_timer.target = 0
         audio_bg.shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, 4)
         end
-        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Teal200"]))
+        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Purple200"]))
       end
     end
   )
@@ -583,17 +444,28 @@ return function(s)
   mic_selector_margin:connect_signal(
     "button::press",
     function()
-      mic_list.visible = not mic_list.visible
-      if mic_list.visible then
+      local rubato_timer = rubato.timed {
+        duration = 0.4,
+        intro = 0.1,
+        outro = 0.1,
+        pos = mic_list.forced_height,
+        easing = rubato.linear,
+        subscribed = function(v)
+          mic_list.forced_height = v
+        end
+      }
+      if mic_list.forced_height == 0 then
+        rubato_timer.target = dpi(200)
         mic_selector_margin.mic_bg.shape = function(cr, width, height)
           gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
         end
-        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Teal200"]))
+        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Blue200"]))
       else
+        rubato_timer.target = 0
         mic_bg.shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, 4)
         end
-        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Teal200"]))
+        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Blue200"]))
       end
     end
   )
@@ -641,7 +513,7 @@ return function(s)
       [[ pactl list sinks | grep -E 'node.name|device.description|alsa.card_name' | awk '{gsub(/"/, ""); for(i = 1;i < NF;i++) printf $i " "; print $NF}' ]],
 
       function(stdout)
-        local device_list = { layout = wibox.layout.fixed.vertical }
+        local device_list = {}
         local was_alsa = false
         local node_names, alsa_names = {}, {}
         for val in stdout:gmatch("[^\n]+") do
@@ -663,7 +535,7 @@ return function(s)
         for k = 1, #alsa_names, 1 do
           device_list[#device_list + 1] = create_device(alsa_names[k], node_names[k], true)
         end
-        dropdown_list_volume.volume_device_background.volume_device_list.children = device_list
+        dropdown_list_volume:get_children_by_id("volume_device_list")[1].children = device_list
       end
     )
   end
@@ -676,7 +548,7 @@ return function(s)
       [[ pactl list sources | grep -E "node.name|device.description|alsa.card_name" | awk '{gsub(/"/, ""); for(i = 1;i < NF;i++) printf $i " "; print $NF}' ]],
 
       function(stdout)
-        local device_list = { layout = wibox.layout.fixed.vertical }
+        local device_list = {}
         local was_alsa = false
         local node_names, alsa_names = {}, {}
 
@@ -699,7 +571,7 @@ return function(s)
         for k = 1, #alsa_names, 1 do
           device_list[#device_list + 1] = create_device(alsa_names[k], node_names[k], false)
         end
-        dropdown_list_microphone.volume_device_background.volume_device_list.children = device_list
+        dropdown_list_microphone:get_children_by_id("volume_device_list")[1].children = device_list
       end
     )
   end

@@ -92,7 +92,7 @@ return function()
         awesome.connect_signal(
           "update::cpu_usage_widget",
           function(cpu_usage)
-            w:get_children_by_id("progressbar1")[1].value = cpu_usage
+            --w:get_children_by_id("progressbar1")[1].value = cpu_usage
             tooltip.text = "CPU Usage: " .. cpu_usage .. "%"
             rubato_timer.target = cpu_usage
           end
@@ -163,7 +163,7 @@ return function()
         awesome.connect_signal(
           "update::cpu_temp_widget",
           function(cpu_temp, cpu_temp_icon)
-            w:get_children_by_id("progressbar1")[1].value = cpu_temp
+            --w:get_children_by_id("progressbar1")[1].value = cpu_temp
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(cpu_temp_icon, color["Blue200"])
             tooltip.text = "CPU Temp: " .. cpu_temp .. "°C"
             rubato_timer.target = cpu_temp
@@ -233,7 +233,7 @@ return function()
         awesome.connect_signal(
           "update::ram_widget",
           function(ram_usage)
-            w:get_children_by_id("progressbar1")[1].value = ram_usage
+            --w:get_children_by_id("progressbar1")[1].value = ram_usage
             tooltip.text = "RAM Usage: " .. ram_usage .. "%"
             rubato_timer.target = ram_usage
           end
@@ -302,7 +302,7 @@ return function()
         awesome.connect_signal(
           "update::gpu_usage_widget",
           function(gpu_usage)
-            w:get_children_by_id("progressbar1")[1].value = gpu_usage
+            --w:get_children_by_id("progressbar1")[1].value = gpu_usage
             tooltip.text = "GPU Usage: " .. gpu_usage .. "%"
             rubato_timer.target = gpu_usage
           end
@@ -373,7 +373,7 @@ return function()
         awesome.connect_signal(
           "update::gpu_temp_widget",
           function(gpu_temp, gpu_temp_icon)
-            w:get_children_by_id("progressbar1")[1].value = gpu_temp
+            --w:get_children_by_id("progressbar1")[1].value = gpu_temp
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(gpu_temp_icon, color["Green200"])
             tooltip.text = "GPU Temp: " .. gpu_temp .. "°C"
             rubato_timer.target = gpu_temp
@@ -445,7 +445,7 @@ return function()
         awesome.connect_signal(
           "update::volume_widget",
           function(volume, volume_icon)
-            w:get_children_by_id("progressbar1")[1].value = volume
+            --w:get_children_by_id("progressbar1")[1].value = volume
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(volume_icon, color["Yellow200"])
             tooltip.text = "Volume: " .. volume .. "%"
             rubato_timer.target = volume
@@ -517,7 +517,7 @@ return function()
         awesome.connect_signal(
           "update::microphone_widget",
           function(microphone, microphone_icon)
-            w:get_children_by_id("progressbar1")[1].value = microphone
+            --w:get_children_by_id("progressbar1")[1].value = microphone
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(microphone_icon, color["Purple200"])
             tooltip.text = "Microphone: " .. microphone .. "%"
             rubato_timer.target = microphone
@@ -589,7 +589,7 @@ return function()
         awesome.connect_signal(
           "update::backlight_widget",
           function(backlight, backlight_icon)
-            w:get_children_by_id("progressbar1")[1].value = backlight
+            --w:get_children_by_id("progressbar1")[1].value = backlight
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(backlight_icon, color["Pink200"])
             tooltip.text = "Backlight: " .. backlight .. "%"
             rubato_timer.target = backlight
@@ -661,7 +661,7 @@ return function()
         awesome.connect_signal(
           "update::battery_widget",
           function(battery, battery_icon)
-            w:get_children_by_id("progressbar1")[1].value = battery
+            --w:get_children_by_id("progressbar1")[1].value = battery
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(battery_icon, color["Purple200"])
             tooltip.text = "Battery: " .. battery .. "%"
             rubato_timer.target = battery
