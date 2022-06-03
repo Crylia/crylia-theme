@@ -124,12 +124,10 @@ return function(s)
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg", color["Grey900"])
             device.bg = color["Blue200"]
             device.fg = color["Grey900"]
-            Hover_signal(device, "#313131", color["Blue200"])
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg", color["Blue200"])
             device.bg = color["Grey900"]
             device.fg = color["Blue200"]
-            Hover_signal(device, "#313131", color["Blue200"])
           end
         end
       )
