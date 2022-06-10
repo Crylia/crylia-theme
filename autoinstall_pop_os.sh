@@ -33,6 +33,7 @@ sudo dpkg -i awesome*.deb
 # rofi (rofi  from apt does NOT work)
 cd
 git clone https://github.com/davatorium/rofi/
+cd rofi
 meson setup build
 sudo ninja -C build
 sudo ninja -C build install
