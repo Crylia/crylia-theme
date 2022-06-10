@@ -10,10 +10,12 @@ echo " "
 
 
 # dependencies for meson, ninja, rofi, awesome and all extra optional packages
-sudo apt -y install meson ninja-build cmake cmake-data pkg-config papirus-icon-theme xorg build-essential git make autoconf automake flex bison check go-md2man doxygen cppcheck ohcount pulseaudio-utils upower bluez xorg xfce4-power-manager playerctl lightdm light-locker
+sudo apt -y install meson ninja-build cmake cmake-data pkg-config papirus-icon-theme xorg build-essential git make autoconf automake flex bison check go-md2man doxygen cppcheck ohcount pulseaudio-utils upower bluez xorg xfce4-power-manager playerctl lightdm light-locker libxcb-emwh-dev libxcb-xfixes0-dev libev-dev libxcb-damage0-dev libxcb-sync-dev libxcb-composite0-dev libxcb-present-dev uthash-dev libconfig-dev libgl-dev alacritty
 
 # fonts
 cd
+mkdir .fonts
+cd .fonts
 wget https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf 
 wget https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf
 wget https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf
@@ -32,6 +34,7 @@ sudo dpkg -i awesome*.deb
 cd
 git clone https://github.com/davatorium/rofi/
 meson setup build
+sudo ninja -C build
 sudo ninja -C build install
 
 # picom  (picom from apt does NOT work)
@@ -39,6 +42,7 @@ cd
 git clone https://github.com/jonaburg/picom
 cd picom
 meson --buildtype=release . build
+sudo ninja -C build
 sudo ninja -C build install
 
 cd
