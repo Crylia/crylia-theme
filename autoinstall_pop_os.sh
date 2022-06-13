@@ -10,7 +10,7 @@ echo " "
 
 
 # dependencies for meson, ninja, rofi, awesome and all extra optional packages
-sudo apt -y install meson ninja-build cmake cmake-data pkg-config papirus-icon-theme xorg build-essential git make autoconf automake flex bison check go-md2man doxygen cppcheck ohcount pulseaudio-utils upower bluez xorg xfce4-power-manager playerctl lightdm light-locker libxcb-emwh-dev libxcb-xfixes0-dev libev-dev libxcb-damage0-dev libxcb-sync-dev libxcb-composite0-dev libxcb-present-dev uthash-dev libconfig-dev libgl-dev alacritty
+sudo apt -y install meson ninja-build cmake cmake-data pkg-config papirus-icon-theme xorg build-essential git make autoconf automake flex bison check go-md2man doxygen cppcheck ohcount pulseaudio-utils upower bluez xorg xfce4-power-manager playerctl lightdm light-locker libxcb-ewmh-dev libxcb-xfixes0-dev libev-dev libxcb-damage0-dev libxcb-sync-dev libxcb-composite0-dev libxcb-present-dev uthash-dev libconfig-dev libgl-dev alacritty bison flex check
 
 # fonts
 cd
@@ -35,8 +35,8 @@ cd
 git clone https://github.com/davatorium/rofi/
 cd rofi
 meson setup build
-sudo ninja -C build
-sudo ninja -C build install
+ninja -C build
+ninja -C build install
 
 # picom  (picom from apt does NOT work)
 cd
