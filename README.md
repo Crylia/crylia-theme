@@ -53,6 +53,26 @@ Everything you see is done purely because I hate myself and like to give myself 
 2. Important dependencies but can be replaced, the theme might behave weird without these or without proper reconfiguration!
 3. Nice to have and are the default. Can be easily changed without any worries!
 
+#### Using the install script (Thanks to @JulianGR)
+
+>**Arch**
+
+```bash
+git clone https://github.com/Crylia/crylia-theme
+cd crylia-theme
+chmod +x autoinstall_arch.sh
+./autoinstall_arch.sh
+```
+
+>**Pop!_OS/Ubuntu**
+
+```bash
+git clone https://github.com/Crylia/crylia-theme
+cd crylia-theme
+chmod +x autoinstall_pop_os.sh
+./autoinstall_pop_os.sh
+```
+
 <details>
 <summary><b>1. Dependencies</b></summary>
 
