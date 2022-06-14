@@ -4,11 +4,9 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("src.core.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/kblayout/"
@@ -23,7 +21,9 @@ return function(s)
               id = "icon",
               widget = wibox.widget.imagebox,
               resize = false,
-              image = gears.color.recolor_image(icondir .. "keyboard.svg", color["Grey900"])
+              valign = "center",
+              halign = "center",
+              image = gears.color.recolor_image(icondir .. "keyboard.svg", Theme_config.kblayout.fg)
             },
             id = "icon_layout",
             widget = wibox.container.place
@@ -47,10 +47,10 @@ return function(s)
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Green200"],
-    fg = color["Grey900"],
+    bg = Theme_config.kblayout.bg,
+    fg = Theme_config.kblayout.fg,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
     widget = wibox.container.background
   }
@@ -179,10 +179,10 @@ return function(s)
             {
               text = shortname,
               widget = wibox.widget.textbox,
-              font = user_vars.font.extrabold,
+              font = User_config.font.extrabold,
               id = "shortname"
             },
-            fg = color["Red200"],
+            fg = Theme_config.kblayout.item.fg_short,
             widget = wibox.container.background,
             id = "background2"
           },
@@ -190,10 +190,10 @@ return function(s)
             {
               text = longname,
               widget = wibox.widget.textbox,
-              font = user_vars.font.bold,
+              font = User_config.font.bold,
               id = "longname",
             },
-            fg = color["Purple200"],
+            fg = Theme_config.kblayout.item.fg_long,
             widget = wibox.container.background,
             id = "background1"
           },
@@ -206,10 +206,9 @@ return function(s)
         id = "margin"
       },
       shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 8)
+        gears.shape.rounded_rect(cr, width, height, dpi(8))
       end,
-      bg = color["Grey800"],
-      fg = color["White"],
+      bg = Theme_config.kblayout.item.bg,
       widget = wibox.container.background,
       id = "background",
       keymap = keymap
@@ -224,13 +223,13 @@ return function(s)
           function(stdout)
             local layout = stdout:gsub("\n", "")
             if kb_layout_item.keymap == layout then
-              kb_layout_item.bg = color["DeepPurple200"]
-              kb_layout_item:get_children_by_id("background2")[1].fg = color["Grey900"]
-              kb_layout_item:get_children_by_id("background1")[1].fg = color["Grey900"]
+              kb_layout_item.bg = Theme_config.kblayout.item.bg_selected
+              kb_layout_item:get_children_by_id("background2")[1].fg = Theme_config.kblayout.item.fg_selected
+              kb_layout_item:get_children_by_id("background1")[1].fg = Theme_config.kblayout.item.fg_selected
             else
-              kb_layout_item.bg = color["Grey800"]
-              kb_layout_item:get_children_by_id("background2")[1].fg = color["Red200"]
-              kb_layout_item:get_children_by_id("background1")[1].fg = color["Purple200"]
+              kb_layout_item.bg = Theme_config.kblayout.item.bg
+              kb_layout_item:get_children_by_id("background2")[1].fg = Theme_config.kblayout.item.fg_short
+              kb_layout_item:get_children_by_id("background1")[1].fg = Theme_config.kblayout.item.fg_long
             end
           end
         )
@@ -260,7 +259,7 @@ return function(s)
       layout = wibox.layout.fixed.vertical,
       spacing = dpi(10)
     }
-    for i, keymap in pairs(user_vars.kblayout) do
+    for i, keymap in pairs(User_config.kblayout) do
       kb_layout_items[i] = create_kb_layout_item(keymap)
     end
     local cont = {
@@ -277,18 +276,19 @@ return function(s)
   local kb_menu_widget = awful.popup {
     screen = s,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 12)
+      gears.shape.rounded_rect(cr, width, height, dpi(12))
     end,
     widget = wibox.container.background,
-    bg = color["Grey900"],
-    fg = color["White"],
+    bg = Theme_config.kblayout.bg_container,
     border_width = dpi(4),
-    border_color = color["Grey800"],
+    border_color = Theme_config.kblayout.border_color_container,
     width = dpi(100),
     max_height = dpi(600),
     visible = false,
     ontop = true,
-    placement = function(c) awful.placement.align(c, { position = "top_right", margins = { right = dpi(255), top = dpi(60) } }) end
+    placement = function(c) awful.placement.align(c,
+        { position = "top_right", margins = { right = dpi(255), top = dpi(60) } })
+    end
   }
 
   kb_menu_widget:connect_signal(
@@ -296,7 +296,7 @@ return function(s)
     function()
       mousegrabber.run(
         function()
-          kblayout_widget.bg = color["Green200"]
+          kblayout_widget.bg = Theme_config.kblayout.bg
           awesome.emit_signal("kblayout::hide:kbmenu")
           mousegrabber.stop()
           return true
@@ -321,18 +321,18 @@ return function(s)
     awful.spawn.easy_async_with_shell(
       "setxkbmap -query | grep layout: | awk '{print $2}'",
       function(stdout)
-        for j, n in ipairs(user_vars.kblayout) do
+        for j, n in ipairs(User_config.kblayout) do
           if stdout:match(n) then
-            if j == #user_vars.kblayout then
+            if j == #User_config.kblayout then
               awful.spawn.easy_async_with_shell(
-                "setxkbmap " .. user_vars.kblayout[1],
+                "setxkbmap " .. User_config.kblayout[1],
                 function()
                   get_kblayout()
                 end
               )
             else
               awful.spawn.easy_async_with_shell(
-                "setxkbmap " .. user_vars.kblayout[j + 1],
+                "setxkbmap " .. User_config.kblayout[j + 1],
                 function()
                   get_kblayout()
                 end
@@ -352,7 +352,7 @@ return function(s)
   )
 
   -- Signals
-  Hover_signal(kblayout_widget, color["Green200"], color["Grey900"])
+  Hover_signal(kblayout_widget, Theme_config.kblayout.bg, Theme_config.kblayout.fg)
 
   local kblayout_keygrabber = awful.keygrabber {
     autostart = false,

@@ -4,11 +4,9 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("src.core.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/power/"
@@ -22,8 +20,10 @@ return function()
           {
             {
               id = "icon",
-              image = gears.color.recolor_image(icondir .. "power.svg", color["Grey900"]),
+              image = gears.color.recolor_image(icondir .. "power.svg", Theme_config.power_button.fg),
               widget = wibox.widget.imagebox,
+              valign = "center",
+              halign = "center",
               resize = false
             },
             id = "icon_layout",
@@ -41,16 +41,16 @@ return function()
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Red200"],
-    fg = color["Grey800"],
+    bg = Theme_config.power_button.bg,
+    fg = Theme_config.power_button.fg,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
     widget = wibox.container.background
   }
 
   -- Signals
-  Hover_signal(power_widget, color["Red200"], color["Grey900"])
+  Hover_signal(power_widget, Theme_config.power_button.bg, Theme_config.power_button.fg)
 
   power_widget:connect_signal(
     "button::release",

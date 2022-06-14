@@ -3,11 +3,9 @@
 ------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("src.core.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/audio/"
@@ -23,6 +21,8 @@ return function(s)
             {
               id = "icon",
               widget = wibox.widget.imagebox,
+              valign = "center",
+              halign = "center",
               resize = false
             },
             id = "icon_layout",
@@ -47,10 +47,10 @@ return function(s)
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Yellow200"],
-    fg = color["Grey900"],
+    bg = Theme_config.audio.bg,
+    fg = Theme_config.audio.fg,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
     widget = wibox.container.background
   }
@@ -77,7 +77,7 @@ return function(s)
         end
         audio_widget.container.audio_layout.label:set_text(volume .. "%")
         audio_widget.container.audio_layout.icon_margin.icon_layout.icon:set_image(
-          gears.color.recolor_image(icon .. ".svg", color["Grey900"]))
+          gears.color.recolor_image(icon .. ".svg", Theme_config.audio.fg))
         awesome.emit_signal("get::volume", volume)
         awesome.emit_signal("update::volume_widget", volume, icon .. ".svg")
       end
@@ -90,9 +90,8 @@ return function(s)
       function(stdout)
         if stdout:match("yes") then
           audio_widget.container.audio_layout.label.visible = false
-          audio_widget.container:set_right(0)
           audio_widget.container.audio_layout.icon_margin.icon_layout.icon:set_image(
-            gears.color.recolor_image(icondir .. "volume-mute" .. ".svg", color["Grey900"]))
+            gears.color.recolor_image(icondir .. "volume-mute" .. ".svg", Theme_config.audio.fg))
           awesome.emit_signal("get::volume_mute", true)
         else
           audio_widget.container:set_right(10)
@@ -104,13 +103,12 @@ return function(s)
   end
 
   -- Signals
-  Hover_signal(audio_widget, color["Yellow200"], color["Grey900"])
+  Hover_signal(audio_widget, Theme_config.audio.bg, Theme_config.audio.fg)
 
   audio_widget:connect_signal(
     "button::press",
     function()
       awesome.emit_signal("module::slider:update")
-      awesome.emit_signal("widget::volume_osd:rerun")
       awesome.emit_signal("volume_controller::toggle", s)
       awesome.emit_signal("volume_controller::toggle:keygrabber")
     end

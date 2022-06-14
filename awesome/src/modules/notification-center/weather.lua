@@ -18,9 +18,9 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/weather/"
 return function()
 
   local api_secrets = {
-    key = user_vars.weather_secrets.key,
-    city_id = user_vars.weather_secrets.city_id,
-    unit = user_vars.weather_secrets.unit
+    key = User_config.weather_secrets.key,
+    city_id = User_config.weather_secrets.city_id,
+    unit = User_config.weather_secrets.unit
   }
 
   local weather_widget = wibox.widget {
@@ -83,6 +83,8 @@ return function()
                   resize = true,
                   forced_width = dpi(24),
                   forced_height = dpi(24),
+                  valign = "center",
+                  halign = "center",
                   widget = wibox.widget.imagebox
                 },
                 {
@@ -107,6 +109,8 @@ return function()
                   forced_width = dpi(24),
                   forced_height = dpi(24),
                   widget = wibox.widget.imagebox,
+                  valign = "center",
+                  halign = "center",
                   image = gears.color.recolor_image(icondir .. "humidity.svg", color["OrangeA200"]),
                   id = "humidity_icon"
                 },
@@ -156,7 +160,8 @@ return function()
 
   local function fetch_weather_data()
     awful.spawn.easy_async_with_shell(
-      "curl -sf 'http://api.openweathermap.org/data/2.5/weather?id=" .. api_secrets.city_id .. "&units=" .. api_secrets.unit .. "&appid=" .. api_secrets.key .. "'",
+      "curl -sf 'http://api.openweathermap.org/data/2.5/weather?id=" ..
+      api_secrets.city_id .. "&units=" .. api_secrets.unit .. "&appid=" .. api_secrets.key .. "'",
       function(stdout)
         if not stdout:match('error') then
           local weather_metadata = json_lua:decode(stdout)
@@ -193,7 +198,8 @@ return function()
             weather_widget:get_children_by_id("icon")[1].image = icondir .. icon_table[weather_icon] .. ".svg"
             weather_widget:get_children_by_id("temp")[1].text = math.floor(temp + 0.5) .. "°C"
             weather_widget:get_children_by_id("city_country")[1].text = city .. ", " .. country
-            weather_widget:get_children_by_id("description")[1].text = description:sub(1, 1):upper() .. description:sub(2)
+            weather_widget:get_children_by_id("description")[1].text = description:sub(1, 1):upper() ..
+                description:sub(2)
             weather_widget:get_children_by_id("line")[1].bg = color["Grey800"]
             weather_widget:get_children_by_id("speed")[1].text = speed .. " m/s"
             weather_widget:get_children_by_id("humidity")[1].text = humidity .. "%"

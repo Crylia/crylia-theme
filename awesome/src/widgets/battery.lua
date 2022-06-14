@@ -5,7 +5,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local lgi = require("lgi")
@@ -30,8 +29,10 @@ return function(battery_kind)
           {
             {
               id = "icon",
-              image = gears.color.recolor_image(icondir .. "battery-unknown.svg", "#212121"),
+              image = gears.color.recolor_image(icondir .. "battery-unknown.svg", Theme_config.battery.fg),
               widget = wibox.widget.imagebox,
+              valign = "center",
+              halign = "center",
               resize = false
             },
             id = "icon_layout",
@@ -57,22 +58,22 @@ return function(battery_kind)
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Purple200"],
-    fg = color["Grey900"],
+    bg = Theme_config.battery.bg,
+    fg = Theme_config.battery.fg,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
     widget = wibox.container.background
   }
 
   -- Color change on mouse over
-  Hover_signal(battery_widget, color["Purple200"], color["Grey900"])
+  Hover_signal(battery_widget, Theme_config.battery.bg, Theme_config.battery.fg)
 
   -- Open an energy manager on click
   battery_widget:connect_signal(
     'button::press',
     function()
-      awful.spawn(user_vars.energy_manager)
+      awful.spawn(User_config.energy_manager)
     end
   )
 
@@ -153,7 +154,8 @@ return function(battery_kind)
         icon = icondir .. icon,
         timeout = 5
       }
-      battery_widget:get_children_by_id("icon")[1].image = gears.surface.load_uncached(gears.color.recolor_image(icondir .. icon, "#212121"))
+      battery_widget:get_children_by_id("icon")[1].image = gears.surface.load_uncached(gears.color.recolor_image(icondir
+        .. icon, Theme_config.battery.fg))
       return
     elseif battery_percentage > 0 and battery_percentage < 10 and battery_status == 'discharging' then
       icon = icon .. '-' .. 'alert.svg'
@@ -164,7 +166,8 @@ return function(battery_kind)
         icon = icondir .. icon,
         timeout = 60
       }
-      battery_widget:get_children_by_id("icon")[1].image = gears.surface.load_uncached(gears.color.recolor_image(icondir .. icon, "#212121"))
+      battery_widget:get_children_by_id("icon")[1].image = gears.surface.load_uncached(gears.color.recolor_image(icondir
+        .. icon, Theme_config.battery.fg))
       return
     end
 
@@ -190,7 +193,8 @@ return function(battery_kind)
       icon = icon .. '-' .. battery_status .. '-' .. '90'
     end
 
-    battery_widget:get_children_by_id("icon")[1].image = gears.surface.load_uncached(gears.color.recolor_image(icondir .. icon .. '.svg', "#212121"))
+    battery_widget:get_children_by_id("icon")[1].image = gears.surface.load_uncached(gears.color.recolor_image(icondir ..
+      icon .. '.svg', Theme_config.battery.fg))
     awesome.emit_signal("update::battery_widget", battery_percentage, icondir .. icon .. ".svg")
 
   end
@@ -202,7 +206,7 @@ return function(battery_kind)
   ---Will report to the bluetooth widget.
   ---@param path string device path /org/freedesktop/...
   local function attach_to_device(path)
-    local device_path = user_vars.battery_path or path or ""
+    local device_path = User_config.battery_path or path or ""
 
     battery_widget.device = get_device_from_path(device_path) or upower_glib.Client():get_display_device()
 
@@ -226,7 +230,7 @@ return function(battery_kind)
 
   battery_widget:connect_signal(
     "upower::update",
-    function(widget, device)
+    function(_, device)
       if upower_glib.DeviceKind[battery_widget.device.kind] == battery_kind then
         set_battery(device)
       end

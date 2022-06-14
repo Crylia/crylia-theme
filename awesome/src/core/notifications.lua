@@ -28,6 +28,8 @@ naughty.config.defaults.border_width = dpi(4)
 naughty.config.defaults.border_color = color["Grey800"]
 naughty.config.defaults.spacing = dpi(10)
 
+Theme.notification_spacing = dpi(20)
+
 naughty.connect_signal(
   'request::icon',
   function(n, context, hints)
@@ -44,7 +46,7 @@ naughty.connect_signal(
 naughty.connect_signal(
   "request::display",
   function(n)
-    if user_vars.dnd then
+    if User_config.dnd then
       n:destroy()
     else
       if n.urgency == "critical" then
@@ -89,6 +91,8 @@ naughty.connect_signal(
               {
                 {
                   id = "icon_role",
+                  valign = "center",
+                  halign = "center",
                   widget = wibox.widget.imagebox
                 },
                 id = "centered",
@@ -179,6 +183,8 @@ naughty.connect_signal(
                           {
                             image = gears.color.recolor_image(icondir .. "notification-outline.svg", color["Teal200"]),
                             resize = false,
+                            valign = "center",
+                            halign = "center",
                             widget = wibox.widget.imagebox
                           },
                           right = dpi(5),
@@ -214,7 +220,7 @@ naughty.connect_signal(
                         {
                           {
                             {
-                              font = user_vars.font.specify .. ", 10",
+                              font = User_config.font.specify .. ", 10",
                               text = "✕",
                               align = "center",
                               valign = "center",
@@ -262,6 +268,8 @@ naughty.connect_signal(
                         image = n.icon,
                         resize = true,
                         widget = wibox.widget.imagebox,
+                        valign = "center",
+                        halign = "center",
                         clip_shape = function(cr, width, height)
                           gears.shape.rounded_rect(cr, width, height, 10)
                         end
@@ -328,7 +336,8 @@ naughty.connect_signal(
         widget = wibox.container.background
       }
 
-      local close = w_template.max_size.min_size.widget_layout.arc_app_bg.arc_app_layout.arc_app_layout_2.arc_margin.const.background
+      local close = w_template.max_size.min_size.widget_layout.arc_app_bg.arc_app_layout.arc_app_layout_2.arc_margin.
+          const.background
       local arc = close.arc_chart
 
       local timeout = n.timeout

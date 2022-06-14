@@ -39,14 +39,37 @@ awful.rules.rules = {
         "pop-up"
       }
     },
-    properties = { floating = true, titlebars_enabled = true }
+    properties = {
+      floating = true,
+      titlebars_enabled = true
+    }
   },
   {
     id = "titlebar",
     rule_any = {
-      type = { "normal", "dialog", "modal", "utility" }
+      type = {
+        "normal",
+        "dialog",
+        "modal",
+        "utility"
+      }
     },
-    properties = { titlebars_enabled = true }
+    properties = {
+      titlebars_enabled = true
+    }
+  },
+  rule_any = {
+    class = {
+      'Wine',
+      'dolphin-emu',
+      'Steam',
+      'Citra',
+    },
+    name = { 'Steam' }
+  },
+  properties = {
+    skip_decoration = true,
+    placement = awful.placement.centered
   }
 }
 

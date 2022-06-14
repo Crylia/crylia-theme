@@ -4,20 +4,18 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local naughty = require("naughty")
 local wibox = require("wibox")
-require("src.core.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/network/"
 
 -- Insert your interfaces here, get the from ip a
 local interfaces = {
-  wlan_interface = user_vars.network.wlan,
-  lan_interface = user_vars.network.ethernet
+  wlan_interface = User_config.network.wlan,
+  lan_interface = User_config.network.ethernet
 }
 
 local network_mode = nil
@@ -34,8 +32,10 @@ return function()
           {
             {
               id = 'icon',
-              image = gears.color.recolor_image(icondir .. "no-internet" .. ".svg", color["Grey900"]),
+              image = gears.color.recolor_image(icondir .. "no-internet" .. ".svg", Theme_config.network.fg),
               widget = wibox.widget.imagebox,
+              valign = "center",
+              halign = "center",
               resize = false
             },
             id = "icon_layout",
@@ -61,10 +61,10 @@ return function()
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Red200"],
-    fg = color["Grey900"],
+    bg = Theme_config.network.bg,
+    fg = Theme_config.network.fg,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
     widget = wibox.container.background
   }
@@ -111,7 +111,7 @@ return function()
       text = message,
       title = title,
       app_name = app_name,
-      icon = gears.color.recolor_image(icon, color["White"]),
+      icon = gears.color.recolor_image(icon, Theme_config.network.notify_icon_color),
       timeout = 3
     }
   end
@@ -133,7 +133,10 @@ return function()
         function(stdout)
           local essid = stdout:match("SSID: (.-)\n") or "N/A"
           local bitrate = stdout:match("tx bitrate: (.+/s)") or "N/A"
-          local message = "Connected to <b>" .. essid .. "</b>\nSignal strength <b>" .. tostring(wifi_strength) .. "%</b>\n" .. "Bit rate <b>" .. tostring(bitrate) .. "</b>"
+          local message = "Connected to <b>" ..
+              essid ..
+              "</b>\nSignal strength <b>" ..
+              tostring(wifi_strength) .. "%</b>\n" .. "Bit rate <b>" .. tostring(bitrate) .. "</b>"
 
           if healthy then
             update_tooltip(message)
@@ -165,7 +168,8 @@ return function()
             update_wireless_data(false)
           end
           network_widget.container.network_layout.spacing = dpi(8)
-          network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. icon .. ".svg", color["Grey900"]))
+          network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir
+            .. icon .. ".svg", Theme_config.network.fg))
         end
       )
     end
@@ -222,7 +226,7 @@ return function()
           update_reconnect_startup(false)
         end
         network_widget.container.network_layout.label.visible = false
-        network_widget.container.network_layout.spacing = dpi(0)
+        network_widget.container.network_layout.spacing = 0
         network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(icondir .. icon .. ".svg")
       end
     )
@@ -230,14 +234,14 @@ return function()
   end
 
   local update_disconnected = function()
-    local notify_wireless_disconnected = function(essid)
+    local notify_wireless_disconnected = function()
       local message = "WiFi has been disconnected"
       local title = "Connection lost"
       local app_name = "System Notification"
       local icon = icondir .. "wifi-strength-off-outline.svg"
       network_notify(message, title, app_name, icon)
     end
-    local notify_wired_disconnected = function(essid)
+    local notify_wired_disconnected = function()
       local message = "Ethernet has been unplugged"
       local title = "Connection lost"
       local app_name = "System Notification"
@@ -260,8 +264,9 @@ return function()
     end
     network_widget.container.network_layout.label.visible = false
     update_tooltip("Network unreachable")
-    network_widget.container.network_layout.spacing = dpi(0)
-    network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir .. icon .. ".svg", color["Grey900"]))
+    network_widget.container.network_layout.spacing = 0
+    network_widget.container.network_layout.icon_margin.icon_layout.icon:set_image(gears.color.recolor_image(icondir ..
+      icon .. ".svg", Theme_config.network.fg))
   end
 
   local check_network_mode = function()
@@ -302,7 +307,6 @@ return function()
                 print_network_mode
             ]=],
       function(stdout)
-        local mode = stdout:gsub("%\n", "")
         if stdout:match("No internet connected") then
           update_disconnected()
         elseif stdout:match("wireless") then
@@ -324,7 +328,7 @@ return function()
   }
 
   -- Signals
-  Hover_signal(network_widget, color["Red200"], color["Grey900"])
+  Hover_signal(network_widget, Theme_config.network.bg, Theme_config.network.fg)
 
   network_widget:connect_signal(
     "button::press",

@@ -7,10 +7,8 @@ local wibox = require("wibox")
 local awful = require("awful")
 local gears = require("gears")
 local dpi = require("beautiful").xresources.apply_dpi
-local color = require("src.theme.colors")
-require("src.tools.icon_handler")
 
-local list_update = function(widget, buttons, label, data, objects)
+local list_update = function(widget, buttons, _, _, objects)
   widget:reset()
 
   for _, object in ipairs(objects) do
@@ -23,7 +21,7 @@ local list_update = function(widget, buttons, label, data, objects)
             align = "center",
             valign = "center",
             visible = true,
-            font = user_vars.font.extrabold,
+            font = User_config.font.extrabold,
             forced_width = dpi(25),
             id = "label",
             widget = wibox.widget.textbox
@@ -36,25 +34,25 @@ local list_update = function(widget, buttons, label, data, objects)
         id = "container",
         layout = wibox.layout.fixed.horizontal
       },
-      fg = color["White"],
+      fg = Theme_config.taglist.fg,
       shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 5)
+        gears.shape.rounded_rect(cr, width, height, dpi(6))
       end,
       widget = wibox.container.background
     }
 
-    local function create_buttons(buttons, object)
-      if buttons then
+    local function create_buttons(buttons_t, object_t)
+      if buttons_t then
         local btns = {}
-        for _, b in ipairs(buttons) do
+        for _, b in ipairs(buttons_t) do
           local btn = awful.button {
             modifiers = b.modifiers,
             button = b.button,
             on_press = function()
-              b:emit_signal('press', object)
+              b:emit_signal('press', object_t)
             end,
             on_release = function()
-              b:emit_signal('release', object)
+              b:emit_signal('release', object_t)
             end
           }
           btns[#btns + 1] = btn
@@ -67,13 +65,13 @@ local list_update = function(widget, buttons, label, data, objects)
 
     tag_widget.container.margin.label:set_text(object.index)
     if object.urgent == true then
-      tag_widget:set_bg(color["RedA200"])
-      tag_widget:set_fg(color["Grey900"])
+      tag_widget:set_bg(Theme_config.taglist.bg_urgent)
+      tag_widget:set_fg(Theme_config.taglist.fg_urgent)
     elseif object == awful.screen.focused().selected_tag then
-      tag_widget:set_bg(color["White"])
-      tag_widget:set_fg(color["Grey900"])
+      tag_widget:set_bg(Theme_config.taglist.bg_focus)
+      tag_widget:set_fg(Theme_config.taglist.fg_focus)
     else
-      tag_widget:set_bg("#3A475C")
+      tag_widget:set_bg(Theme_config.taglist.bg)
     end
 
     -- Set the icon for each client
@@ -85,6 +83,8 @@ local list_update = function(widget, buttons, label, data, objects)
           {
             id = "icon",
             resize = true,
+            valign = "center",
+            halign = "center",
             widget = wibox.widget.imagebox
           },
           widget = wibox.container.place
@@ -93,7 +93,9 @@ local list_update = function(widget, buttons, label, data, objects)
         margins = dpi(6),
         widget = wibox.container.margin
       }
-      icon.icon_container.icon:set_image(Get_icon(user_vars.icon_theme, client))
+
+      icon.icon_container.icon:set_image(xdg_icon_lookup:find_icon(client.class, 64))
+
       tag_widget.container:setup({
         icon,
         strategy = "exact",
@@ -102,15 +104,14 @@ local list_update = function(widget, buttons, label, data, objects)
     end
 
     --#region Hover_signal
-    local old_wibox, old_cursor, old_bg
+    local old_wibox, old_cursor
     tag_widget:connect_signal(
       "mouse::enter",
       function()
-        old_bg = tag_widget.bg
         if object == awful.screen.focused().selected_tag then
-          tag_widget.bg = '#dddddd' .. 'dd'
+          tag_widget.bg = Theme_config.taglist.bg_focus_hover .. 'dd'
         else
-          tag_widget.bg = '#3A475C' .. 'dd'
+          tag_widget.bg = Theme_config.taglist.bg .. 'dd'
         end
         local w = mouse.current_wibox
         if w then
@@ -124,9 +125,9 @@ local list_update = function(widget, buttons, label, data, objects)
       "button::press",
       function()
         if object == awful.screen.focused().selected_tag then
-          tag_widget.bg = '#bbbbbb' .. 'dd'
+          tag_widget.bg = Theme_config.taglist.bg_focus_pressed .. 'dd'
         else
-          tag_widget.bg = '#3A475C' .. 'dd'
+          tag_widget.bg = Theme_config.taglist.bg .. 'dd'
         end
       end
     )
@@ -135,9 +136,9 @@ local list_update = function(widget, buttons, label, data, objects)
       "button::release",
       function()
         if object == awful.screen.focused().selected_tag then
-          tag_widget.bg = '#dddddd' .. 'dd'
+          tag_widget.bg = Theme_config.taglist.bg_focus_hover .. 'dd'
         else
-          tag_widget.bg = '#3A475C' .. 'dd'
+          tag_widget.bg = Theme_config.taglist.bg .. 'dd'
         end
       end
     )
@@ -145,7 +146,11 @@ local list_update = function(widget, buttons, label, data, objects)
     tag_widget:connect_signal(
       "mouse::leave",
       function()
-        tag_widget.bg = old_bg
+        if object == awful.screen.focused().selected_tag then
+          tag_widget.bg = Theme_config.taglist.bg_focus
+        else
+          tag_widget.bg = Theme_config.taglist.bg
+        end
         if old_wibox then
           old_wibox.cursor = old_cursor
           old_wibox = nil

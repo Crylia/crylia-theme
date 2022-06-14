@@ -44,6 +44,8 @@ return function(s)
   local shuffle_button = wibox.widget {
     resize = false,
     image = gears.color.recolor_image(icondir .. "shuffle.svg", color["Grey800"]),
+    valign = "center",
+    halign = "center",
     widget = wibox.widget.imagebox,
   }
 
@@ -81,6 +83,8 @@ return function(s)
     resize = false,
     image = gears.color.recolor_image(icondir .. "repeat.svg", color["Grey800"]),
     widget = wibox.widget.imagebox,
+    valign = "center",
+    halign = "center",
     id = "imagebox"
   }
 
@@ -108,6 +112,8 @@ return function(s)
 
   local prev_button = wibox.widget {
     resize = false,
+    valign = "center",
+    halign = "center",
     image = gears.color.recolor_image(icondir .. "skip-prev.svg", color["Teal200"]),
     widget = wibox.widget.imagebox
   }
@@ -126,6 +132,8 @@ return function(s)
 
   local pause_play_button = wibox.widget {
     resize = false,
+    valign = "center",
+    halign = "center",
     image = gears.color.recolor_image(icondir .. "play-pause.svg", color["Teal200"]),
     widget = wibox.widget.imagebox
   }
@@ -139,6 +147,8 @@ return function(s)
 
   local next_button = wibox.widget {
     resize = false,
+    valign = "center",
+    halign = "center",
     image = gears.color.recolor_image(icondir .. "skip-next.svg", color["Teal200"]),
     widget = wibox.widget.imagebox
   }
@@ -192,11 +202,13 @@ return function(s)
             {
               { -- Album art
                 {
-                  image = icondir .. "spotify.svg",
+                  image = "default image",
                   resize = true,
                   clip_shape = function(cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, dpi(8))
                   end,
+                  valign = "center",
+                  halign = "center",
                   widget = wibox.widget.imagebox,
                   id = "imagebox"
                 },
@@ -211,7 +223,6 @@ return function(s)
                   {
                     {
                       { --Title
-                        markup = "Title",
                         halign = "center",
                         align = "center",
                         widget = wibox.widget.textbox,
@@ -234,7 +245,6 @@ return function(s)
                   {
                     {
                       { --Artist
-                        markup = "Artist",
                         halign = "center",
                         align = "center",
                         widget = wibox.widget.textbox,
@@ -304,7 +314,7 @@ return function(s)
                 color = color["Purple200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 0,
+                value = 50,
                 forced_height = dpi(5),
                 shape = function(cr, width)
                   gears.shape.rounded_bar(cr, width, dpi(5))
@@ -380,7 +390,7 @@ return function(s)
             function(stdout2)
               local tit = stdout2:gsub("\n", "")
               title = tit
-              music_widget:get_children_by_id("textbox4")[1].text = tit or "Title"
+              music_widget:get_children_by_id("textbox4")[1].text = tit
             end
           )
 
@@ -390,7 +400,7 @@ return function(s)
             function(stdout2)
               local art = stdout2:gsub("\n", "")
               artist = art
-              music_widget:get_children_by_id("textbox3")[1].text = art or "Artist"
+              music_widget:get_children_by_id("textbox3")[1].text = art
             end
           )
 

@@ -20,7 +20,7 @@ return function()
 
   ---Creates a layout with bar widgets based on the given table
   ---@param widget_table string{}
-  ---@return table @{layout}
+  ---@return table
   local function create_bar_layout(widget_table)
     local bar_layout = { layout = wibox.layout.flex.horizontal, spacing = dpi(10) }
 
@@ -105,7 +105,7 @@ return function()
                 color = color["Blue200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -177,7 +177,7 @@ return function()
                 color = color["Red200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -246,7 +246,7 @@ return function()
                 color = color["Green200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -315,7 +315,7 @@ return function()
                 color = color["Green200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -387,7 +387,7 @@ return function()
                 color = color["Yellow200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -459,7 +459,7 @@ return function()
                 color = color["Purple200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -531,7 +531,7 @@ return function()
                 color = color["Pink200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -603,7 +603,7 @@ return function()
                 color = color["Purple200"],
                 background_color = color["Grey800"],
                 max_value = 100,
-                value = 50,
+                value = 0,
                 forced_height = dpi(8),
                 shape = function(cr, width, heigth)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
@@ -679,7 +679,7 @@ return function()
       {
         {
           {
-            create_bar_layout({ "cpu_usage", "cpu_temp", "ram_usage", "battery", "microphone", "backlight", "volume", "gpu_temp", "gpu_usage" }),
+            create_bar_layout(User_config.status_bar_widgets),
             width = dpi(480),
             strategy = "exact",
             widget = wibox.container.constraint

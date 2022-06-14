@@ -28,12 +28,16 @@ return function()
         interface = "org.freedesktop.DBus.Properties",
         path = object_path
       }
-      awesome.emit_signal("bluetooth::scan")
-      if device.Name ~= nil or device.Alias ~= nil then
+
+      if device.Name ~= "" and device.Name ~= nil then
         device_properties:connect_signal(function()
-          awesome.emit_signal("bluetooth::device_changed", device, battery)
+          naughty.notification {
+            title = "Bluetooth Device Connected",
+            message = device.Name,
+            icon = require("awful").util.getdir("config") .. "src/assets/icons/bluetooth/bluetooth.svg"
+          }
+          awesome.emit_signal("device_added", object_path, device, battery)
         end, "PropertiesChanged")
-        awesome.emit_signal("bluetooth::device_changed", device, battery)
       end
     end
   end
@@ -87,16 +91,10 @@ return function()
           "PropertiesChanged"
         )
 
-        awesome.connect_signal(
-          "bluetooth::scan",
-          function()
-            Adapter:StartDiscovery()
-          end
-        )
-
         AdapterProperties:connect_signal(
           function(data)
             if data.Powered ~= nil then
+              awesome.emit_signal("state", data.Powered)
               if data.Powered then
                 Adapter:StartDiscovery()
               end

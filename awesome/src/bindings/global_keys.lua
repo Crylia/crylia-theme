@@ -4,7 +4,7 @@ local awful = require("awful")
 local hotkeys_popup = require("awful.hotkeys_popup")
 local ruled = require("ruled")
 
-local modkey = user_vars.modkey
+local modkey = User_config.modkey
 
 return gears.table.join(
   awful.key(
@@ -90,7 +90,7 @@ return gears.table.join(
     { modkey },
     "#36",
     function()
-      awful.spawn(user_vars.terminal)
+      awful.spawn(User_config.terminal)
     end,
     { description = "Open terminal", group = "Applications" }
   ),
@@ -160,7 +160,7 @@ return gears.table.join(
     { modkey },
     "#23",
     function()
-      awful.spawn("rofi -show window -theme ~/.config/rofi/window.rasi")
+      awful.spawn("rofi -kb-accept-entry '!Alt-Tab' -kb-row-down Alt-Tab  -show window -theme ~/.config/rofi/window.rasi")
     end,
     { descripton = "Client switcher (alt+tab)", group = "Application" }
   ),
@@ -168,7 +168,7 @@ return gears.table.join(
     { "Mod1" },
     "#23",
     function()
-      awful.spawn("rofi -show window -theme ~/.config/rofi/window.rasi")
+      awful.spawn("rofi -kb-accept-entry '!Alt-Tab' -kb-row-down Alt-Tab  -show window -theme ~/.config/rofi/window.rasi")
     end,
     { descripton = "Client switcher (alt+tab)", group = "Application" }
   ),
@@ -176,7 +176,7 @@ return gears.table.join(
     { modkey },
     "#26",
     function()
-      awful.spawn(user_vars.file_manager)
+      awful.spawn(User_config.file_manager)
     end,
     { descripton = "Open file manager", group = "System" }
   ),
@@ -192,7 +192,7 @@ return gears.table.join(
     {},
     "#107",
     function()
-      awful.spawn(user_vars.screenshot_program)
+      awful.spawn(User_config.screenshot_program)
     end,
     { description = "Screenshot", group = "Applications" }
   ),
@@ -239,7 +239,8 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) + BACKLIGHT_SEPS), function(stdou2)
+          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " ..
+            tostring(tonumber(stdout) + BACKLIGHT_SEPS), function(stdou2)
 
           end)
           awesome.emit_signal("module::brightness_osd:show", true)
@@ -257,7 +258,8 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " .. tostring(tonumber(stdout) - BACKLIGHT_SEPS), function(stdout2)
+          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " ..
+            tostring(tonumber(stdout) - BACKLIGHT_SEPS), function(stdout2)
 
           end)
           awesome.emit_signal("module::brightness_osd:show", true)
@@ -322,7 +324,8 @@ return gears.table.join(
                     return
                   end
                 end
-                awful.spawn.with_shell("echo -n '" .. stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/rules.txt")
+                awful.spawn.with_shell("echo -n '" ..
+                  stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/rules.txt")
                 local c = mouse.screen.selected_tag:clients()
                 for j, client in ipairs(c) do
                   if client.class:match(stdout:gsub("\n", "")) then

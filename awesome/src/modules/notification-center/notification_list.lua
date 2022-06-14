@@ -15,7 +15,7 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
 local nl = {}
 
-nl.notification_list = { layout = require("src.lib.overflow_widget.overflow").vertical, scrollbar_width = 0, scroll_speed = 10, spacing = dpi(20) }
+nl.notification_list = { layout = wibox.layout.overflow.vertical, scrollbar_width = 0, step = dpi(10), spacing = dpi(20) }
 
 -- @param {table} notification
 -- @return {widget} notifications_list
@@ -66,7 +66,7 @@ function nl.create_notification(n)
       {
         {
           {
-            font = user_vars.font.specify .. ", 10",
+            font = User_config.font.specify .. ", 10",
             text = "✕",
             align = "center",
             valign = "center",
@@ -110,6 +110,8 @@ function nl.create_notification(n)
                       {
                         image = gears.color.recolor_image(icondir .. "notification-outline.svg", color["Teal200"]),
                         resize = false,
+                        valign = "center",
+                        halign = "center",
                         widget = wibox.widget.imagebox
                       },
                       right = dpi(5),
@@ -151,6 +153,8 @@ function nl.create_notification(n)
                     image = n.icon,
                     resize = true,
                     widget = wibox.widget.imagebox,
+                    valign = "center",
+                    halign = "center",
                     clip_shape = function(cr, width, height)
                       gears.shape.rounded_rect(cr, width, height, 10)
                     end

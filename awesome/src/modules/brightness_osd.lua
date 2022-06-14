@@ -28,159 +28,91 @@ return function(s)
   local brightness_osd_widget = wibox.widget {
     {
       {
-        {
-          {
-            nil,
-            {
-              nil,
-              {
-                id = "icon",
-                forced_height = dpi(220),
-                image = icondir .. "brightness-high.svg",
-                widget = wibox.widget.imagebox
-              },
-              nil,
-              expand = "none",
-              id = "icon_margin2",
-              layout = wibox.layout.align.vertical
-            },
-            nil,
-            id = "icon_margin1",
-            expand = "none",
-            layout = wibox.layout.align.horizontal
-          },
+        { -- Brightness Icon
+          image = gears.color.recolor_image(icondir .. "brightness-high.svg", Theme_config.brightness_osd.icon_color),
+          valign = "center",
+          halign = "center",
+          resize = false,
+          id = "icon",
+          widget = wibox.widget.imagebox
+        },
+        { -- Brightness Bar
           {
             {
-              id = "label",
-              text = "Brightness",
-              align = "left",
-              valign = "center",
-              widget = wibox.widget.textbox
+              id = "progressbar1",
+              color = Theme_config.brightness_osd.bar_bg_active,
+              background_color = Theme_config.brightness_osd.bar_bg,
+              max_value = 100,
+              value = 50,
+              forced_height = dpi(6),
+              shape = function(cr, width, height)
+                gears.shape.rounded_bar(cr, width, height, dpi(6))
+              end,
+              widget = wibox.widget.progressbar
             },
-            nil,
-            {
-              id = "value",
-              text = "0%",
-              align = "center",
-              valign = "center",
-              widget = wibox.widget.textbox
-            },
-            id = "label_value_layout",
-            forced_height = dpi(48),
-            layout = wibox.layout.align.horizontal,
-          },
-          {
-            {
-              id = "brightness_slider",
-              bar_shape = gears.shape.rounded_rect,
-              bar_height = dpi(10),
-              bar_color = color["Grey800"] .. "88",
-              bar_active_color = "#ffffff",
-              handle_color = "#ffffff",
-              handle_shape = gears.shape.circle,
-              handle_width = dpi(10),
-              handle_border_color = color["White"],
-              maximum = 100,
-              widget = wibox.widget.slider
-            },
-            id = "slider_layout",
-            forced_height = dpi(24),
+            id = "progressbar_container2",
+            halign = "center",
+            valign = "center",
             widget = wibox.container.place
           },
-          id = "icon_slider_layout",
-          spacing = dpi(0),
-          layout = wibox.layout.align.vertical
+          id = "progressbar_container",
+          width = dpi(240),
+          heigth = dpi(20),
+          stragety = "max",
+          widget = wibox.container.constraint
         },
-        id = "osd_layout",
-        layout = wibox.layout.align.vertical
+        id = "layout1",
+        spacing = dpi(10),
+        layout = wibox.layout.fixed.horizontal
       },
-      id = "container",
-      left = dpi(24),
-      right = dpi(24),
+      id = "margin",
+      margins = dpi(10),
       widget = wibox.container.margin
     },
-    bg = color["Grey900"] .. "88",
-    widget = wibox.container.background,
-    ontop = true,
-    visible = true,
-    type = "notification",
-    forced_height = dpi(300),
     forced_width = dpi(300),
-    offset = dpi(5),
+    forced_height = dpi(80),
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(12))
+    end,
+    border_color = Theme_config.brightness_osd.border_color,
+    border_width = Theme_config.brightness_osd.border_width,
+    fg = Theme_config.brightness_osd.fg,
+    bg = Theme_config.brightness_osd.bg,
+    widget = wibox.container.background
   }
-
-  brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:connect_signal(
-    "property::value",
-    function()
-      awful.spawn.easy_async_with_shell(
-        "pkexec xfpm-power-backlight-helper --get-brightness",
-        function(stdout)
-          local brightness_value = math.floor((tonumber(stdout) - 1) / (BACKLIGHT_MAX_BRIGHTNESS - 1) * 100)
-          brightness_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text(tostring(brightness_value) .. "%")
-
-          awesome.emit_signal(
-            "widget::brightness:update",
-            brightness_value
-          )
-
-          if awful.screen.focused().show_brightness_osd then
-            awesome.emit_signal(
-              "module::brightness_osd:show",
-              true
-            )
-          end
-
-          local icon = icondir .. "brightness"
-          if brightness_value >= 0 and brightness_value < 34 then
-            icon = icon .. "-low"
-          elseif brightness_value >= 34 and brightness_value < 67 then
-            icon = icon .. "-medium"
-          elseif brightness_value >= 67 then
-            icon = icon .. "-high"
-          end
-          brightness_osd_widget.container.osd_layout.icon_slider_layout.icon_margin1.icon_margin2.icon:set_image(icon .. ".svg")
-          awesome.emit_signal("update::backlight_widget", brightness_value, icon .. ".svg")
-        end
-      )
-    end
-  )
 
   local update_slider = function()
     awful.spawn.easy_async_with_shell(
       [[ pkexec xfpm-power-backlight-helper --get-brightness ]],
       function(stdout)
-        stdout = math.floor((tonumber(stdout) - 1) / (BACKLIGHT_MAX_BRIGHTNESS - 1) * 100)
-        brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:set_value(stdout)
+        local brightness_value = math.floor((tonumber(stdout) - 1) / (BACKLIGHT_MAX_BRIGHTNESS - 1) * 100)
+        brightness_osd_widget:get_children_by_id("progressbar")[1].value = stdout
+
+        local icon = icondir .. "brightness"
+        if brightness_value >= 0 and brightness_value < 34 then
+          icon = icon .. "-low"
+        elseif brightness_value >= 34 and brightness_value < 67 then
+          icon = icon .. "-medium"
+        elseif brightness_value >= 67 then
+          icon = icon .. "-high"
+        end
+        brightness_osd_widget:get_children_by_id("icon"):set_image(gears.color.recolor_image(icon .. ".svg",
+          Theme_config.brightness_osd.icon_color))
       end
     )
   end
 
-  awesome.connect_signal(
-    "module::brightness_slider:update",
-    function()
-      update_slider()
-    end
-  )
-
-  awesome.connect_signal(
-    "widget::brightness:update",
-    function(value)
-      brightness_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.brightness_slider:set_value(tonumber(value))
-    end
-  )
-
   update_slider()
 
   local brightness_container = awful.popup {
-    widget = wibox.container.background,
+    widget = {},
     ontop = true,
-    bg = color["Grey900"] .. "00",
     stretch = false,
     visible = false,
     screen = s,
-    placement = function(c) awful.placement.centered(c, { margins = { top = dpi(200) } }) end,
+    placement = function(c) awful.placement.bottom_left(c, { margins = dpi(20) }) end,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 15)
+      gears.shape.rounded_rect(cr, width, height, dpi(14))
     end
   }
 
@@ -200,36 +132,14 @@ return function(s)
   awesome.connect_signal(
     "widget::brightness_osd:rerun",
     function()
+      brightness_container.visible = true
       if hide_brightness_osd.started then
         hide_brightness_osd:again()
+        update_slider()
       else
         hide_brightness_osd:start()
+        update_slider()
       end
-    end
-  )
-
-  awesome.connect_signal(
-    "module::brightness_osd:show",
-    function()
-      if s == mouse.screen then
-        brightness_container.visible = true
-      end
-    end
-  )
-
-  brightness_container:connect_signal(
-    "mouse::enter",
-    function()
-      brightness_container.visible = true
-      hide_brightness_osd:stop()
-    end
-  )
-
-  brightness_container:connect_signal(
-    "mouse::leave",
-    function()
-      brightness_container.visible = true
-      hide_brightness_osd:again()
     end
   )
 end

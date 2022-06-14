@@ -149,13 +149,13 @@ return function(s)
         right_button.visible = false
         toggle_button.active = not toggle_button.active
         toggle_button.border_color = color["Grey800"]
-        user_vars.dnd = false
+        User_config.dnd = false
       else
         left_button.visible = false
         right_button.visible = true
         toggle_button.active = not toggle_button.active
         toggle_button.border_color = color["Purple200"]
-        user_vars.dnd = true
+        User_config.dnd = true
       end
     end
   )

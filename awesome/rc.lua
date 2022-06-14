@@ -7,7 +7,8 @@
 -- ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝ ╚═╝     ╚═╝ --
 -----------------------------------------------------------------------------------------
 -- Initialising, order is important!
-require("src.theme.user_variables")
+require("src.theme.user_config")
+require("src.theme.theme_config")
 require("src.theme.init")
 require("src.core.error_handling")
 require("src.core.signals")
@@ -16,5 +17,5 @@ require("src.core.rules")
 require("src.bindings.global_buttons")
 require("src.bindings.bind_to_tags")
 require("src.modules.init")
-require("src.tools.auto_starter")(user_vars.autostart)
+require("src.tools.auto_starter")(User_config.autostart)
 require("src.dbus.bluetooth_dbus")()

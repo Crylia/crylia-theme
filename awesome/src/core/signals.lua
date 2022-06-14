@@ -1,9 +1,7 @@
 ---@diagnostic disable: undefined-field
 -- Awesome Libs
 local awful = require("awful")
-local beautiful = require("beautiful")
 local gears = require("gears")
-local wibox = require("wibox")
 
 screen.connect_signal(
   "added",
@@ -50,8 +48,8 @@ client.connect_signal(
   end
 )
 
-client.connect_signal(
-  'tag::switched',
+tag.connect_signal(
+  'property::selected',
   function(c)
     if #awful.screen.focused().clients > 0 then
       awful.screen.focused().clients[1]:emit_signal(
@@ -76,22 +74,6 @@ client.connect_signal(
         raise = false
       }
     )
-  end
-)
-
--- Workaround for focused border color, why in the love of god doesnt it work with
--- beautiful.border_focus
-client.connect_signal(
-  "focus",
-  function(c)
-    c.border_color = "#616161"
-  end
-)
-
-client.connect_signal(
-  "unfocus",
-  function(c)
-    c.border_color = beautiful.border_normal
   end
 )
 

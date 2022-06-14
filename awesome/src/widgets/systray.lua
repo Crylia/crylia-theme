@@ -3,13 +3,12 @@
 --------------------------------
 
 -- Awesome Libs
-local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
-require("src.core.signals")
+Theme.bg_systray = Theme_config.systray.bg
+Theme.systray_icon_spacing = dpi(10)
 
 return function(s)
   local systray = wibox.widget {
@@ -25,12 +24,12 @@ return function(s)
     },
     widget = wibox.container.background,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
-    bg = color["BlueGrey800"]
+    bg = Theme_config.systray.bg
   }
   -- Signals
-  Hover_signal(systray.container, color["Red200"], color["Grey900"])
+  Hover_signal(systray.container, Theme_config.systray.bg, Theme_config.systray.bg)
 
   awesome.connect_signal("systray::update", function()
     local num_entries = awesome.systray()
@@ -42,7 +41,7 @@ return function(s)
     end
   end)
 
-  systray.container.st.widget:set_base_size(dpi(20))
+  systray.container.st.widget:set_base_size(dpi(24))
 
   return systray
 end

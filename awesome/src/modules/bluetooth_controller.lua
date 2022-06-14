@@ -4,10 +4,8 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
-local naughty = require("naughty")
 local wibox = require("wibox")
 
 local rubato = require("src.lib.rubato")
@@ -24,7 +22,8 @@ return function(s)
           {
             {
               {
-                image = gears.color.recolor_image(icondir .. icon .. ".svg", color["Purple200"]),
+                image = gears.color.recolor_image(
+                  icondir .. icon .. ".svg", Theme_config.bluetooth_controller.icon_color),
                 id = "icon",
                 resize = false,
                 valign = "center",
@@ -50,7 +49,7 @@ return function(s)
                   text = "Connecting...",
                   id = "connecting",
                   visible = false,
-                  font = user_vars.font.specify .. ", regular 10",
+                  font = User_config.font.specify .. ", regular 10",
                   widget = wibox.widget.textbox
                 },
                 id = "alias_container",
@@ -95,7 +94,7 @@ return function(s)
               shape = function(cr, width, height)
                 gears.shape.rounded_rect(cr, width, height, dpi(4))
               end,
-              bg = color["Blue200"],
+              bg = Theme_config.bluetooth_controller.con_button_color,
               widget = wibox.container.background
             },
             id = "margin0",
@@ -109,23 +108,24 @@ return function(s)
         margins = dpi(5),
         widget = wibox.container.margin
       },
-      bg = color["Grey900"],
-      fg = color["LightBlue200"],
-      border_color = color["Grey800"],
-      border_width = dpi(2),
+      bg = Theme_config.bluetooth_controller.device_bg,
+      fg = Theme_config.bluetooth_controller.device_fg,
+      border_color = Theme_config.bluetooth_controller.device_border_color,
+      border_width = Theme_config.bluetooth_controller.device_border_width,
       id = "background",
       shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 4)
+        gears.shape.rounded_rect(cr, width, height, dpi(4))
       end,
       widget = wibox.container.background
     }
 
     --! using :Connect freezes awesome, either find a solution or switch to console commands
     if device.Connected then
-      device_widget:get_children_by_id("con")[1].image = gears.color.recolor_image(icondir .. "link-off.svg", color["Grey900"])
+      device_widget:get_children_by_id("con")[1].image = gears.color.recolor_image(icondir .. "link-off.svg",
+        Theme_config.bluetooth_controller.icon_color_dark)
       device_widget:connect_signal(
         "button::press",
-        function(c, d, e, key)
+        function(_, _, _, key)
           if key == 1 then
             device:Disconnect()
             awesome.emit_signal("bluetooth::connect", device)
@@ -133,10 +133,11 @@ return function(s)
         end
       )
     else
-      device_widget:get_children_by_id("con")[1].image = gears.color.recolor_image(icondir .. "link.svg", color["Grey900"])
+      device_widget:get_children_by_id("con")[1].image = gears.color.recolor_image(icondir .. "link.svg",
+        Theme_config.bluetooth_controller.icon_color_dark)
       device_widget:connect_signal(
         "button::press",
-        function(c, d, e, key)
+        function(_, _, _, key)
           if key == 1 then
             device:Connect()
             awesome.emit_signal("bluetooth::disconnect", device)
@@ -144,7 +145,8 @@ return function(s)
         end
       )
     end
-    Hover_signal(device_widget, '#313131', color["LightBlue100"])
+    Hover_signal(device_widget, Theme_config.bluetooth_controller.device_bg_hover,
+      Theme_config.bluetooth_controller.device_fg_hover)
     return device_widget
   end
 
@@ -168,10 +170,10 @@ return function(s)
       widget = wibox.container.constraint
     },
     id = "connected_device_background",
-    border_color = color["Grey800"],
-    border_width = dpi(2),
+    border_color = Theme_config.bluetooth_controller.con_device_border_color,
+    border_width = Theme_config.bluetooth_controller.con_device_border_width,
     shape = function(cr, width, height)
-      gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, 4)
+      gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
     end,
     widget = wibox.container.background
   }
@@ -196,10 +198,10 @@ return function(s)
       widget = wibox.container.constraint
     },
     id = "discovered_device_background",
-    border_color = color["Grey800"],
-    border_width = dpi(2),
+    border_color = Theme_config.bluetooth_controller.con_device_border_color,
+    border_width = Theme_config.bluetooth_controller.con_device_border_width,
     shape = function(cr, width, height)
-      gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, 4)
+      gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
     end,
     widget = wibox.container.background
   }
@@ -214,8 +216,11 @@ return function(s)
                 {
                   {
                     resize = false,
-                    image = gears.color.recolor_image(icondir .. "menu-down.svg", color["Purple200"]),
+                    image = gears.color.recolor_image(icondir .. "menu-down.svg",
+                      Theme_config.bluetooth_controller.connected_icon_color),
                     widget = wibox.widget.imagebox,
+                    valign = "center",
+                    halign = "center",
                     id = "icon"
                   },
                   id = "center",
@@ -225,7 +230,7 @@ return function(s)
                 },
                 {
                   {
-                    text = "Coupled Devices",
+                    text = "Paired Devices",
                     widget = wibox.widget.textbox,
                     id = "device_name"
                   },
@@ -236,10 +241,10 @@ return function(s)
                 layout = wibox.layout.fixed.horizontal
               },
               id = "connected_bg",
-              bg = color["Grey800"],
-              fg = color["Purple200"],
+              bg = Theme_config.bluetooth_controller.connected_bg,
+              fg = Theme_config.bluetooth_controller.connected_fg,
               shape = function(cr, width, height)
-                gears.shape.rounded_rect(cr, width, height, 4)
+                gears.shape.rounded_rect(cr, width, height, dpi(4))
               end,
               widget = wibox.container.background
             },
@@ -257,8 +262,11 @@ return function(s)
                 {
                   {
                     resize = false,
-                    image = gears.color.recolor_image(icondir .. "menu-down.svg", color["LightBlueA200"]),
+                    image = gears.color.recolor_image(icondir .. "menu-down.svg",
+                      Theme_config.bluetooth_controller.discovered_icon_color),
                     widget = wibox.widget.imagebox,
+                    valign = "center",
+                    halign = "center",
                     id = "icon",
                   },
                   id = "center",
@@ -279,10 +287,10 @@ return function(s)
                 layout = wibox.layout.fixed.horizontal
               },
               id = "discovered_bg",
-              bg = color["Grey800"],
-              fg = color["Blue200"],
+              bg = Theme_config.bluetooth_controller.discovered_bg,
+              fg = Theme_config.bluetooth_controller.discovered_fg,
               shape = function(cr, width, height)
-                gears.shape.rounded_rect(cr, width, height, 4)
+                gears.shape.rounded_rect(cr, width, height, dpi(4))
               end,
               widget = wibox.container.background
             },
@@ -305,9 +313,9 @@ return function(s)
       shape = function(cr, width, height)
         gears.shape.rounded_rect(cr, width, height, dpi(8))
       end,
-      border_color = color["Grey800"],
-      border_width = dpi(4),
-      bg = color["Grey900"],
+      border_color = Theme_config.bluetooth_controller.container_border_color,
+      border_width = Theme_config.bluetooth_controller.container_border_width,
+      bg = Theme_config.bluetooth_controller.container_bg,
       id = "background",
       widget = wibox.container.background
     },
@@ -320,13 +328,15 @@ return function(s)
   local bluetooth_controller_container = awful.popup {
     widget = wibox.container.background,
     ontop = true,
-    bg = color["Grey900"],
+    bg = Theme_config.bluetooth_controller.container_bg,
     stretch = false,
     visible = false,
     screen = s,
-    placement = function(c) awful.placement.align(c, { position = "top_right", margins = { right = dpi(380), top = dpi(60) } }) end,
+    placement = function(c) awful.placement.align(c,
+        { position = "top_right", margins = { right = dpi(380), top = dpi(60) } })
+    end,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 12)
+      gears.shape.rounded_rect(cr, width, height, dpi(12))
     end
   }
 
@@ -404,15 +414,17 @@ return function(s)
           rubato_timer.target = dpi(210)
         end
         connected_margin.connected_bg.shape = function(cr, width, height)
-          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
+          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
         end
-        connected.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Purple200"]))
+        connected.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
+          Theme_config.bluetooth_controller.connected_icon_color))
       else
         rubato_timer.target = 0
         connected_bg.shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, 4)
         end
-        connected.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Purple200"]))
+        connected.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
+          Theme_config.bluetooth_controller.connected_icon_color))
       end
     end
   )
@@ -446,15 +458,17 @@ return function(s)
           rubato_timer.target = dpi(20)
         end
         discovered_margin.discovered_bg.shape = function(cr, width, height)
-          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, 4)
+          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
         end
-        discovered.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["LightBlue200"]))
+        discovered.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
+          Theme_config.bluetooth_controller.discovered_icon_color))
       else
-        rubato_timer.target = dpi(0)
+        rubato_timer.target = 0
         discovered_bg.shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, 4)
         end
-        discovered.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["LightBlue200"]))
+        discovered.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
+          Theme_config.bluetooth_controller.discovered_icon_color))
       end
     end
   )

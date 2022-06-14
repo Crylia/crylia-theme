@@ -4,17 +4,21 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("src.core.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/titlebar/"
 
 awful.titlebar.enable_tooltip = true
 awful.titlebar.fallback_name = 'Client'
+
+Theme.titlebar_close_button_normal = icondir .. "close.svg"
+Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
+Theme.titlebar_minimize_button_normal = icondir .. "minimize.svg"
+Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
+Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
 
 local double_click_event_handler = function(double_click_event)
   if double_click_timer then
@@ -60,10 +64,10 @@ local create_click_events = function(c)
   return buttons
 end
 
-local create_titlebar = function(c, bg, size)
+local create_titlebar = function(c, size)
   local titlebar = awful.titlebar(c, {
     position = "left",
-    bg = bg,
+    bg = Theme_config.titlebar.bg,
     size = size
   })
 
@@ -73,27 +77,27 @@ local create_titlebar = function(c, bg, size)
         {
           awful.titlebar.widget.closebutton(c),
           widget = wibox.container.background,
-          bg = color["Red200"],
+          bg = Theme_config.titlebar.close_button_bg,
           shape = function(cr, height, width)
-            gears.shape.rounded_rect(cr, width, height, 4)
+            gears.shape.rounded_rect(cr, width, height, dpi(4))
           end,
           id = "closebutton"
         },
         {
           awful.titlebar.widget.maximizedbutton(c),
           widget = wibox.container.background,
-          bg = color["Yellow200"],
+          bg = Theme_config.titlebar.minimize_button_bg,
           shape = function(cr, height, width)
-            gears.shape.rounded_rect(cr, width, height, 4)
+            gears.shape.rounded_rect(cr, width, height, dpi(4))
           end,
           id = "maximizebutton"
         },
         {
           awful.titlebar.widget.minimizebutton(c),
           widget = wibox.container.background,
-          bg = color["Green200"],
+          bg = Theme_config.titlebar.maximize_button_bg,
           shape = function(cr, height, width)
-            gears.shape.rounded_rect(cr, width, height, 4)
+            gears.shape.rounded_rect(cr, width, height, dpi(4))
           end,
           id = "minimizebutton"
         },
@@ -119,15 +123,18 @@ local create_titlebar = function(c, bg, size)
     layout = wibox.layout.align.vertical,
     id = "main"
   }
-  Hover_signal(titlebar.main.margin.spacing.closebutton, color["Red200"], color["Grey900"])
-  Hover_signal(titlebar.main.margin.spacing.maximizebutton, color["Yellow200"], color["Grey900"])
-  Hover_signal(titlebar.main.margin.spacing.minimizebutton, color["Green200"], color["Grey900"])
+  Hover_signal(titlebar.main.margin.spacing.closebutton, Theme_config.titlebar.close_button_bg,
+    Theme_config.titlebar.close_button_fg)
+  Hover_signal(titlebar.main.margin.spacing.maximizebutton, Theme_config.titlebar.minimize_button_bg,
+    Theme_config.titlebar.minimize_button_fg)
+  Hover_signal(titlebar.main.margin.spacing.minimizebutton, Theme_config.titlebar.maximize_button_bg,
+    Theme_config.titlebar.maximize_button_fg)
 end
 
-local create_titlebar_dialog = function(c, bg, size)
+local create_titlebar_dialog_modal = function(c, size)
   local titlebar = awful.titlebar(c, {
     position = "left",
-    bg = bg,
+    bg = Theme_config.titlebar.bg,
     size = size
   })
 
@@ -137,18 +144,18 @@ local create_titlebar_dialog = function(c, bg, size)
         {
           awful.titlebar.widget.closebutton(c),
           widget = wibox.container.background,
-          bg = color["Red200"],
+          bg = Theme_config.titlebar.close_button_bg,
           shape = function(cr, height, width)
-            gears.shape.rounded_rect(cr, width, height, 4)
+            gears.shape.rounded_rect(cr, width, height, dpi(4))
           end,
           id = "closebutton"
         },
         {
           awful.titlebar.widget.minimizebutton(c),
           widget = wibox.container.background,
-          bg = color["Green200"],
+          bg = Theme_config.titlebar.minimize_button_bg,
           shape = function(cr, height, width)
-            gears.shape.rounded_rect(cr, width, height, 4)
+            gears.shape.rounded_rect(cr, width, height, dpi(4))
           end,
           id = "minimizebutton"
         },
@@ -174,79 +181,38 @@ local create_titlebar_dialog = function(c, bg, size)
     layout = wibox.layout.align.vertical,
     id = "main"
   }
-  Hover_signal(titlebar.main.margin.spacing.closebutton, color["Red200"], color["Grey900"])
-  Hover_signal(titlebar.main.margin.spacing.minimizebutton, color["Green200"], color["Grey900"])
+  Hover_signal(titlebar.main.margin.spacing.closebutton, Theme_config.titlebar.close_button_bg,
+    Theme_config.titlebar.close_button_fg)
+  Hover_signal(titlebar.main.margin.spacing.minimizebutton, Theme_config.titlebar.minimize_button_bg,
+    Theme_config.titlebar.minimize_button_fg)
 end
-
-local draw_titlebar = function(c)
-  if c.type == 'normal' and not c.requests_no_titlebar then
-    if c.class == 'Firefox' then
-      create_titlebar(c, '#121212AA', 35)
-    elseif c.name == "Steam" then
-      create_titlebar(c, '#121212AA', 0)
-    elseif c.name == "Settings" then
-      create_titlebar(c, '#121212AA', 0)
-    elseif c.class == "gcr-prompter" or c.class == "Gcr-prompter" then
-      create_titlebar(c, '#121212AA', 0)
-    else
-      create_titlebar(c, '#121212AA', 35)
-    end
-  elseif c.type == 'dialog' then
-    create_titlebar_dialog(c, '#121212AA', 35)
-  end
-end
-
-client.connect_signal(
-  "property::maximized",
-  function(c)
-    if c.maximized then
-      Theme.titlebar_maximized_button_normal = icondir .. "unmaximize.svg"
-      Theme.titlebar_maximized_button_active = icondir .. "unmaximize.svg"
-      Theme.titlebar_maximized_button_inactive = icondir .. "unmaximize.svg"
-    elseif not c.minimized then
-      Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
-      Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
-      Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
-    end
-  end
-)
 
 client.connect_signal(
   "request::titlebars",
   function(c)
-    if c.maximized then
-      Theme.titlebar_maximized_button_normal = icondir .. "unmaximize.svg"
-      Theme.titlebar_maximized_button_active = icondir .. "unmaximize.svg"
-      Theme.titlebar_maximized_button_inactive = icondir .. "unmaximize.svg"
-      draw_titlebar(c)
-    elseif not c.minimized then
-      Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
-      Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
-      Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
-      draw_titlebar(c)
+    if c.type == "normal" then
+      create_titlebar(c, dpi(35))
+    elseif c.type == "dialog" then
+      create_titlebar_dialog_modal(c, dpi(35))
+    elseif c.type == "modal" then
+      create_titlebar_dialog_modal(c, dpi(35))
+    else
+      create_titlebar(c, dpi(35))
     end
-    if not c.floating or c.maximized then
-      awful.titlebar.hide(c, 'left')
-      awful.titlebar.hide(c, 'right')
-      awful.titlebar.hide(c, 'top')
-      awful.titlebar.hide(c, 'bottom')
+
+    if not c.floating then
+      awful.titlebar.hide(c, "left")
     end
   end
 )
 
 client.connect_signal(
-  'property::floating',
+  "property::floating",
   function(c)
-    if c.floating or (c.floating and c.maximized) then
-      awful.titlebar.show(c, 'left')
-      awful.titlebar.hide(c, 'right')
-      awful.titlebar.hide(c, 'top')
-      awful.titlebar.hide(c, 'bottom')
+    if c.floating and not (c.maximized or c.fullscreen) then
+      awful.titlebar.show(c, "left")
     else
-      awful.titlebar.hide(c, 'left')
-      awful.titlebar.hide(c, 'right')
-      awful.titlebar.hide(c, 'top')
-      awful.titlebar.hide(c, 'bottom')
+      awful.titlebar.hide(c, "left")
     end
   end
 )

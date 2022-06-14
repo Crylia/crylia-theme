@@ -2,7 +2,7 @@
 local awful = require("awful")
 local gears = require("gears")
 local globalkeys = require("src.bindings.global_keys")
-local modkey = user_vars.modkey
+local modkey = User_config.modkey
 
 for i = 1, 9 do
   globalkeys = gears.table.join(globalkeys,

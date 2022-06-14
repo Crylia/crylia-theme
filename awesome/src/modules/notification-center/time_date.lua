@@ -28,7 +28,7 @@ return function()
                 id = "label",
                 align = "left",
                 valign = "bottom",
-                format = "<span foreground='#69F0AE' font='JetBrainsMono Nerd Font, Regular 18'><b>%e</b></span><span foreground='#18FFFF' font='JetBrainsMono Nerd Font, Regular 18'><b> %b %Y</b></span>",
+                format = "<span foreground='#69F0AE' font='JetBrainsMono Nerd Font, Regular 18'><b>%d</b></span><span foreground='#18FFFF' font='JetBrainsMono Nerd Font, Regular 18'><b> %b %Y</b></span>",
                 widget = wibox.widget.textclock
               },
               widget = wibox.container.margin

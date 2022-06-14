@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -23,8 +22,10 @@ return function()
           {
             {
               id = "icon",
-              image = gears.color.recolor_image(icondir .. "calendar.svg", color["Grey900"]),
+              image = gears.color.recolor_image(icondir .. "calendar.svg", Theme_config.date.fg),
               widget = wibox.widget.imagebox,
+              valign = "center",
+              halign = "center",
               resize = false
             },
             id = "icon_layout",
@@ -49,10 +50,10 @@ return function()
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Teal200"],
-    fg = color["Grey900"],
+    bg = Theme_config.date.bg,
+    fg = Theme_config.date.fg,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
     widget = wibox.container.background
   }
@@ -72,7 +73,7 @@ return function()
   }
 
   -- Signals
-  Hover_signal(date_widget, color["Teal200"], color["Grey900"])
+  Hover_signal(date_widget, Theme_config.date.bg, Theme_config.date.fg)
 
   date_widget:connect_signal(
     "mouse::enter",

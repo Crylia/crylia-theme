@@ -7,9 +7,8 @@ local awful = require('awful')
 local wibox = require('wibox')
 local dpi = require('beautiful').xresources.apply_dpi
 local gears = require('gears')
-local color = require('src.theme.colors')
 
-local list_update = function(widget, buttons, label, data, objects)
+local list_update = function(widget, buttons, label, _, objects)
 	widget:reset()
 	for _, object in ipairs(objects) do
 		local task_widget = wibox.widget {
@@ -20,6 +19,8 @@ local list_update = function(widget, buttons, label, data, objects)
 							nil,
 							{
 								id = "icon",
+								valign = "center",
+								halign = "center",
 								resize = true,
 								widget = wibox.widget.imagebox
 							},
@@ -48,10 +49,9 @@ local list_update = function(widget, buttons, label, data, objects)
 				widget = wibox.container.margin,
 				id = "container"
 			},
-			bg = color["White"],
-			fg = color["Grey900"],
+			fg = Theme_config.tasklist.fg,
 			shape = function(cr, width, height)
-				gears.shape.rounded_rect(cr, width, height, 5)
+				gears.shape.rounded_rect(cr, width, height, dpi(6))
 			end,
 			widget = wibox.container.background
 		}
@@ -66,18 +66,18 @@ local list_update = function(widget, buttons, label, data, objects)
 			delay_show = 1
 		}
 
-		local function create_buttons(buttons, object)
-			if buttons then
+		local function create_buttons(buttons_t, object_t)
+			if buttons_t then
 				local btns = {}
-				for _, b in ipairs(buttons) do
+				for _, b in ipairs(buttons_t) do
 					local btn = awful.button {
 						modifiers = b.modifiers,
 						button = b.button,
 						on_press = function()
-							b:emit_signal('press', object)
+							b:emit_signal('press', object_t)
 						end,
 						on_release = function()
-							b:emit_signal('release', object)
+							b:emit_signal('release', object_t)
 						end
 					}
 					btns[#btns + 1] = btn
@@ -106,27 +106,26 @@ local list_update = function(widget, buttons, label, data, objects)
 					task_tool_tip:remove_from_object(task_widget)
 				end
 			end
-			task_widget:set_bg(color["White"])
-			task_widget:set_fg(color["Grey900"])
+			task_widget:set_bg(Theme_config.tasklist.bg_focus)
+			task_widget:set_fg(Theme_config.tasklist.fg_focus)
 			task_widget.container.layout_it.title:set_text(text)
 		else
-			task_widget:set_bg("#3A475C")
+			task_widget:set_bg(Theme_config.tasklist.bg)
 			task_widget.container.layout_it.title:set_text('')
 		end
-		task_widget.container.layout_it.margin.layout_icon.icon:set_image(Get_icon(user_vars.icon_theme, object))
+		task_widget.container.layout_it.margin.layout_icon.icon:set_image(xdg_icon_lookup:find_icon(object.class, 64))
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
 
 		--#region Hover_signal
-		local old_wibox, old_cursor, old_bg
+		local old_wibox, old_cursor
 		task_widget:connect_signal(
 			"mouse::enter",
 			function()
-				old_bg = task_widget.bg
 				if object == client.focus then
-					task_widget.bg = '#dddddddd'
+					task_widget.bg = Theme_config.tasklist.bg_focus_hover .. "dd"
 				else
-					task_widget.bg = '#3A475Cdd'
+					task_widget.bg = Theme_config.tasklist.bg .. 'dd'
 				end
 				local w = mouse.current_wibox
 				if w then
@@ -140,9 +139,9 @@ local list_update = function(widget, buttons, label, data, objects)
 			"button::press",
 			function()
 				if object == client.focus then
-					task_widget.bg = "#ffffffaa"
+					task_widget.bg = Theme_config.tasklist.bg_focus_pressed .. "dd"
 				else
-					task_widget.bg = '#3A475Caa'
+					task_widget.bg = Theme_config.tasklist.bg .. "dd"
 				end
 			end
 		)
@@ -151,9 +150,9 @@ local list_update = function(widget, buttons, label, data, objects)
 			"button::release",
 			function()
 				if object == client.focus then
-					task_widget.bg = "#ffffffdd"
+					task_widget.bg = Theme_config.tasklist.bg_focus_hover .. "dd"
 				else
-					task_widget.bg = '#3A475Cdd'
+					task_widget.bg = Theme_config.tasklist.bg .. "dd"
 				end
 			end
 		)
@@ -161,7 +160,11 @@ local list_update = function(widget, buttons, label, data, objects)
 		task_widget:connect_signal(
 			"mouse::leave",
 			function()
-				task_widget.bg = old_bg
+				if object == client.focus then
+					task_widget.bg = Theme_config.tasklist.bg_focus
+				else
+					task_widget.bg = Theme_config.tasklist.bg
+				end
 				if old_wibox then
 					old_wibox.cursor = old_cursor
 					old_wibox = nil

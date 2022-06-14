@@ -19,7 +19,7 @@ return function(s, widgets)
     maximum_width = dpi(500),
     placement = function(c) awful.placement.top(c, { margins = dpi(10) }) end,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end
   }
 
@@ -27,42 +27,42 @@ return function(s, widgets)
     top = 55
   }
 
-  local function prepare_widgets(widgets)
+  local function prepare_widgets(w)
     local layout = {
-      forced_height = 45,
+      forced_height = dpi(50),
       layout = wibox.layout.fixed.horizontal
     }
-    for i, widget in pairs(widgets) do
+    for i, widget in pairs(w) do
       if i == 1 then
         table.insert(layout,
           {
-          widget,
-          left = dpi(6),
-          right = dpi(6),
-          top = dpi(6),
-          bottom = dpi(6),
-          widget = wibox.container.margin
-        })
-      elseif i == #widgets then
+            widget,
+            left = dpi(6),
+            right = dpi(6),
+            top = dpi(6),
+            bottom = dpi(6),
+            widget = wibox.container.margin
+          })
+      elseif i == #w then
         table.insert(layout,
           {
-          widget,
-          left = dpi(3),
-          right = dpi(6),
-          top = dpi(6),
-          bottom = dpi(6),
-          widget = wibox.container.margin
-        })
+            widget,
+            left = dpi(3),
+            right = dpi(6),
+            top = dpi(6),
+            bottom = dpi(6),
+            widget = wibox.container.margin
+          })
       else
         table.insert(layout,
           {
-          widget,
-          left = dpi(3),
-          right = dpi(3),
-          top = dpi(6),
-          bottom = dpi(6),
-          widget = wibox.container.margin
-        })
+            widget,
+            left = dpi(3),
+            right = dpi(3),
+            top = dpi(6),
+            bottom = dpi(6),
+            widget = wibox.container.margin
+          })
       end
     end
     return layout
@@ -78,45 +78,45 @@ return function(s, widgets)
   client.connect_signal(
     "manage",
     function(c)
-    if #s.selected_tag:clients() < 1 then
-      top_center.visible = false
-    else
-      top_center.visible = true
+      if #s.selected_tag:clients() < 1 then
+        top_center.visible = false
+      else
+        top_center.visible = true
+      end
     end
-  end
   )
 
   client.connect_signal(
     "unmanage",
     function(c)
-    if #s.selected_tag:clients() < 1 then
-      top_center.visible = false
-    else
-      top_center.visible = true
+      if #s.selected_tag:clients() < 1 then
+        top_center.visible = false
+      else
+        top_center.visible = true
+      end
     end
-  end
   )
 
   client.connect_signal(
-    "tag::switched",
+    "property::selected",
     function(c)
-    if #s.selected_tag:clients() < 1 then
-      top_center.visible = false
-    else
-      top_center.visible = true
+      if #s.selected_tag:clients() < 1 then
+        top_center.visible = false
+      else
+        top_center.visible = true
+      end
     end
-  end
   )
 
   awesome.connect_signal(
     "refresh",
     function(c)
-    if #s.selected_tag:clients() < 1 then
-      top_center.visible = false
-    else
-      top_center.visible = true
+      if #s.selected_tag:clients() < 1 then
+        top_center.visible = false
+      else
+        top_center.visible = true
+      end
     end
-  end
   )
 
 end

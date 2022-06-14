@@ -4,11 +4,9 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("src.core.signals")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/clock/"
@@ -23,8 +21,10 @@ return function()
           {
             {
               id = "icon",
-              image = gears.color.recolor_image(icondir .. "clock.svg", color["Grey900"]),
+              image = gears.color.recolor_image(icondir .. "clock.svg", Theme_config.clock.fg),
               widget = wibox.widget.imagebox,
+              valign = "center",
+              halign = "center",
               resize = false
             },
             id = "icon_layout",
@@ -50,15 +50,15 @@ return function()
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Orange200"],
-    fg = color["Grey900"],
+    bg = Theme_config.clock.bg,
+    fg = Theme_config.clock.fg,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 5)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
     end,
     widget = wibox.container.background
   }
 
-  Hover_signal(clock_widget, color["Orange200"], color["Grey900"])
+  Hover_signal(clock_widget, Theme_config.clock.bg, Theme_config.clock.fg)
 
   return clock_widget
 end
