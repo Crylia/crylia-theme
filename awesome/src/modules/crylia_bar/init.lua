@@ -15,7 +15,7 @@ return function(s)
         if widget == "Audio" then
           table.insert(widget_table, require("src.widgets.audio")(s))
         elseif widget == "Battery" then
-          table.insert(widget_table, require("src.widgets.battery")(User_config.battery_path))
+          table.insert(widget_table, require("src.widgets.battery")(User_config.battery_kind))
         elseif widget == "Bluetooth" then
           table.insert(widget_table, require("src.widgets.bluetooth")())
         elseif widget == "Clock" then
