@@ -123,12 +123,16 @@ return function(s)
       local i = 1
       local sel = nil
 
-      local select_next = function()
-        if #objects_sorted >= i then
-          selected = objects_sorted[i].pid
-          sel = selected
+      awesome.connect_signal(
+        "window_switcher::select_next",
+        function()
+          if not object.valid then
+            return
+          end
+          if #objects_sorted >= i then
+            selected = objects_sorted[i].pid
+            sel = selected
 
-          if object.valid then
             if selected == object.pid then
               window_element.border_color = Theme_config.window_switcher.selected_border_color
               window_element.fg = Theme_config.window_switcher.selected_fg
@@ -139,17 +143,12 @@ return function(s)
               window_element.bg = Theme_config.window_switcher.bg
             end
           end
+          if #objects_sorted > i then
+            i = i + 1
+          else
+            i = 1
+          end
         end
-        if #objects_sorted > i then
-          i = i + 1
-        else
-          i = 1
-        end
-      end
-
-      awesome.connect_signal(
-        "window_switcher::select_next",
-        select_next
       )
 
       object:connect_signal(
@@ -162,6 +161,9 @@ return function(s)
             selected = objects_sorted[1].pid
           end
           -- remove object from table
+          if not object.valid then
+            return
+          end
           for _, object in ipairs(objects) do
             if object.pid == c.pid then
               table.remove(objects, _)
@@ -180,25 +182,30 @@ return function(s)
       awesome.connect_signal(
         "window_switcher::raise",
         function()
+          if not object.valid then
+            return
+          end
           if objects_sorted[i] then
-            if object.valid then
-              if sel == object.pid then
-                object:jump_to()
+            if sel == object.pid then
+              if not object:isvisible() and object.first_tag then
+                object.first_tag:view_only()
               end
+              object:emit_signal('request::activate')
+              object:raise()
+            end
 
-              -- Reset window switcher
-              i = 1
-              selected = objects_sorted[i].pid
-              sel = selected
-              if selected == object.pid then
-                window_element.border_color = Theme_config.window_switcher.selected_border_color
-                window_element.fg = Theme_config.window_switcher.selected_fg
-                window_element.bg = Theme_config.window_switcher.bg
-              else
-                window_element.border_color = Theme_config.window_switcher.border_color
-                window_element.fg = Theme_config.window_switcher.element_fg
-                window_element.bg = Theme_config.window_switcher.selected_bg
-              end
+            -- Reset window switcher
+            i = 1
+            selected = objects_sorted[i].pid
+            sel = selected
+            if selected == object.pid then
+              window_element.border_color = Theme_config.window_switcher.selected_border_color
+              window_element.fg = Theme_config.window_switcher.selected_fg
+              window_element.bg = Theme_config.window_switcher.bg
+            else
+              window_element.border_color = Theme_config.window_switcher.border_color
+              window_element.fg = Theme_config.window_switcher.element_fg
+              window_element.bg = Theme_config.window_switcher.selected_bg
             end
           end
         end
