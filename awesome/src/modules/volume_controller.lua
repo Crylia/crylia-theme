@@ -166,17 +166,39 @@ return function(s)
       awful.spawn.easy_async_with_shell(
         [[ pactl get-default-sink ]],
         function(stdout)
-          local node_active = stdout:gsub("\n", "")
-          if node == node_active then
-            bg = color["Purple200"]
-            fg = color["Grey900"]
-            device.background:set_bg(color["Purple200"])
-            device.background:set_fg(color["Grey900"])
+          if stdout:gsub("\n", "") ~= "" then
+            local node_active = stdout:gsub("\n", "")
+            if node == node_active then
+              bg = color["Purple200"]
+              fg = color["Grey900"]
+              device.background:set_bg(color["Purple200"])
+              device.background:set_fg(color["Grey900"])
+            else
+              fg = color["Purple200"]
+              bg = color["Grey700"]
+              device.background:set_fg(color["Purple200"])
+              device.background:set_bg(color["Grey700"])
+            end
           else
-            fg = color["Purple200"]
-            bg = color["Grey700"]
-            device.background:set_fg(color["Purple200"])
-            device.background:set_bg(color["Grey700"])
+            awful.spawn.easy_async_with_shell(
+              [[LC_ALL=C pactl info | perl -n -e'/Default Sink: (.+)\s/ && print $1']],
+              function(stdout2)
+                if stdout2:gsub("\n", "") ~= "" then
+                  local node_active = stdout2:gsub("\n", "")
+                  if node == node_active then
+                    bg = color["Purple200"]
+                    fg = color["Grey900"]
+                    device.background:set_bg(color["Purple200"])
+                    device.background:set_fg(color["Grey900"])
+                  else
+                    fg = color["Purple200"]
+                    bg = color["Grey700"]
+                    device.background:set_fg(color["Purple200"])
+                    device.background:set_bg(color["Grey700"])
+                  end
+                end
+              end
+            )
           end
         end
       )
@@ -307,6 +329,45 @@ return function(s)
             bg = color["Grey700"]
             device.background:set_fg(color["Blue200"])
             device.background:set_bg(color["Grey700"])
+          end
+        end
+      )
+      awful.spawn.easy_async_with_shell(
+        [[ pactl get-default-source ]],
+        function(stdout)
+          if stdout:gsub("\n", "") ~= "" then
+            local node_active = stdout:gsub("\n", "")
+            if node == node_active then
+              bg = color["Blue200"]
+              fg = color["Grey900"]
+              device.background:set_bg(color["Blue200"])
+              device.background:set_fg(color["Grey900"])
+            else
+              fg = color["Blue200"]
+              bg = color["Grey700"]
+              device.background:set_fg(color["Blue200"])
+              device.background:set_bg(color["Grey700"])
+            end
+          else
+            awful.spawn.easy_async_with_shell(
+              [[LC_ALL=C pactl info | perl -n -e'/Default Source: (.+)\s/ && print $1']],
+              function(stdout2)
+                if stdout2:gsub("\n", "") ~= "" then
+                  local node_active = stdout:gsub("\n", "")
+                  if node == node_active then
+                    bg = color["Blue200"]
+                    fg = color["Grey900"]
+                    device.background:set_bg(color["Blue200"])
+                    device.background:set_fg(color["Grey900"])
+                  else
+                    fg = color["Blue200"]
+                    bg = color["Grey700"]
+                    device.background:set_fg(color["Blue200"])
+                    device.background:set_bg(color["Grey700"])
+                  end
+                end
+              end
+            )
           end
         end
       )
@@ -594,7 +655,8 @@ return function(s)
     end
   )
 
-  local audio_slider_margin = volume_controller:get_children_by_id("audio_volume_margin")[1].audio_volume.slider_margin.slider
+  local audio_slider_margin = volume_controller:get_children_by_id("audio_volume_margin")[1].audio_volume.slider_margin.
+      slider
 
   -- Volume slider change event
   audio_slider_margin:connect_signal(
@@ -625,7 +687,9 @@ return function(s)
     stretch = false,
     visible = false,
     screen = s,
-    placement = function(c) awful.placement.align(c, { position = "top_right", margins = { right = dpi(305), top = dpi(60) } }) end,
+    placement = function(c) awful.placement.align(c,
+        { position = "top_right", margins = { right = dpi(305), top = dpi(60) } })
+    end,
     shape = function(cr, width, height)
       gears.shape.rounded_rect(cr, width, height, 12)
     end
@@ -634,7 +698,8 @@ return function(s)
   -- Get all source devices
   local function get_source_devices()
     awful.spawn.easy_async_with_shell(
-      [[ pactl list sinks | grep -E 'node.name|alsa.card_name' | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]],
+      [[ pactl list sinks | grep -E 'node.name|alsa.card_name' | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]]
+      ,
 
       function(stdout)
         local i, j = 1, 1
@@ -668,7 +733,8 @@ return function(s)
   -- Get all input devices
   local function get_input_devices()
     awful.spawn.easy_async_with_shell(
-      [[ pactl list sources | grep -E "node.name|alsa.card_name" | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]],
+      [[ pactl list sources | grep -E "node.name|alsa.card_name" | awk '{gsub(/"/, ""); for(i = 3;i < NF;i++) printf $i " "; print $NF}' ]]
+      ,
 
       function(stdout)
         local i, j = 1, 1
@@ -718,9 +784,11 @@ return function(s)
         local volume = stdout:gsub("%%", ""):gsub("\n", "")
         volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(volume))
         if volume > 0 then
-          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone.svg", color["LightBlue200"]))
+          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
+            .. "microphone.svg", color["LightBlue200"]))
         else
-          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
+            .. "microphone-off.svg", color["LightBlue200"]))
         end
       end
     )
@@ -735,7 +803,8 @@ return function(s)
       function(stdout)
         if stdout:match("yes") then
           volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(0))
-          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
+            .. "microphone-off.svg", color["LightBlue200"]))
         else
           get_mic_volume()
         end
@@ -813,8 +882,10 @@ return function(s)
         icon = icon .. "-high"
       end
 
-      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.slider_margin.slider:set_value(volume)
-      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.recolor_image(icon .. ".svg", color["Purple200"]))
+      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.slider_margin.slider:
+          set_value(volume)
+      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.
+        recolor_image(icon .. ".svg", color["Purple200"]))
     end
   )
 
@@ -823,7 +894,8 @@ return function(s)
     "get::volume_mute",
     function(mute)
       if mute then
-        volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "volume-mute.svg", color["Purple200"]))
+        volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.
+          color.recolor_image(icondir .. "volume-mute.svg", color["Purple200"]))
       end
     end
   )
@@ -833,9 +905,11 @@ return function(s)
     "get::mic_volume",
     function(volume)
       if volume > 0 then
-        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone.svg", color["LightBlue200"]))
+        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir
+          .. "microphone.svg", color["LightBlue200"]))
       else
-        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "microphone-off.svg", color["LightBlue200"]))
+        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir
+          .. "microphone-off.svg", color["LightBlue200"]))
       end
     end
   )
