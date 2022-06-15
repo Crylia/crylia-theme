@@ -6,6 +6,34 @@ local ruled = require("ruled")
 
 local modkey = User_config.modkey
 
+awful.keygrabber {
+  keybindings        = {
+    awful.key {
+      modifiers = { modkey },
+      key = "Tab",
+      on_press = function()
+        awesome.emit_signal("window_switcher::select_next")
+      end
+    }
+  },
+  root_keybindings   = {
+    awful.key { -- Has to be here and can't be nil
+      modifiers = { "Also Nothing" },
+      key = "Nothing"
+    }
+  },
+  stop_key           = "Mod4",
+  stop_event         = "release",
+  start_callback     = function()
+    awesome.emit_signal("toggle_window_switcher")
+  end,
+  stop_callback      = function()
+    awesome.emit_signal("window_switcher::raise")
+    awesome.emit_signal("toggle_window_switcher")
+  end,
+  export_keybindings = true,
+}
+
 return gears.table.join(
   awful.key(
     { modkey },
@@ -155,14 +183,6 @@ return gears.table.join(
       awful.spawn("rofi -show drun -theme ~/.config/rofi/rofi.rasi")
     end,
     { descripton = "Application launcher", group = "Application" }
-  ),
-  awful.key(
-    { modkey },
-    "#23",
-    function()
-      awful.spawn("rofi -kb-accept-entry '!Alt-Tab' -kb-row-down Alt-Tab  -show window -theme ~/.config/rofi/window.rasi")
-    end,
-    { descripton = "Client switcher (alt+tab)", group = "Application" }
   ),
   awful.key(
     { "Mod1" },

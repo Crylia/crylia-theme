@@ -78,6 +78,7 @@ client.connect_signal(
 )
 
 --- Takes a wibox.container.background and connects four signals to it
+---@diagnostic disable-next-line: undefined-doc-name
 ---@param widget widget.container.background
 ---@param bg string
 ---@param fg string

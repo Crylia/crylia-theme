@@ -256,8 +256,11 @@ Theme_config.volume_osd = {
 
 Theme_config.window_switcher = {
   element_bg = color["Grey800"],
-  element_fg = color["CyanA200"],
+  element_fg = color["Green200"],
   border_color = color["Grey800"],
   border_width = dpi(4),
   bg = color["Grey900"],
+  selected_fg = color["CyanA200"],
+  selected_border_color = color["Purple200"],
+  selected_bg = "#313131"
 }

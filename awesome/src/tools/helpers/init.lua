@@ -1,0 +1,6 @@
+require("src.tools.helpers.cpu_temp")
+require("src.tools.helpers.cpu_usage")
+require("src.tools.helpers.cpu_freq")
+require("src.tools.helpers.ram")
+require("src.tools.helpers.gpu_usage")
+require("src.tools.helpers.gpu_temp")

@@ -15,6 +15,7 @@ local rubato = require("src.lib.rubato")
 local icondir = awful.util.getdir("config") .. "src/assets/icons/"
 
 --- Signal bars widget for the notification-center
+---@diagnostic disable-next-line: undefined-doc-name
 ---@return wibox.widget
 return function()
 
@@ -90,9 +91,8 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::cpu_usage_widget",
+          "update::cpu_usage",
           function(cpu_usage)
-            --w:get_children_by_id("progressbar1")[1].value = cpu_usage
             tooltip.text = "CPU Usage: " .. cpu_usage .. "%"
             rubato_timer.target = cpu_usage
           end
@@ -161,10 +161,17 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::cpu_temp_widget",
-          function(cpu_temp, cpu_temp_icon)
-            --w:get_children_by_id("progressbar1")[1].value = cpu_temp
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(cpu_temp_icon, color["Blue200"])
+          "update::cpu_temp",
+          function(cpu_temp)
+            local temp_icon
+            if cpu_temp < 50 then
+              temp_icon = icondir .. "cpu/thermometer-low.svg"
+            elseif cpu_temp >= 50 and cpu_temp < 80 then
+              temp_icon = icondir .. "cpu/thermometer.svg"
+            elseif cpu_temp >= 80 then
+              temp_icon = icondir .. "cpu/thermometer-high.svg"
+            end
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(temp_icon, color["Blue200"])
             tooltip.text = "CPU Temp: " .. cpu_temp .. "°C"
             rubato_timer.target = cpu_temp
           end
@@ -232,8 +239,8 @@ return function()
 
         awesome.connect_signal(
           "update::ram_widget",
-          function(ram_usage)
-            --w:get_children_by_id("progressbar1")[1].value = ram_usage
+          function(MemTotal, MemFree, MemAvailable)
+            local ram_usage = math.floor(((MemTotal - MemAvailable) / MemTotal * 100) + 0.5)
             tooltip.text = "RAM Usage: " .. ram_usage .. "%"
             rubato_timer.target = ram_usage
           end
@@ -300,11 +307,10 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::gpu_usage_widget",
+          "update::gpu_usage",
           function(gpu_usage)
-            --w:get_children_by_id("progressbar1")[1].value = gpu_usage
             tooltip.text = "GPU Usage: " .. gpu_usage .. "%"
-            rubato_timer.target = gpu_usage
+            rubato_timer.target = tonumber(gpu_usage)
           end
         )
       elseif widget == "gpu_temp" then
@@ -337,7 +343,7 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "cpu/gpu.svg", color["Green200"]),
+              image = gears.color.recolor_image(icondir .. "cpu/thermometer.svg", color["Green200"]),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -371,12 +377,27 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::gpu_temp_widget",
-          function(gpu_temp, gpu_temp_icon)
-            --w:get_children_by_id("progressbar1")[1].value = gpu_temp
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(gpu_temp_icon, color["Green200"])
-            tooltip.text = "GPU Temp: " .. gpu_temp .. "°C"
-            rubato_timer.target = gpu_temp
+          "update::gpu_temp",
+          function(gpu_temp)
+            local temp_icon
+            local temp_num = tonumber(gpu_temp)
+
+            if temp_num then
+
+              if temp_num < 50 then
+                temp_icon = icondir .. "cpu/thermometer-low.svg"
+              elseif temp_num >= 50 and temp_num < 80 then
+                temp_icon = icondir .. "cpu/thermometer.svg"
+              elseif temp_num >= 80 then
+                temp_icon = icondir .. "cpu/thermometer-high.svg"
+              end
+            else
+              temp_num = "NaN"
+              temp_icon = icondir .. "cpu/thermometer-low.svg"
+            end
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(temp_icon, color["Green200"])
+            tooltip.text = "GPU Temp: " .. temp_num .. "°C"
+            rubato_timer.target = temp_num
           end
         )
       elseif widget == "volume" then
@@ -587,7 +608,7 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::backlight_widget",
+          "update::backlight",
           function(backlight, backlight_icon)
             --w:get_children_by_id("progressbar1")[1].value = backlight
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(backlight_icon, color["Pink200"])

@@ -43,7 +43,7 @@ return function(s)
               color = Theme_config.brightness_osd.bar_bg_active,
               background_color = Theme_config.brightness_osd.bar_bg,
               max_value = 100,
-              value = 50,
+              value = 0,
               forced_height = dpi(6),
               shape = function(cr, width, height)
                 gears.shape.rounded_bar(cr, width, height, dpi(6))
@@ -86,7 +86,9 @@ return function(s)
       [[ pkexec xfpm-power-backlight-helper --get-brightness ]],
       function(stdout)
         local brightness_value = math.floor((tonumber(stdout) - 1) / (BACKLIGHT_MAX_BRIGHTNESS - 1) * 100)
-        brightness_osd_widget:get_children_by_id("progressbar")[1].value = stdout
+        brightness_osd_widget:get_children_by_id("progressbar1")[1].value = brightness_value
+
+        awesome.emit_signal("update::backlight", brightness_value)
 
         local icon = icondir .. "brightness"
         if brightness_value >= 0 and brightness_value < 34 then
@@ -96,7 +98,7 @@ return function(s)
         elseif brightness_value >= 67 then
           icon = icon .. "-high"
         end
-        brightness_osd_widget:get_children_by_id("icon"):set_image(gears.color.recolor_image(icon .. ".svg",
+        brightness_osd_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icon .. ".svg",
           Theme_config.brightness_osd.icon_color))
       end
     )
