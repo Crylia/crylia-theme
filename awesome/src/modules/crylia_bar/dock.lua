@@ -88,7 +88,7 @@ return function(screen, programs)
     visible = true,
     screen = screen,
     type = "dock",
-    height = User_config.dock_icon_size + 10,
+    height = dpi(User_config.dock_icon_size + 10),
     placement = function(c) awful.placement.bottom(c, { margins = dpi(10) }) end,
     shape = function(cr, width, height)
       gears.shape.rounded_rect(cr, width, height, dpi(16))
@@ -192,7 +192,8 @@ return function(screen, programs)
   }
 
   local function check_for_dock_hide(s)
-    for _, client in ipairs(s.selected_tag:clients()) do
+    local clients_on_tag = s.selected_tag:clients()
+    for _, client in ipairs(clients_on_tag) do
       if client.fullscreen then
         dock.visible = false
         fakedock.visible = false
@@ -200,21 +201,20 @@ return function(screen, programs)
         fakedock.visible = true
       end
     end
-    if #s.selected_tag:clients() < 1 then
+    if #clients_on_tag < 1 then
       dock.visible = true
       return
     end
     if s == mouse.screen then
-      local minimized
-      for _, c in ipairs(s.selected_tag:clients()) do
-        if c.minimized then
-          minimized = true
-        end
+      local minimized = false
+      for _, c in ipairs(clients_on_tag) do
         if c.maximized or c.fullscreen then
           dock.visible = false
           return
         end
-        if not c.minimized then
+        if c.minimized then
+          minimized = true
+        else
           local y = c:geometry().y
           local h = c.height
           if (y + h) >= s.geometry.height - User_config.dock_icon_size - 35 then
@@ -250,6 +250,10 @@ return function(screen, programs)
           dock_intelligent_hide:stop()
           dock.visible = true
         end
+      end
+      if #screen.clients < 1 then
+        dock.visible = true
+        dock_intelligent_hide:stop()
       end
     end
   )
@@ -313,6 +317,12 @@ return function(screen, programs)
     "mouse::leave",
     function()
       dock_intelligent_hide:again()
+      dock.visible = false
     end
   )
+  dock:setup {
+    dock_elements,
+    create_incicator_widget(programs),
+    layout = wibox.layout.fixed.vertical
+  }
 end
