@@ -101,20 +101,17 @@ return function(widget)
   }
 
   -- GPU Utilization
-  watch(
-    [[ bash -c "nvidia-smi -q -d UTILIZATION | grep Gpu | awk '{print $3}'"]],
-    3,
-    function(_, stdout)
+  awesome.connect_signal(
+    "update::gpu_usage",
+    function(stdout)
       gpu_usage_widget.container.gpu_layout.label.text = stdout:gsub("\n", "") .. "%"
-      awesome.emit_signal("update::gpu_usage_widget", tonumber(stdout))
     end
   )
 
   -- GPU Temperature
-  watch(
-    [[ bash -c "nvidia-smi -q -d TEMPERATURE | grep 'GPU Current Temp' | awk '{print $5}'"]],
-    3,
-    function(_, stdout)
+  awesome.connect_signal(
+    "update::gpu_temp",
+    function(stdout)
 
       local temp_icon
       local temp_color
@@ -137,12 +134,9 @@ return function(widget)
         temp_color = color["Green200"]
         temp_icon = icon_dir .. "thermometer-low.svg"
       end
-      Hover_signal(gpu_temp_widget, temp_color, Theme_config.gpu_temp.fg)
       gpu_temp_widget.container.gpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
       gpu_temp_widget:set_bg(temp_color)
       gpu_temp_widget.container.gpu_layout.label.text = tostring(temp_num) .. "°C"
-      awesome.emit_signal("update::gpu_temp_widget", temp_num, temp_icon)
-
     end
   )
 

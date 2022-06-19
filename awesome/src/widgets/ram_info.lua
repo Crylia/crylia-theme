@@ -57,18 +57,12 @@ return function()
 
   Hover_signal(ram_widget, Theme_config.ram_info.bg, Theme_config.ram_info.fg)
 
-  watch(
-    [[ bash -c "cat /proc/meminfo| grep Mem | awk '{print $2}'" ]],
-    3,
-    function(_, stdout)
-
-      local MemTotal, MemFree, MemAvailable = stdout:match("(%d+)\n(%d+)\n(%d+)\n")
-
+  awesome.connect_signal(
+    "update::ram",
+    function(MemTotal, MemFree, MemAvailable)
       local ram_string = tostring(string.format("%.1f", ((MemTotal - MemAvailable) / 1024 / 1024)) ..
         "/" .. string.format("%.1f", (MemTotal / 1024 / 1024)) .. "GB"):gsub(",", ".")
-
       ram_widget.container.ram_layout.label.text = ram_string
-      awesome.emit_signal("update::ram_widget", math.floor(((MemTotal - MemAvailable) / MemTotal * 100) + 0.5))
     end
   )
 

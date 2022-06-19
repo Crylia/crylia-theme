@@ -144,79 +144,47 @@ return function(widget, clock_mode)
     widget = wibox.container.background
   }
 
-  local total_prev = 0
-  local idle_prev = 0
-
-  watch(
-    [[ cat "/proc/stat" | grep '^cpu ' ]],
-    3,
-    function(_, stdout)
-      local user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice =
-      stdout:match("(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s")
-
-      local total = user + nice + system + idle + iowait + irq + softirq + steal
-
-      local diff_idle = idle - idle_prev
-      local diff_total = total - total_prev
-      local diff_usage = (1000 * (diff_total - diff_idle) / diff_total + 5) / 10
-
-      cpu_usage_widget.container.cpu_layout.label.text = tostring(math.floor(diff_usage)) .. "%"
-      awesome.emit_signal("update::cpu_usage_widget", math.floor(diff_usage + 0.5))
-
-      total_prev = total
-      idle_prev = idle
-      collectgarbage("collect")
+  awesome.connect_signal(
+    "update::cpu_usage",
+    function(usage)
+      cpu_usage_widget.container.cpu_layout.label.text = usage .. "%"
     end
   )
 
-  watch(
-    [[ bash -c "sensors | grep 'Package id 0:' | awk '{print $4}'" ]],
-    3,
-    function(_, stdout)
-
+  awesome.connect_signal(
+    "update::cpu_temp",
+    function(temp)
       local temp_icon
       local temp_color
-
-      local temp_num = tonumber(stdout:match("%d+"))
-      if temp_num < 50 then
+      if temp < 50 then
         temp_color = color["Green200"]
         temp_icon = icon_dir .. "thermometer-low.svg"
-      elseif temp_num >= 50 and temp_num < 80 then
+      elseif temp >= 50 and temp < 80 then
         temp_color = color["Orange200"]
         temp_icon = icon_dir .. "thermometer.svg"
-      elseif temp_num >= 80 then
+      elseif temp >= 80 then
         temp_color = color["Red200"]
         temp_icon = icon_dir .. "thermometer-high.svg"
       end
       Hover_signal(cpu_temp, temp_color, Theme_config.cpu_temp.fg)
       cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
       cpu_temp:set_bg(temp_color)
-      cpu_temp.container.cpu_layout.label.text = math.floor(temp_num) .. "°C"
-      awesome.emit_signal("update::cpu_temp_widget", temp_num, temp_icon)
+      cpu_temp.container.cpu_layout.label.text = math.floor(temp) .. "°C"
+      awesome.emit_signal("update::cpu_temp_widget", temp, temp_icon)
     end
   )
 
-  watch(
-    [[ bash -c "cat /proc/cpuinfo | grep "MHz" | awk '{print int($4)}'" ]],
-    3,
-    function(_, stdout)
-      local cpu_freq = {}
+  awesome.connect_signal(
+    "update::cpu_freq_average",
+    function(average)
+      cpu_clock.container.cpu_layout.label.text = average .. "Mhz"
+    end
+  )
 
-      for value in stdout:gmatch("%d+") do
-        table.insert(cpu_freq, value)
-      end
-
-      local average = 0
-
-      if clock_mode == "average" then
-        for i = 1, #cpu_freq do
-          average = average + cpu_freq[i]
-        end
-        average = math.floor(average / #cpu_freq)
-        cpu_clock.container.cpu_layout.label.text = average .. "Mhz"
-      elseif clock_mode then
-        cpu_clock.container.cpu_layout.label.text = cpu_freq[clock_mode] .. "Mhz"
-      end
+  awesome.connect_signal(
+    "update::cpu_freq_core",
+    function(freq)
+      cpu_clock.container.cpu_layout.label.text = freq .. "Mhz"
     end
   )
 
