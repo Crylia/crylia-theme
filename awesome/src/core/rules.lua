@@ -18,7 +18,7 @@ awful.rules.rules = {
       keys         = require("src.bindings.client_keys"),
       buttons      = require("src.bindings.client_buttons"),
       screen       = awful.screen.preferred,
-      placement    = awful.placement.no_overlap + awful.placement.no_offscreen
+      placement    = awful.placement.under_mouse + awful.placement.no_overlap + awful.placement.no_offscreen
     }
   },
   {

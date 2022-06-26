@@ -19,13 +19,13 @@ local function get_basedir()
   if gears.filesystem.dir_readable(dir) then table.insert(dirs, dir) end
 
   for _, value in ipairs(GLib.get_system_data_dirs()) do
-    dir = GLib.build_filenamev({ value, ".icons" })
+    dir = GLib.build_filenamev({ value, "icons" })
     if gears.filesystem.dir_readable(dir) then table.insert(dirs, dir) end
   end
 
   local need_usr_share_pixmaps = true
   for _, value in ipairs(GLib.get_system_data_dirs()) do
-    dir = GLib.build_filenamev({ value, ".icons" })
+    dir = GLib.build_filenamev({ value, "icons" })
     if gears.filesystem.dir_readable(dir) then table.insert(dirs, dir) end
     if dir == "/usr/share/pixmaps" then
       need_usr_share_pixmaps = false
@@ -37,8 +37,6 @@ local function get_basedir()
   if need_usr_share_pixmaps and gears.filesystem.dir_readable(dir) then
     table.insert(dirs, dir)
   end
-
-  table.insert(dirs, "/usr/share/icons")
 
   return dirs
 end
@@ -186,6 +184,9 @@ local function find_icon_helper(self, icon, size)
   if filename then return filename end
 
   for _, parent in ipairs(self.theme_index:get_inherits()) do
+    if parent == "hicolor" then
+      return
+    end
     filename = find_icon_helper(xdg_icon_lookup(parent, self.base_directories), icon, size)
     if filename then return filename end
   end
@@ -199,10 +200,10 @@ local iconcache = {}
 ---@param size any
 ---@return string path_to_icon
 function xdg_icon_lookup:find_icon(icon, size)
-  if iconcache[icon] then
-    return iconcache[icon]
-  end
-  size = size or 64
+
+  if icon_cache[icon] == "" then return nil end
+  if iconcache[icon] then return iconcache[icon] end
+
   if not icon or icon == "" then return nil end
 
   local filename = find_icon_helper(self, icon, size)
@@ -223,10 +224,8 @@ function xdg_icon_lookup:find_icon(icon, size)
     return filename
   end
 
-  local fallback = gears.color.recolor_image(require("awful").util.getdir("config") .. "src/assets/icons/fallback.svg",
-    "#ffffff")
-  iconcache[icon] = fallback
-  return fallback
+  iconcache[icon] = ""
+  return nil
 end
 
 xdg_icon_lookup.mt.__call = function(_, ...)

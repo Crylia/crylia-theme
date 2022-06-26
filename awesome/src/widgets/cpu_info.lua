@@ -4,16 +4,14 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
-local watch = awful.widget.watch
 local wibox = require("wibox")
 
 local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
 
 --TODO: Add tooltip with more CPU and per core information
-return function(widget, clock_mode)
+return function(widget, _)
 
   local cpu_usage_widget = wibox.widget {
     {
@@ -93,7 +91,7 @@ return function(widget, clock_mode)
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Green200"],
+    bg = Theme_config.cpu_temp.bg_low,
     fg = Theme_config.cpu_temp.fg,
     shape = function(cr, width, height)
       gears.shape.rounded_rect(cr, width, height, dpi(6))
@@ -157,13 +155,13 @@ return function(widget, clock_mode)
       local temp_icon
       local temp_color
       if temp < 50 then
-        temp_color = color["Green200"]
+        temp_color = Theme_config.cpu_temp.bg_low
         temp_icon = icon_dir .. "thermometer-low.svg"
       elseif temp >= 50 and temp < 80 then
-        temp_color = color["Orange200"]
+        temp_color = Theme_config.cpu_temp.bg_mid
         temp_icon = icon_dir .. "thermometer.svg"
       elseif temp >= 80 then
-        temp_color = color["Red200"]
+        temp_color = Theme_config.cpu_temp.bg_high
         temp_icon = icon_dir .. "thermometer-high.svg"
       end
       Hover_signal(cpu_temp, temp_color, Theme_config.cpu_temp.fg)

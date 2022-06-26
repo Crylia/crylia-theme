@@ -14,9 +14,12 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/titlebar/"
 awful.titlebar.enable_tooltip = true
 awful.titlebar.fallback_name = 'Client'
 
+-- Normal AND Focus(active/inactive) have to be set or errors will appear in stdout
 Theme.titlebar_close_button_normal = icondir .. "close.svg"
-Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
+Theme.titlebar_close_button_focus = icondir .. "close.svg"
 Theme.titlebar_minimize_button_normal = icondir .. "minimize.svg"
+Theme.titlebar_minimize_button_focus = icondir .. "minimize.svg"
+Theme.titlebar_maximized_button_normal = icondir .. "maximize.svg"
 Theme.titlebar_maximized_button_active = icondir .. "maximize.svg"
 Theme.titlebar_maximized_button_inactive = icondir .. "maximize.svg"
 
@@ -75,7 +78,9 @@ local create_titlebar = function(c, size)
     {
       {
         {
-          awful.titlebar.widget.closebutton(c),
+          {
+            widget = awful.titlebar.widget.closebutton(c),
+          },
           widget = wibox.container.background,
           bg = Theme_config.titlebar.close_button_bg,
           shape = function(cr, height, width)
@@ -84,7 +89,9 @@ local create_titlebar = function(c, size)
           id = "closebutton"
         },
         {
-          awful.titlebar.widget.maximizedbutton(c),
+          {
+            widget = awful.titlebar.widget.maximizedbutton(c),
+          },
           widget = wibox.container.background,
           bg = Theme_config.titlebar.minimize_button_bg,
           shape = function(cr, height, width)
@@ -93,7 +100,9 @@ local create_titlebar = function(c, size)
           id = "maximizebutton"
         },
         {
-          awful.titlebar.widget.minimizebutton(c),
+          {
+            widget = awful.titlebar.widget.minimizebutton(c),
+          },
           widget = wibox.container.background,
           bg = Theme_config.titlebar.maximize_button_bg,
           shape = function(cr, height, width)
@@ -115,7 +124,7 @@ local create_titlebar = function(c, size)
     },
     {
       {
-        widget = awful.widget.clienticon(c)
+        widget = awful.titlebar.widget.iconwidget(c),
       },
       margins = dpi(5),
       widget = wibox.container.margin
@@ -200,7 +209,7 @@ client.connect_signal(
       create_titlebar(c, dpi(35))
     end
 
-    if not c.floating then
+    if not c.floating or c.maximized or c.fullscreen then
       awful.titlebar.hide(c, "left")
     end
   end

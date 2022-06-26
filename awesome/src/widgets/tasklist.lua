@@ -22,6 +22,7 @@ local list_update = function(widget, buttons, label, _, objects)
 								valign = "center",
 								halign = "center",
 								resize = true,
+								image = object.icon,
 								widget = wibox.widget.imagebox
 							},
 							nil,
@@ -113,7 +114,8 @@ local list_update = function(widget, buttons, label, _, objects)
 			task_widget:set_bg(Theme_config.tasklist.bg)
 			task_widget.container.layout_it.title:set_text('')
 		end
-		task_widget.container.layout_it.margin.layout_icon.icon:set_image(xdg_icon_lookup:find_icon(object.class, 64))
+		task_widget:get_children_by_id("icon")[1]:set_image(xdg_icon_lookup:find_icon(object.class, 64) or
+			object.icon)
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
 

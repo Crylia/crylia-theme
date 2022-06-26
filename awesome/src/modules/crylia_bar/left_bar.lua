@@ -3,7 +3,6 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -16,7 +15,7 @@ return function(s, w)
 
     },
     ontop = false,
-    bg = color["Grey900"],
+    bg = Theme_config.left_bar.bg,
     visible = true,
     maximum_width = dpi(650),
     placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end,
@@ -26,7 +25,7 @@ return function(s, w)
   }
 
   top_left:struts {
-    top = 55
+    top = dpi(55)
   }
 
   local function prepare_widgets(widgets)

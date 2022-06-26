@@ -55,15 +55,19 @@ return function(s)
     widget = wibox.container.background
   }
 
-  local get_volume = function()
-    awful.spawn.easy_async_with_shell(
-      "./.config/awesome/src/scripts/vol.sh volume",
-      function(stdout)
+  awesome.connect_signal(
+    "audio::get",
+    function(muted, volume)
+      if muted then
+        audio_widget.container.audio_layout.label.visible = false
+        audio_widget.container.audio_layout.icon_margin.icon_layout.icon:set_image(
+          gears.color.recolor_image(icondir .. "volume-mute" .. ".svg", Theme_config.audio.fg))
+      else
+        audio_widget.container:set_right(10)
         local icon = icondir .. "volume"
-        stdout = stdout:gsub("%%", "")
-        local volume = tonumber(stdout) or 0
         audio_widget.container.audio_layout.spacing = dpi(5)
         audio_widget.container.audio_layout.label.visible = true
+        volume = tonumber(volume)
         if volume < 1 then
           icon = icon .. "-mute"
           audio_widget.container.audio_layout.spacing = dpi(0)
@@ -78,29 +82,9 @@ return function(s)
         audio_widget.container.audio_layout.label:set_text(volume .. "%")
         audio_widget.container.audio_layout.icon_margin.icon_layout.icon:set_image(
           gears.color.recolor_image(icon .. ".svg", Theme_config.audio.fg))
-        awesome.emit_signal("get::volume", volume)
-        awesome.emit_signal("update::volume_widget", volume, icon .. ".svg")
       end
-    )
-  end
-
-  local check_muted = function()
-    awful.spawn.easy_async_with_shell(
-      "./.config/awesome/src/scripts/vol.sh mute",
-      function(stdout)
-        if stdout:match("yes") then
-          audio_widget.container.audio_layout.label.visible = false
-          audio_widget.container.audio_layout.icon_margin.icon_layout.icon:set_image(
-            gears.color.recolor_image(icondir .. "volume-mute" .. ".svg", Theme_config.audio.fg))
-          awesome.emit_signal("get::volume_mute", true)
-        else
-          audio_widget.container:set_right(10)
-          awesome.emit_signal("get::volume_mute", false)
-          get_volume()
-        end
-      end
-    )
-  end
+    end
+  )
 
   -- Signals
   Hover_signal(audio_widget, Theme_config.audio.bg, Theme_config.audio.fg)
@@ -108,19 +92,10 @@ return function(s)
   audio_widget:connect_signal(
     "button::press",
     function()
-      awesome.emit_signal("module::slider:update")
       awesome.emit_signal("volume_controller::toggle", s)
       awesome.emit_signal("volume_controller::toggle:keygrabber")
     end
   )
 
-  gears.timer {
-    timeout = 0.5,
-    call_now = true,
-    autostart = true,
-    callback = check_muted
-  }
-
-  check_muted()
   return audio_widget
 end

@@ -58,7 +58,7 @@ return function()
   Hover_signal(ram_widget, Theme_config.ram_info.bg, Theme_config.ram_info.fg)
 
   awesome.connect_signal(
-    "update::ram",
+    "update::ram_widget",
     function(MemTotal, MemFree, MemAvailable)
       local ram_string = tostring(string.format("%.1f", ((MemTotal - MemAvailable) / 1024 / 1024)) ..
         "/" .. string.format("%.1f", (MemTotal / 1024 / 1024)) .. "GB"):gsub(",", ".")

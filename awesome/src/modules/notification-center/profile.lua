@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -43,7 +42,8 @@ return function()
                 {
                   { -- Username
                     id = "username_prefix",
-                    image = gears.color.recolor_image(icondir .. "user.svg", color["Blue200"]),
+                    image = gears.color.recolor_image(icondir .. "user.svg",
+                      Theme_config.notification_center.profile.username_icon_color),
                     valign = "center",
                     halign = "left",
                     resize = false,
@@ -61,7 +61,8 @@ return function()
                 {
                   {
                     id = "os_prefix",
-                    image = gears.color.recolor_image(icondir .. "laptop.svg", color["Blue200"]),
+                    image = gears.color.recolor_image(icondir .. "laptop.svg",
+                      Theme_config.notification_center.profile.os_prefix_icon_color),
                     valign = "center",
                     halign = "left",
                     resize = false,
@@ -79,7 +80,8 @@ return function()
                 {
                   {
                     id = "kernel_prefix",
-                    image = gears.color.recolor_image(icondir .. "penguin.svg", color["Blue200"]),
+                    image = gears.color.recolor_image(icondir .. "penguin.svg",
+                      Theme_config.notification_center.profile.kernel_icon_color),
                     valign = "center",
                     halign = "left",
                     resize = false,
@@ -97,7 +99,8 @@ return function()
                 {
                   {
                     id = "uptime_prefix",
-                    image = gears.color.recolor_image(icondir .. "clock.svg", color["Blue200"]),
+                    image = gears.color.recolor_image(icondir .. "clock.svg",
+                      Theme_config.notification_center.profile.uptime_icon_color),
                     valign = "center",
                     halign = "left",
                     resize = false,
@@ -129,12 +132,10 @@ return function()
           widget = wibox.layout.fixed.vertical
         },
         id = "wrapper",
-        fg = color["Green200"],
-        border_color = color["Grey800"],
-        border_width = dpi(4),
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(8))
-        end,
+        fg = Theme_config.notification_center.profile.fg,
+        border_color = Theme_config.notification_center.profile.border_color,
+        border_width = Theme_config.notification_center.profile.border_width,
+        shape = Theme_config.notification_center.profile.shape,
         widget = wibox.container.background
       },
       id = "const",
@@ -177,7 +178,6 @@ return function()
         profile_widget:get_children_by_id("username")[1].text = stdout:gsub("\n", "") or ""
       end
     )
-
   end
 
   -- function to fetch uptime async

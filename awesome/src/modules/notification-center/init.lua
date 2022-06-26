@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -58,8 +57,8 @@ return function(s)
           id = "clearall"
         },
         id = "background4",
-        fg = color["Grey900"],
-        bg = color["Blue200"],
+        fg = Theme_config.notification_center.clear_all_button.fg,
+        bg = Theme_config.notification_center.clear_all_button.bg,
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, 12)
         end,
@@ -81,7 +80,7 @@ return function(s)
     {
       {
         widget = wibox.container.background,
-        bg = color["Grey700"],
+        bg = Theme_config.notification_center.dnd.disabled,
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, dpi(8))
         end,
@@ -104,7 +103,7 @@ return function(s)
     {
       {
         widget = wibox.container.background,
-        bg = color["Purple200"],
+        bg = Theme_config.notification_center.dnd.border_enabled,
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, dpi(8))
         end,
@@ -131,8 +130,8 @@ return function(s)
     },
     active = false,
     widget = wibox.container.background,
-    bg = color["Grey900"],
-    border_color = color["Grey800"],
+    bg = Theme_config.notification_center.dnd.bg,
+    border_color = Theme_config.notification_center.dnd.border_disabled,
     border_width = dpi(2),
     forced_height = dpi(40),
     forced_width = dpi(80),
@@ -148,13 +147,13 @@ return function(s)
         left_button.visible = true
         right_button.visible = false
         toggle_button.active = not toggle_button.active
-        toggle_button.border_color = color["Grey800"]
+        toggle_button.border_color = Theme_config.notification_center.dnd.border_disabled
         User_config.dnd = false
       else
         left_button.visible = false
         right_button.visible = true
         toggle_button.active = not toggle_button.active
-        toggle_button.border_color = color["Purple200"]
+        toggle_button.border_color = Theme_config.notification_center.dnd.border_enabled
         User_config.dnd = true
       end
     end
@@ -177,9 +176,9 @@ return function(s)
           id = "layout12"
         },
         id = "background4",
-        fg = color["Pink200"],
+        fg = Theme_config.notification_center.dnd.fg,
         shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, 12)
+          gears.shape.rounded_rect(cr, width, height, dpi(12))
         end,
         forced_height = dpi(40),
         widget = wibox.container.background
@@ -227,9 +226,9 @@ return function(s)
   --#region Notification center
   local notification_center = awful.popup {
     widget = wibox.container.background,
-    bg = color["Grey900"],
-    border_color = color["Grey800"],
-    border_width = dpi(4),
+    bg = Theme_config.notification_center.bg,
+    border_color = Theme_config.notification_center.border_color,
+    border_width = Theme_config.notification_center.border_width,
     placement = function(c)
       awful.placement.top(c, { margins = dpi(10) })
     end,
@@ -237,7 +236,7 @@ return function(s)
     screen = s,
     visible = false,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 12)
+      gears.shape.rounded_rect(cr, width, height, dpi(12))
     end,
   }
 
@@ -295,8 +294,7 @@ return function(s)
       id = "yes",
       spacing_widget = {
         {
-          fg = color["Grey800"],
-          bg = color["Grey800"],
+          bg = Theme_config.notification_center.spacing_color,
           widget = wibox.container.background
         },
         top = dpi(40),
@@ -365,7 +363,8 @@ return function(s)
     end
   )
 
-  Hover_signal(clear_all_widget, color["Blue200"], color["Grey900"])
+  Hover_signal(clear_all_widget, Theme_config.notification_center.clear_all_button.bg,
+    Theme_config.notification_center.clear_all_button.fg)
   --#endregion
 
 end

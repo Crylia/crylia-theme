@@ -76,7 +76,6 @@ return function(s)
               -- TODO: using gears.color to recolor a SVG will make it look super low res
               -- currently I recolor it in the .svg file directly, but later implement
               -- a better way to recolor a SVG
-              -- image = gears.color.recolor_image(icon, color["Grey900"]),
               image = icon,
               resize = true,
               forced_height = dpi(30),

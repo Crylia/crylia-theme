@@ -8,10 +8,6 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
-local naughty = require("naughty")
--- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/window_switcher/"
-
 return function(s)
 
   -- Variable to check if client is selected
@@ -43,6 +39,7 @@ return function(s)
     local objects_sorted = sort_objects()
 
     local selected = objects_sorted[1].pid
+
 
     for _, object in ipairs(objects_sorted) do
       local window_element = wibox.widget {
@@ -123,89 +120,92 @@ return function(s)
       local i = 1
       local sel = nil
 
+      local function select_next()
+        if not object.valid then
+          return
+        end
+        if #objects_sorted >= i then
+          selected = objects_sorted[i].pid
+          sel = selected
+          if selected == object.pid then
+            window_element.border_color = Theme_config.window_switcher.selected_border_color
+            window_element.fg = Theme_config.window_switcher.selected_fg
+            window_element.bg = Theme_config.window_switcher.selected_bg
+          else
+            window_element.border_color = Theme_config.window_switcher.border_color
+            window_element.fg = Theme_config.window_switcher.element_fg
+            window_element.bg = Theme_config.window_switcher.bg
+          end
+        end
+        if #objects_sorted > i then
+          i = i + 1
+        else
+          i = 1
+        end
+      end
+
+      local function raise()
+        if not object.valid then
+          return
+        end
+        if objects_sorted[i] then
+          if sel == object.pid then
+            if not object:isvisible() and object.first_tag then
+              object.first_tag:view_only()
+            end
+            object:emit_signal('request::activate')
+            object:raise()
+          end
+
+          -- Reset window switcher
+          i = 1
+          selected = objects_sorted[i].pid
+          sel = selected
+          if selected == object.pid then
+            window_element.border_color = Theme_config.window_switcher.selected_border_color
+            window_element.fg = Theme_config.window_switcher.selected_fg
+            window_element.bg = Theme_config.window_switcher.bg
+          else
+            window_element.border_color = Theme_config.window_switcher.border_color
+            window_element.fg = Theme_config.window_switcher.element_fg
+            window_element.bg = Theme_config.window_switcher.selected_bg
+          end
+        end
+        awesome.disconnect_signal(
+          "window_switcher::select_next",
+          select_next
+        )
+        awesome.disconnect_signal(
+          "window_switcher::raise",
+          raise
+        )
+      end
+
       awesome.connect_signal(
         "window_switcher::select_next",
-        function()
-          if not object.valid then
-            return
-          end
-          if #objects_sorted >= i then
-            selected = objects_sorted[i].pid
-            sel = selected
-
-            if selected == object.pid then
-              window_element.border_color = Theme_config.window_switcher.selected_border_color
-              window_element.fg = Theme_config.window_switcher.selected_fg
-              window_element.bg = Theme_config.window_switcher.selected_bg
-            else
-              window_element.border_color = Theme_config.window_switcher.border_color
-              window_element.fg = Theme_config.window_switcher.element_fg
-              window_element.bg = Theme_config.window_switcher.bg
-            end
-          end
-          if #objects_sorted > i then
-            i = i + 1
-          else
-            i = 1
-          end
-        end
-      )
-
-      object:connect_signal(
-        "unmanage",
-        function(c)
-          i = 1
-          objects_sorted[1] = objects_sorted[#objects_sorted]
-          objects_sorted[#objects_sorted] = nil
-          if objects_sorted[1] then
-            selected = objects_sorted[1].pid
-          end
-          -- remove object from table
-          if not object.valid then
-            return
-          end
-          for _, object in ipairs(objects) do
-            if object.pid == c.pid then
-              table.remove(objects, _)
-              break
-            end
-          end
-          for _, object in ipairs(objects_sorted) do
-            if object.pid == c.pid then
-              table.remove(objects_sorted, _)
-              break
-            end
-          end
-        end
+        select_next
       )
 
       awesome.connect_signal(
         "window_switcher::raise",
-        function()
-          if not object.valid then
-            return
-          end
-          if objects_sorted[i] then
-            if sel == object.pid then
-              if not object:isvisible() and object.first_tag then
-                object.first_tag:view_only()
-              end
-              object:emit_signal('request::activate')
-              object:raise()
-            end
+        raise
+      )
 
-            -- Reset window switcher
+
+      object:connect_signal(
+        "unmanage",
+        function(c)
+          if object.valid then
             i = 1
-            selected = objects_sorted[i].pid
-            sel = selected
-            if selected == object.pid then
-              window_element.border_color = Theme_config.window_switcher.selected_border_color
-              window_element.fg = Theme_config.window_switcher.selected_fg
-              window_element.bg = Theme_config.window_switcher.bg
-            else
-              window_element.border_color = Theme_config.window_switcher.border_color
-              window_element.fg = Theme_config.window_switcher.element_fg
-              window_element.bg = Theme_config.window_switcher.selected_bg
+            objects_sorted[1] = objects_sorted[#objects_sorted]
+            objects_sorted[#objects_sorted] = nil
+            for _, obj in ipairs(objects_sorted) do
+              if obj.valid then
+                if obj.pid == c.pid then
+                  table.remove(objects_sorted, _)
+                  break
+                end
+              end
             end
           end
         end
@@ -288,7 +288,9 @@ return function(s)
   awesome.connect_signal(
     "toggle_window_switcher",
     function()
-      window_switcher_container.visible = not window_switcher_container.visible
+      if mouse.screen == s then
+        window_switcher_container.visible = not window_switcher_container.visible
+      end
     end
   )
 

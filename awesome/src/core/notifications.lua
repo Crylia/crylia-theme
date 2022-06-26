@@ -3,7 +3,6 @@
 -------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local menubar = require('menubar')
@@ -17,18 +16,16 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 -- TODO: Figure out how to use hover effects without messing up the actions
 naughty.config.defaults.ontop = true
 naughty.config.defaults.icon_size = dpi(80)
-naughty.config.defaults.timeout = 3
+naughty.config.defaults.timeout = Theme_config.notification.timeout
 naughty.config.defaults.title = "System Notification"
 naughty.config.defaults.margin = dpi(10)
-naughty.config.defaults.position = "bottom_right"
-naughty.config.defaults.shape = function(cr, width, height)
-  gears.shape.rounded_rect(cr, width, height, dpi(10))
-end
-naughty.config.defaults.border_width = dpi(4)
-naughty.config.defaults.border_color = color["Grey800"]
-naughty.config.defaults.spacing = dpi(10)
+naughty.config.defaults.position = Theme_config.notification.position
+naughty.config.defaults.shape = Theme_config.notification.shape
+naughty.config.defaults.border_width = Theme_config.notification.border_width
+naughty.config.defaults.border_color = Theme_config.notification.border_color
+naughty.config.defaults.spacing = Theme_config.notification.spacing
 
-Theme.notification_spacing = dpi(20)
+Theme.notification_spacing = Theme_config.notification.corner_spacing
 
 naughty.connect_signal(
   'request::icon',
@@ -51,34 +48,42 @@ naughty.connect_signal(
     else
       if n.urgency == "critical" then
         n.title = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, ExtraBold 16'>%s</span>",
-          color["RedA200"], n.title) or ""
-        n.message = string.format("<span foreground='%s'>%s</span>", color["Red200"], n.message) or ""
-        n.app_name = string.format("<span foreground='%s'>%s</span>", color["RedA400"], n.app_name) or ""
-        n.bg = color["Grey900"]
+          Theme_config.notification.fg_urgent_title, n.title) or ""
+        n.message = string.format("<span foreground='%s'>%s</span>", Theme_config.notification.fg_urgent_message,
+          n.message) or ""
+        n.app_name = string.format("<span foreground='%s'>%s</span>", Theme_config.notification.fg_urgent_app_name,
+          n.app_name) or ""
+        n.bg = Theme_config.notification.bg_urgent
       else
         n.title = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, ExtraBold 16'>%s</span>",
-          color["Pink200"], n.title) or ""
-        n.message = string.format("<span foreground='%s'>%s</span>", "#ffffffaa", n.message) or ""
-        n.bg = color["Grey900"]
-        n.timeout = n.timeout or 3
+          Theme_config.notification.fg_normal_title, n.title) or ""
+        n.message = string.format("<span foreground='%s'>%s</span>", Theme_config.notification.fg_normal_message,
+          n.message) or ""
+        n.bg = Theme_config.notification.bg_normal
+        n.timeout = n.timeout or Theme_config.notification.timeout
       end
 
       local use_image = false
 
       if n.app_name == "Spotify" then
-        n.actions = { naughty.action {
-          program = "Spotify",
-          id = "skip-prev",
-          icon = gears.color.recolor_image(icondir .. "skip-prev.svg", color["Cyan200"])
-        }, naughty.action {
-          program = "Spotify",
-          id = "play-pause",
-          icon = gears.color.recolor_image(icondir .. "play-pause.svg", color["Cyan200"])
-        }, naughty.action {
-          program = "Spotify",
-          id = "skip-next",
-          icon = gears.color.recolor_image(icondir .. "skip-next.svg", color["Cyan200"])
-        } }
+        n.actions = {
+          naughty.action {
+            program = "Spotify",
+            id = "skip-prev",
+            icon = gears.color.recolor_image(icondir .. "skip-prev.svg",
+              Theme_config.notification.spotify_button_icon_color)
+          }, naughty.action {
+            program = "Spotify",
+            id = "play-pause",
+            icon = gears.color.recolor_image(icondir .. "play-pause.svg",
+              Theme_config.notification.spotify_button_icon_color)
+          }, naughty.action {
+            program = "Spotify",
+            id = "skip-next",
+            icon = gears.color.recolor_image(icondir .. "skip-next.svg",
+              Theme_config.notification.spotify_button_icon_color)
+          }
+        }
         use_image = true
       end
 
@@ -105,8 +110,7 @@ naughty.connect_signal(
             },
             forced_height = dpi(35),
             forced_width = dpi(35),
-            fg = color["Cyan200"],
-            bg = color["Grey800"],
+            bg = Theme_config.notification.action_bg,
             shape = function(cr, width, height)
               gears.shape.rounded_rect(cr, width, height, dpi(6))
             end,
@@ -134,8 +138,8 @@ naughty.connect_signal(
               margins = dpi(5),
               widget = wibox.container.margin
             },
-            fg = color["Green200"],
-            bg = color["Grey800"],
+            fg = Theme_config.notification.action_fg,
+            bg = Theme_config.notification.action_bg,
             shape = function(cr, width, height)
               gears.shape.rounded_rect(cr, width, height, dpi(6))
             end,
@@ -158,9 +162,7 @@ naughty.connect_signal(
         widget_template = action_template_widget,
         style = {
           underline_normal = false,
-          underline_selected = true,
-          bg_normal = color["Grey100"],
-          bg_selected = color["Grey200"]
+          underline_selected = true
         },
         widget = naughty.list.actions
       }
@@ -181,7 +183,8 @@ naughty.connect_signal(
                       {
                         {
                           {
-                            image = gears.color.recolor_image(icondir .. "notification-outline.svg", color["Teal200"]),
+                            image = gears.color.recolor_image(icondir .. "notification-outline.svg",
+                              Theme_config.notification.icon_color),
                             resize = false,
                             valign = "center",
                             halign = "center",
@@ -198,7 +201,7 @@ naughty.connect_signal(
                         },
                         layout = wibox.layout.fixed.horizontal
                       },
-                      fg = color["Teal200"],
+                      fg = Theme_config.notification.fg_appname,
                       widget = wibox.container.background
                     },
                     margins = dpi(10),
@@ -212,7 +215,7 @@ naughty.connect_signal(
                         widget = wibox.widget.textbox
                       },
                       id = "background",
-                      fg = color["Teal200"],
+                      fg = Theme_config.notification.fg_time,
                       widget = wibox.container.background
                     },
                     {
@@ -235,8 +238,7 @@ naughty.connect_signal(
                             id = "arc_chart"
                           },
                           id = "background",
-                          fg = color["Teal200"],
-                          bg = color["Grey900"],
+                          fg = Theme_config.notification.fg_close,
                           widget = wibox.container.background
                         },
                         strategy = "exact",
@@ -256,8 +258,8 @@ naughty.connect_signal(
                   layout = wibox.layout.align.horizontal
                 },
                 id = "arc_app_bg",
-                border_color = color["Grey800"],
-                border_width = dpi(2),
+                border_color = Theme_config.notification.title_border_color,
+                border_width = Theme_config.notification.title_border_width,
                 widget = wibox.container.background
               },
               {
@@ -327,17 +329,15 @@ naughty.connect_signal(
           widget = wibox.container.constraint
         },
         id = "background",
-        bg = color["Grey900"],
-        border_color = color["Grey800"],
-        border_width = dpi(4),
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, 4)
-        end,
+        bg = Theme_config.notification.bg,
+        border_color = Theme_config.notification.border_color,
+        border_width = Theme_config.notification.border_width,
+        shape = Theme_config.notification.shape_inside,
         widget = wibox.container.background
       }
 
-      local close = w_template.max_size.min_size.widget_layout.arc_app_bg.arc_app_layout.arc_app_layout_2.arc_margin.
-          const.background
+      local close = w_template.max_size.min_size.widget_layout.arc_app_bg.arc_app_layout.arc_app_layout_2.arc_margin.const
+          .background
       local arc = close.arc_chart
 
       local timeout = n.timeout
@@ -378,7 +378,7 @@ naughty.connect_signal(
         )
       end
 
-      Hover_signal(close, color["Grey900"], color["Teal200"])
+      Hover_signal(close, Theme_config.notification.bg_close, Theme_config.notification.fg_close)
 
       close:connect_signal(
         "button::press",
@@ -389,18 +389,13 @@ naughty.connect_signal(
 
       w_template:connect_signal(
         "button::press",
-        function(c, d, e, key)
+        function(_, _, _, key)
           if key == 3 then
             n:destroy()
           end
           -- TODO: Find out how to get the associated client
+          -- for some reason n.clients is always empty
           --[[ if key == 1 then
-          if n.clients then
-            n.clients[1]:activate {
-              switch_to_tag = true,
-              raise         = true
-            }
-          end
         end ]]
         end
       )
@@ -425,7 +420,6 @@ naughty.connect_signal(
 naughty.connect_signal(
   "destroyed",
   function()
-
   end
 )
 

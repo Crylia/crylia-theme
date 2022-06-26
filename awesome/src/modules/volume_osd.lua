@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -71,41 +70,33 @@ return function(s)
     widget = wibox.container.background
   }
 
-  local update_slider = function()
-    awful.spawn.easy_async_with_shell(
-      "./.config/awesome/src/scripts/vol.sh mute",
-      function(stdout)
-        if stdout:match("yes") then
-          volume_osd_widget:get_children_by_id("icon")[1]
-              :set_image(gears.color.recolor_image(
-                icondir .. "volume-mute" .. ".svg", Theme_config.volume_osd.icon_color))
-          volume_osd_widget:get_children_by_id("progressbar1")[1].value = tonumber(0)
-        else
-          awful.spawn.easy_async_with_shell(
-            "./.config/awesome/src/scripts/vol.sh volume",
-            function(stdout2)
-              local volume_level = stdout2:gsub("%%", ""):gsub("\n", "")
-              volume_osd_widget:get_children_by_id("progressbar1")[1].value = tonumber(volume_level)
-              local icon = icondir .. "volume"
-              if volume_level < 1 then
-                icon = icon .. "-mute"
-              elseif volume_level >= 1 and volume_level < 34 then
-                icon = icon .. "-low"
-              elseif volume_level >= 34 and volume_level < 67 then
-                icon = icon .. "-medium"
-              elseif volume_level >= 67 then
-                icon = icon .. "-high"
-              end
-              volume_osd_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icon .. ".svg",
-                Theme_config.volume_osd.icon_color))
-            end
-          )
+  awesome.connect_signal(
+    "audio::get",
+    function(muted, volume)
+      if muted then
+        volume_osd_widget:get_children_by_id("icon")[1]
+            :set_image(gears.color.recolor_image(
+              icondir .. "volume-mute" .. ".svg", Theme_config.volume_osd.icon_color))
+        volume_osd_widget:get_children_by_id("progressbar1")[1].value = tonumber(0)
+      else
+        volume = tonumber(volume)
+        volume_osd_widget:get_children_by_id("progressbar1")[1].value = tonumber(volume)
+        local icon = icondir .. "volume"
+        if volume < 1 then
+          icon = icon .. "-mute"
+        elseif volume >= 1 and volume < 34 then
+          icon = icon .. "-low"
+        elseif volume >= 34 and volume < 67 then
+          icon = icon .. "-medium"
+        elseif volume >= 67 then
+          icon = icon .. "-high"
         end
+        volume_osd_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icon .. ".svg",
+          Theme_config.volume_osd.icon_color))
       end
-    )
-  end
+    end
+  )
 
-  update_slider()
 
   local volume_container = awful.popup {
     widget = {},
@@ -138,10 +129,8 @@ return function(s)
       volume_container.visible = true
       if hide_volume_osd.started then
         hide_volume_osd:again()
-        update_slider()
       else
         hide_volume_osd:start()
-        update_slider()
       end
     end
   )

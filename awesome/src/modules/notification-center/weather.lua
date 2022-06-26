@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -66,20 +65,21 @@ return function()
                 widget = wibox.widget.textbox,
                 id = "description"
               },
-              fg = color["LightBlue200"],
+              fg = Theme_config.notification_center.weather.description_fg,
               widget = wibox.container.background
             },
             { -- line
               forced_height = dpi(4),
               forced_width = dpi(10),
-              bg = color["Grey800"],
+              bg = Theme_config.notification_center.weather.line_bg,
               widget = wibox.container.background,
               id = "line"
             },
             {
               { -- Speed
                 {
-                  image = gears.color.recolor_image(icondir .. "weather-windy.svg", color["OrangeA200"]),
+                  image = gears.color.recolor_image(icondir .. "weather-windy.svg",
+                    Theme_config.notification_center.weather.speed_icon_color),
                   resize = true,
                   forced_width = dpi(24),
                   forced_height = dpi(24),
@@ -111,7 +111,8 @@ return function()
                   widget = wibox.widget.imagebox,
                   valign = "center",
                   halign = "center",
-                  image = gears.color.recolor_image(icondir .. "humidity.svg", color["OrangeA200"]),
+                  image = gears.color.recolor_image(icondir .. "humidity.svg",
+                    Theme_config.notification_center.weather.humidity_icon_color),
                   id = "humidity_icon"
                 },
                 {
@@ -142,11 +143,9 @@ return function()
         widget = wibox.container.place
       },
       id = "background",
-      border_color = color["Grey800"],
-      border_width = dpi(4),
-      shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, dpi(12))
-      end,
+      border_color = Theme_config.notification_center.weather.border_color,
+      border_width = Theme_config.notification_center.weather.border_width,
+      shape = Theme_config.notification_center.weather.shape,
       widget = wibox.container.background
     },
     id = "margin",
@@ -200,7 +199,7 @@ return function()
             weather_widget:get_children_by_id("city_country")[1].text = city .. ", " .. country
             weather_widget:get_children_by_id("description")[1].text = description:sub(1, 1):upper() ..
                 description:sub(2)
-            weather_widget:get_children_by_id("line")[1].bg = color["Grey800"]
+            weather_widget:get_children_by_id("line")[1].bg = Theme_config.notification_center.weather.line_color
             weather_widget:get_children_by_id("speed")[1].text = speed .. " m/s"
             weather_widget:get_children_by_id("humidity")[1].text = humidity .. "%"
 

@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -32,12 +31,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Blue200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.cpu_usage_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -56,7 +55,8 @@ return function()
           },
           {
             { --Icon
-              image = gears.color.recolor_image(icondir .. "cpu/cpu.svg", color["Cyan200"]),
+              image = gears.color.recolor_image(icondir .. "cpu/cpu.svg",
+                Theme_config.notification_center.status_bar.cpu_usage_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox,
@@ -102,12 +102,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Blue200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.cpu_temp_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -127,7 +127,8 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "cpu/thermometer.svg", color["Cyan200"]),
+              image = gears.color.recolor_image(icondir .. "cpu/thermometer.svg",
+                Theme_config.notification_center.status_bar.cpu_temp_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -171,7 +172,8 @@ return function()
             elseif cpu_temp >= 80 then
               temp_icon = icondir .. "cpu/thermometer-high.svg"
             end
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(temp_icon, color["Blue200"])
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(temp_icon,
+              Theme_config.notification_center.status_bar.cpu_temp_color)
             tooltip.text = "CPU Temp: " .. cpu_temp .. "°C"
             rubato_timer.target = cpu_temp
           end
@@ -181,12 +183,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Red200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.ram_usage_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -205,7 +207,8 @@ return function()
           },
           {
             { --Icon
-              image = gears.color.recolor_image(icondir .. "cpu/ram.svg", color["Red200"]),
+              image = gears.color.recolor_image(icondir .. "cpu/ram.svg",
+                Theme_config.notification_center.status_bar.ram_usage_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -239,7 +242,10 @@ return function()
 
         awesome.connect_signal(
           "update::ram_widget",
-          function(MemTotal, MemFree, MemAvailable)
+          function(MemTotal, _, MemAvailable)
+            if not MemTotal or not MemAvailable then
+              return
+            end
             local ram_usage = math.floor(((MemTotal - MemAvailable) / MemTotal * 100) + 0.5)
             tooltip.text = "RAM Usage: " .. ram_usage .. "%"
             rubato_timer.target = ram_usage
@@ -250,12 +256,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Green200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.gpu_usage_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -274,7 +280,8 @@ return function()
           },
           {
             { --Icon
-              image = gears.color.recolor_image(icondir .. "cpu/gpu.svg", color["Green200"]),
+              image = gears.color.recolor_image(icondir .. "cpu/gpu.svg",
+                Theme_config.notification_center.status_bar.gpu_usage_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -318,12 +325,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Green200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.gpu_temp_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -343,7 +350,8 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "cpu/thermometer.svg", color["Green200"]),
+              image = gears.color.recolor_image(icondir .. "cpu/thermometer.svg",
+                Theme_config.notification_center.status_bar.gpu_temp_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -395,7 +403,8 @@ return function()
               temp_num = "NaN"
               temp_icon = icondir .. "cpu/thermometer-low.svg"
             end
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(temp_icon, color["Green200"])
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(temp_icon,
+              Theme_config.notification_center.status_bar.gpu_temp_color)
             tooltip.text = "GPU Temp: " .. temp_num .. "°C"
             rubato_timer.target = temp_num
           end
@@ -405,12 +414,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Yellow200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.volume_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -430,7 +439,8 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "audio/volume-high.svg", color["Yellow200"]),
+              image = gears.color.recolor_image(icondir .. "audio/volume-high.svg",
+                Theme_config.notification_center.status_bar.volume_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -464,10 +474,25 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::volume_widget",
-          function(volume, volume_icon)
-            --w:get_children_by_id("progressbar1")[1].value = volume
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(volume_icon, color["Yellow200"])
+          "audio::get",
+          function(muted, volume)
+            local icon = icondir .. "audio/volume"
+            volume = tonumber(volume)
+            if muted then
+              icon = icon .. "-mute"
+            else
+              if volume < 1 then
+                icon = icon .. "-mute"
+              elseif volume >= 1 and volume < 34 then
+                icon = icon .. "-low"
+              elseif volume >= 34 and volume < 67 then
+                icon = icon .. "-medium"
+              elseif volume >= 67 then
+                icon = icon .. "-high"
+              end
+            end
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(icon .. ".svg",
+              Theme_config.notification_center.status_bar.volume_color)
             tooltip.text = "Volume: " .. volume .. "%"
             rubato_timer.target = volume
           end
@@ -477,12 +502,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Purple200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.microphone_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -502,7 +527,8 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "audio/microphone.svg", color["Purple200"]),
+              image = gears.color.recolor_image(icondir .. "audio/microphone.svg",
+                Theme_config.notification_center.status_bar.microphone_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -536,12 +562,17 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::microphone_widget",
-          function(microphone, microphone_icon)
-            --w:get_children_by_id("progressbar1")[1].value = microphone
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(microphone_icon, color["Purple200"])
-            tooltip.text = "Microphone: " .. microphone .. "%"
-            rubato_timer.target = microphone
+          "microphone::get",
+          function(muted, volume)
+            local icon = icondir .. "audio/microphone"
+            volume = tonumber(volume)
+            if muted or (volume < 1) then
+              icon = icon .. "-off"
+            end
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(icon .. ".svg",
+              Theme_config.notification_center.status_bar.microphone_color)
+            tooltip.text = "Microphone: " .. volume .. "%"
+            rubato_timer.target = volume
           end
         )
       elseif widget == "backlight" then
@@ -549,12 +580,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Pink200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.backlight_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -574,7 +605,8 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "brightness/brightness-high.svg", color["Pink200"]),
+              image = gears.color.recolor_image(icondir .. "brightness/brightness-high.svg" .. ".svg",
+                Theme_config.notification_center.status_bar.backlight_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -610,8 +642,8 @@ return function()
         awesome.connect_signal(
           "update::backlight",
           function(backlight, backlight_icon)
-            --w:get_children_by_id("progressbar1")[1].value = backlight
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(backlight_icon, color["Pink200"])
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(backlight_icon,
+              Theme_config.notification_center.status_bar.backlight_color)
             tooltip.text = "Backlight: " .. backlight .. "%"
             rubato_timer.target = backlight
           end
@@ -621,12 +653,12 @@ return function()
           {
             {
               { --Bar
-                color = color["Purple200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.status_bar.battery_color,
+                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
-                shape = function(cr, width, heigth)
+                shape = function(cr)
                   gears.shape.rounded_bar(cr, dpi(58), dpi(8))
                 end,
                 id = "progressbar1",
@@ -646,7 +678,8 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "battery/battery.svg", color["Purple200"]),
+              image = gears.color.recolor_image(icondir .. "battery/battery.svg",
+                Theme_config.notification_center.status_bar.battery_color),
               halign = "center",
               valign = "center",
               widget = wibox.widget.imagebox
@@ -682,8 +715,8 @@ return function()
         awesome.connect_signal(
           "update::battery_widget",
           function(battery, battery_icon)
-            --w:get_children_by_id("progressbar1")[1].value = battery
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(battery_icon, color["Purple200"])
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(battery_icon,
+              Theme_config.notification_center.status_bar.battery_color)
             tooltip.text = "Battery: " .. battery .. "%"
             rubato_timer.target = battery
           end
@@ -714,11 +747,9 @@ return function()
       },
       forced_height = dpi(120),
       forced_width = dpi(500),
-      border_color = color["Grey800"],
-      border_width = dpi(4),
-      shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, dpi(10))
-      end,
+      border_color = Theme_config.notification_center.status_bar.border_color,
+      border_width = Theme_config.notification_center.status_bar.border_width,
+      shape = Theme_config.notification_center.status_bar.shape,
       widget = wibox.container.background
     },
     top = dpi(10),

@@ -82,6 +82,7 @@ local list_update = function(widget, buttons, _, _, objects)
           id = "icon_container",
           {
             id = "icon",
+            image = client.icon,
             resize = true,
             valign = "center",
             halign = "center",
@@ -94,7 +95,7 @@ local list_update = function(widget, buttons, _, _, objects)
         widget = wibox.container.margin
       }
 
-      icon.icon_container.icon:set_image(xdg_icon_lookup:find_icon(client.class, 64))
+      icon.icon_container.icon:set_image(xdg_icon_lookup:find_icon(client.class, 64) or client.icon)
 
       tag_widget.container:setup({
         icon,

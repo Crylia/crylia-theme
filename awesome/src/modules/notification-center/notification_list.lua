@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -33,7 +32,7 @@ function nl.create_notification(n)
         id = "txt"
       },
       id = "background",
-      fg = color["Teal200"],
+      fg = Theme_config.notification_center.notification_list.timer_fg,
       widget = wibox.container.background
     },
     margins = dpi(10),
@@ -81,7 +80,7 @@ function nl.create_notification(n)
           id = "arc_chart"
         },
         id = "background",
-        fg = color["Teal200"],
+        fg = Theme_config.notification_center.notification_list.close_color,
         widget = wibox.container.background
       },
       strategy = "exact",
@@ -108,7 +107,8 @@ function nl.create_notification(n)
                   {
                     {
                       {
-                        image = gears.color.recolor_image(icondir .. "notification-outline.svg", color["Teal200"]),
+                        image = gears.color.recolor_image(icondir .. "notification-outline.svg",
+                          Theme_config.notification_center.notification_list.icon),
                         resize = false,
                         valign = "center",
                         halign = "center",
@@ -125,7 +125,7 @@ function nl.create_notification(n)
                     },
                     layout = wibox.layout.fixed.horizontal
                   },
-                  fg = color["Teal200"],
+                  fg = Theme_config.notification_center.notification_list.title_fg,
                   widget = wibox.container.background
                 },
                 margins = dpi(10),
@@ -141,8 +141,8 @@ function nl.create_notification(n)
               layout = wibox.layout.align.horizontal
             },
             id = "arc_app_bg",
-            border_color = color["Grey800"],
-            border_width = dpi(2),
+            border_color = Theme_config.notification_center.notification_list.title_border_color,
+            border_width = Theme_config.notification_center.notification_list.title_border_width,
             widget = wibox.container.background
           },
           {
@@ -211,12 +211,10 @@ function nl.create_notification(n)
       widget = wibox.container.constraint
     },
     pk = #nl.notification_list + 1,
-    bg = color["Grey900"],
-    border_color = color["Grey800"],
-    border_width = dpi(4),
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 8)
-    end,
+    bg = Theme_config.notification_center.notification_list.notification_bg,
+    border_color = Theme_config.notification_center.notification_list.notification_border_color,
+    border_width = Theme_config.notification_center.notification_list.notification_border_width,
+    shape = Theme_config.notification_center.notification_list.notification_shape,
     widget = wibox.container.background
   }
 
@@ -235,7 +233,8 @@ function nl.create_notification(n)
     end
   )
 
-  Hover_signal(close_widget.const.background, color["Grey900"], color["Teal200"])
+  Hover_signal(close_widget.const.background, Theme_config.notification_center.notification_list.close_bg,
+    Theme_config.notification_center.notification_list.close_color)
 
   notification:connect_signal(
     "mouse::enter",

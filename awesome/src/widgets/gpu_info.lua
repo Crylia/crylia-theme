@@ -4,10 +4,8 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
-local watch = awful.widget.watch
 local wibox = require("wibox")
 
 local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
@@ -92,7 +90,7 @@ return function(widget)
       right = dpi(8),
       widget = wibox.container.margin
     },
-    bg = color["Green200"],
+    bg = Theme_config.gpu_temp.bg_low,
     fg = Theme_config.gpu_temp.fg,
     shape = function(cr, width, height)
       gears.shape.rounded_rect(cr, width, height, dpi(6))
@@ -120,18 +118,18 @@ return function(widget)
       if temp_num then
 
         if temp_num < 50 then
-          temp_color = color["Green200"]
+          temp_color = Theme_config.gpu_temp.bg_low
           temp_icon = icon_dir .. "thermometer-low.svg"
         elseif temp_num >= 50 and temp_num < 80 then
-          temp_color = color["Orange200"]
+          temp_color = Theme_config.gpu_temp.bg_mid
           temp_icon = icon_dir .. "thermometer.svg"
         elseif temp_num >= 80 then
-          temp_color = color["Red200"]
+          temp_color = Theme_config.gpu_temp.bg_high
           temp_icon = icon_dir .. "thermometer-high.svg"
         end
       else
         temp_num = "NaN"
-        temp_color = color["Green200"]
+        temp_color = Theme_config.gpu_temp.bg_low
         temp_icon = icon_dir .. "thermometer-low.svg"
       end
       gpu_temp_widget.container.gpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)

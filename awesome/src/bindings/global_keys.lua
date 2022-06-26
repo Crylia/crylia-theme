@@ -17,9 +17,11 @@ awful.keygrabber {
     }
   },
   root_keybindings   = {
-    awful.key { -- Has to be here and can't be nil
-      modifiers = { "Also Nothing" },
-      key = "Nothing"
+    awful.key {
+      modifiers = { modkey },
+      key = "Tab",
+      on_press = function()
+      end
     }
   },
   stop_key           = "Mod4",
@@ -185,14 +187,6 @@ return gears.table.join(
     { descripton = "Application launcher", group = "Application" }
   ),
   awful.key(
-    { "Mod1" },
-    "#23",
-    function()
-      awful.spawn("rofi -kb-accept-entry '!Alt-Tab' -kb-row-down Alt-Tab  -show window -theme ~/.config/rofi/window.rasi")
-    end,
-    { descripton = "Client switcher (alt+tab)", group = "Application" }
-  ),
-  awful.key(
     { modkey },
     "#26",
     function()
@@ -221,8 +215,6 @@ return gears.table.join(
     "XF86AudioLowerVolume",
     function(c)
       awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ -2%", function()
-        awesome.emit_signal("module::volume_osd:show", true)
-        awesome.emit_signal("module::slider:update")
         awesome.emit_signal("widget::volume_osd:rerun")
       end)
     end,
@@ -233,8 +225,6 @@ return gears.table.join(
     "XF86AudioRaiseVolume",
     function(c)
       awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ +2%", function()
-        awesome.emit_signal("module::volume_osd:show", true)
-        awesome.emit_signal("module::slider:update")
         awesome.emit_signal("widget::volume_osd:rerun")
       end)
     end,
@@ -245,8 +235,6 @@ return gears.table.join(
     "XF86AudioMute",
     function(c)
       awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
-      awesome.emit_signal("module::volume_osd:show", true)
-      awesome.emit_signal("module::slider:update")
       awesome.emit_signal("widget::volume_osd:rerun")
     end,
     { description = "Mute volume", group = "System" }
@@ -255,17 +243,12 @@ return gears.table.join(
     {},
     "XF86MonBrightnessUp",
     function(c)
-      --awful.spawn("xbacklight -time 100 -inc 10%+")
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " ..
-            tostring(tonumber(stdout) + BACKLIGHT_SEPS), function(stdou2)
-
-          end)
-          awesome.emit_signal("module::brightness_osd:show", true)
-          awesome.emit_signal("module::brightness_slider:update")
-          awesome.emit_signal("widget::brightness_osd:rerun")
+          awful.spawn("pkexec xfpm-power-backlight-helper --set-brightness " ..
+            tostring(tonumber(stdout) + BACKLIGHT_SEPS))
+          awesome.emit_signal("brightness::update")
         end
       )
     end,
@@ -278,13 +261,10 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn.easy_async_with_shell("pkexec xfpm-power-backlight-helper --set-brightness " ..
-            tostring(tonumber(stdout) - BACKLIGHT_SEPS), function(stdout2)
-
-          end)
-          awesome.emit_signal("module::brightness_osd:show", true)
-          awesome.emit_signal("module::brightness_slider:update")
-          awesome.emit_signal("widget::brightness_osd:rerun")
+          awful.spawn(
+            "pkexec xfpm-power-backlight-helper --set-brightness " ..
+            tostring(tonumber(stdout) - BACKLIGHT_SEPS))
+          awesome.emit_signal("brightness::update")
         end
       )
     end,
@@ -324,6 +304,14 @@ return gears.table.join(
   ),
   awful.key(
     { modkey },
+    "#27",
+    function()
+      awesome.emit_signal("application_laucher::show")
+    end,
+    { description = "show application launcher", group = "System" }
+  ),
+  awful.key(
+    { modkey },
     "#22",
     function()
       awful.spawn.easy_async_with_shell(
@@ -347,7 +335,7 @@ return gears.table.join(
                 awful.spawn.with_shell("echo -n '" ..
                   stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/rules.txt")
                 local c = mouse.screen.selected_tag:clients()
-                for j, client in ipairs(c) do
+                for _, client in ipairs(c) do
                   if client.class:match(stdout:gsub("\n", "")) then
                     client.floating = true
                   end
@@ -375,13 +363,13 @@ return gears.table.join(
             }
             awful.spawn.easy_async_with_shell(
               [[
-                                REMOVE="]] .. stdout:gsub("\n", "") .. [[;"
-                                STR=$(cat ~/.config/awesome/src/assets/rules.txt)
-                                echo -n ${STR//$REMOVE/} > ~/.config/awesome/src/assets/rules.txt
-                            ]],
-              function(stdout2)
+                REMOVE="]] .. stdout:gsub("\n", "") .. [[;"
+                STR=$(cat ~/.config/awesome/src/assets/rules.txt)
+                echo -n ${STR//$REMOVE/} > ~/.config/awesome/src/assets/rules.txt
+              ]],
+              function()
                 local c = mouse.screen.selected_tag:clients()
-                for j, client in ipairs(c) do
+                for _, client in ipairs(c) do
                   if client.class:match(stdout:gsub("\n", "")) then
                     client.floating = false
                   end

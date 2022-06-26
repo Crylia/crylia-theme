@@ -9,8 +9,6 @@
 local awful = require("awful")
 local beautiful = require("beautiful")
 local gears = require("gears")
-local color = require("src.theme.colors")
-local dpi = require("beautiful.xresources").apply_dpi
 
 Theme_path = awful.util.getdir("config") .. "/src/theme/"
 Theme = {}
@@ -21,37 +19,33 @@ Theme = {}
 Theme.font = User_config.font.bold
 
 --#region Client variables
-Theme.useless_gap = dpi(5)
-Theme.border_width = dpi(0)
-Theme.border_normal = color["Grey800"]
-Theme.border_marked = color["Red200"]
+Theme.useless_gap = Theme_config.window.useless_gap
+Theme.border_width = Theme_config.window.border_width
+Theme.border_normal = Theme_config.window.border_normal
+Theme.border_marked = Theme_config.window.border_marked
 --#endregion
 
 --#region Tooltip variables
-Theme.tooltip_border_color = color["Grey800"]
-Theme.tooltip_bg = color["Grey900"]
-Theme.tooltip_fg = color["CyanA200"]
-Theme.tooltip_border_width = dpi(4)
-Theme.tooltip_gaps = dpi(15)
-Theme.tooltip_shape = function(cr, width, heigth)
-  gears.shape.rounded_rect(cr, width, heigth, dpi(4))
-end
+Theme.tooltip_border_color = Theme_config.tooltip.border_color
+Theme.tooltip_bg = Theme_config.tooltip.bg
+Theme.tooltip_fg = Theme_config.tooltip.fg
+Theme.tooltip_border_width = Theme_config.tooltip.border_width
+Theme.tooltip_gaps = Theme_config.tooltip.gaps
+Theme.tooltip_shape = Theme_config.tooltip.shape
 --#endregion
 
 --#region Hotkeys variables
-Theme.hotkeys_bg = color["Grey900"]
-Theme.hotkeys_fg = color["White"]
-Theme.hotkeys_border_width = dpi(4)
-Theme.hotkeys_border_color = color["Grey800"]
-Theme.hotkeys_shape = function(cr, width, height)
-  gears.shape.rounded_rect(cr, width, height, dpi(12))
-end
-Theme.hotkeys_modifiers_fg = color["Cyan200"]
-Theme.hotkeys_description_font = User_config.font.bold
-Theme.hotkeys_font = User_config.font.bold
-Theme.hotkeys_group_margin = dpi(20)
-Theme.hotkeys_label_bg = color["Cyan200"]
-Theme.hotkeys_label_fg = color["Grey900"]
+Theme.hotkeys_bg = Theme_config.hotkeys.bg
+Theme.hotkeys_fg = Theme_config.hotkeys.fg
+Theme.hotkeys_border_width = Theme_config.hotkeys.border_width
+Theme.hotkeys_border_color = Theme_config.hotkeys.border_color
+Theme.hotkeys_shape = Theme_config.hotkeys.shape
+Theme.hotkeys_modifiers_fg = Theme_config.hotkeys.modifiers_fg
+Theme.hotkeys_description_font = Theme_config.hotkeys.description_font
+Theme.hotkeys_font = Theme_config.hotkeys.font
+Theme.hotkeys_group_margin = Theme_config.hotkeys.group_margin
+Theme.hotkeys_label_bg = Theme_config.hotkeys.label_bg
+Theme.hotkeys_label_fg = Theme_config.hotkeys.label_fg
 --#endregion
 
 Theme.awesome_icon = Theme_path .. "../assets/icons/ArchLogo.png"

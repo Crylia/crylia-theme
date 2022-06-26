@@ -89,11 +89,11 @@ User_config = {
     "arduino-arduinoide.desktop",
     "us.zoom.Zoom.desktop",
     "thunderbird.desktop",
-    "com.mattermost.Desktop.desktop",
+    "com.ultimaker.cura.desktop",
     "blender.desktop",
     "freecad.desktop",
     "The Witcher 3 Wild Hunt.desktop",
-    "windows_11.desktop"
+    --"windows_11.desktop"
   },
 
   --[[

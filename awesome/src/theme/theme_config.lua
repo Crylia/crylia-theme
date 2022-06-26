@@ -44,6 +44,9 @@ Theme_config.cpu_freq = {
 
 Theme_config.cpu_temp = {
   fg = color["Grey900"],
+  bg_low = color["Green200"],
+  bg_mid = color["Orange200"],
+  bg_high = color["Red200"],
 }
 
 Theme_config.cpu_usage = {
@@ -63,6 +66,9 @@ Theme_config.gpu_usage = {
 
 Theme_config.gpu_temp = {
   fg = color["Grey900"],
+  bg_low = color["Green200"],
+  bg_mid = color["Orange200"],
+  bg_high = color["Red200"],
 }
 
 Theme_config.kblayout = {
@@ -137,8 +143,45 @@ Theme_config.tasklist = {
 
 ]] --
 
+--#region Module Settings
+Theme_config.notification = {
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  bg = color["Grey900"],
+  spacing = dpi(10),
+  shape = function(cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, dpi(10))
+  end,
+  shape_inside = function(cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, dpi(4))
+  end,
+  position = "bottom_right",
+  timeout = 3,
+  corner_spacing = dpi(20),
+  bg_urgent = color["Grey900"],
+  fg_urgent_title = color["RedA200"],
+  fg_urgent_message = color["Red200"],
+  fg_urgent_app_name = color["RedA400"],
+  fg_normal_title = color["Pink200"],
+  fg_normal_message = "#ffffffaa",
+  bg_normal = color["Grey900"],
+  spotify_button_icon_color = color["Cyan200"],
+  action_bg = color["Grey800"],
+  action_fg = color["Green200"],
+  icon_color = color["Teal200"],
+  fg_appname = color["Teal200"],
+  fg_time = color["Teal200"],
+  fg_close = color["Teal200"],
+  bg_close = color["Grey900"],
+  title_border_color = color["Grey800"],
+  title_border_width = dpi(2),
+}
+
 Theme_config.notification_center = {
   bg = color["Grey900"],
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  spacing_color = color["Grey800"],
 
   -- Clear all button
   clear_all_button = {
@@ -148,31 +191,91 @@ Theme_config.notification_center = {
 
   -- DnD button
   dnd = {
-
+    bg = color["Grey900"],
+    fg = color["Pink200"],
+    disabled = color["Grey700"],
+    enabled = color["Purple200"],
+    border_disabled = color["Grey800"],
+    border_enabled = color["Purple200"],
   },
 
   -- Notification_list
   notification_list = {
-
+    timer_fg = color["Teal200"],
+    close_color = color["Teal200"],
+    close_bg = color["Grey900"],
+    icon = color["Teal200"],
+    title_fg = color["Teal200"],
+    title_border_color = color["Grey800"],
+    title_border_width = dpi(2),
+    notification_border_color = color["Grey800"],
+    notification_bg = color["Grey900"],
+    notification_border_width = dpi(4),
+    notification_shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, 8)
+    end
   },
 
   -- Profile widget
   profile = {
-
+    username_icon_color = color["Blue200"],
+    os_prefix_icon_color = color["Blue200"],
+    kernel_icon_color = color["Blue200"],
+    uptime_icon_color = color["Blue200"],
+    fg = color["Green200"],
+    border_color = color["Grey800"],
+    border_width = dpi(4),
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(8))
+    end
   },
 
   -- Song info widget
   song_info = {
-
+    shuffle_disabled = color["Grey800"],
+    shuffle_enabled = color["Green200"],
+    repeat_disabled = color["Grey800"],
+    repeat_single = color["Green200"],
+    repeat_all = color["Green200"],
+    prev_enabled = color["Teal200"],
+    next_enabled = color["Teal200"],
+    play_enabled = color["Teal200"],
+    prev_hover = color["Teal300"],
+    next_hover = color["Teal300"],
+    play_hover = color["Teal300"],
+    title_fg = color["Pink200"],
+    artist_fg = color["Teal200"],
+    duration_fg = color["Teal200"],
+    progress_color = color["Purple200"],
+    progress_background_color = color["Grey800"],
+    border_color = color["Grey800"],
+    border_width = dpi(4),
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(8))
+    end
   },
   -- Spacing line widget
   spacing_line = {
-
+    color = color["Grey800"],
   },
 
   -- Status bar widgets
   status_bar = {
-
+    border_color = color["Grey800"],
+    border_width = dpi(4),
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(10))
+    end,
+    bar_bg_color = color["Grey800"],
+    cpu_usage_color = color["Cyan200"],
+    cpu_temp_color = color["Blue200"],
+    ram_usage_color = color["Red200"],
+    gpu_usage_color = color["Green200"],
+    gpu_temp_color = color["Green200"],
+    volume_color = color["Yellow200"],
+    microphone_color = color["Blue200"],
+    backlight_color = color["Pink200"],
+    battery_color = color["Purple200"],
   },
 
   -- Time Date widget
@@ -182,7 +285,15 @@ Theme_config.notification_center = {
 
   -- Weather widget
   weather = {
-
+    description_fg = color["LightBlue200"],
+    line_color = color["Grey800"],
+    speed_icon_color = color["OrangeA200"],
+    humidity_icon_color = color["OrangeA200"],
+    border_color = color["Grey800"],
+    border_width = dpi(4),
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(12))
+    end
   },
 }
 
@@ -219,6 +330,28 @@ Theme_config.brightness_osd = {
   icon_color = color["Blue200"],
 }
 
+Theme_config.center_bar = {
+  bg = color["Grey900"],
+}
+
+Theme_config.dock = {
+  element_bg = color["Grey900"],
+  element_focused_bg = color["Grey800"],
+  element_focused_hover_bg = color["Grey800"],
+  element_focused_hover_fg = color["White"],
+  bg = color["Grey900"],
+  indicator_bg = color["Grey600"],
+  indicator_bg_focus = color["YellowA200"],
+  indicator_bg_urgent = color["RedA200"],
+  indicator_bg_maximized = color["GreenA200"],
+  indicator_bg_minimized = color["BlueA200"],
+  indicator_bg_fullscreen = color["PurpleA200"],
+}
+
+Theme_config.left_bar = {
+  bg = color["Grey900"],
+}
+
 Theme_config.powermenu = {
   container_bg = "#21212188",
   button_fg = color["Grey900"],
@@ -227,6 +360,10 @@ Theme_config.powermenu = {
   suspend_button_bg = color["Yellow200"],
   lock_button_bg = color["Green200"],
   logout_button_bg = color["Orange200"],
+}
+
+Theme_config.right_bar = {
+  bg = color["Grey900"],
 }
 
 Theme_config.titlebar = {
@@ -241,7 +378,42 @@ Theme_config.titlebar = {
 }
 
 Theme_config.volume_controller = {
-
+  bg = color["Grey900"],
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  shape = function(cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, dpi(12))
+  end,
+  device_bg = color["Grey900"],
+  device_border_color = color["Grey800"],
+  device_border_width = dpi(2),
+  device_shape = function(cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, dpi(4))
+  end,
+  device_headphones_fg = color["Purple200"],
+  device_microphone_fg = color["Blue200"],
+  device_headphones_selected_bg = color["Purple200"],
+  device_headphones_selected_fg = color["Grey900"],
+  device_microphone_selected_bg = color["Blue200"],
+  device_microphone_selected_fg = color["Grey900"],
+  device_headphones_selected_border_color = color["Purple200"],
+  device_microphone_selected_border_color = color["Blue200"],
+  device_headphones_selected_icon_color = color["Purple200"],
+  device_microphone_selected_icon_color = color["Blue200"],
+  device_icon_color = color["Grey900"],
+  list_border_color = color["Grey800"],
+  list_border_width = dpi(2),
+  list_shape = function(cr, width, height)
+    gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+  end,
+  list_bg = color["Grey800"],
+  list_headphones_fg = color["Purple200"],
+  list_microphone_fg = color["Blue200"],
+  selector_shape = function(cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, dpi(4))
+  end,
+  volume_fg = color["Purple200"],
+  microphone_fg = color["Blue200"],
 }
 
 Theme_config.volume_osd = {
@@ -264,3 +436,67 @@ Theme_config.window_switcher = {
   selected_border_color = color["Purple200"],
   selected_bg = "#313131"
 }
+
+Theme_config.application_launcher = {
+  bg = color["Grey900"],
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  application = {
+
+  },
+  searchbar = {
+    bg = color["Grey900"],
+    fg = color["Green200"],
+    fg_hint = color["Grey800"],
+    border_color = color["Red200"],
+    border_width = dpi(2),
+  }
+}
+--#endregion
+
+--[[
+  ========================
+  === General Settings ===
+  ========================
+
+  Here are some general settings for borders, tooltips etc
+
+]] --
+
+--#region General Settings
+
+Theme_config.window = {
+  border_width = dpi(0),
+  border_normal = color["Grey800"],
+  border_marked = color["Red200"],
+  useless_gap = dpi(5)
+}
+
+Theme_config.tooltip = {
+  bg = color["Grey900"],
+  fg = color["CyanA200"],
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  gaps = dpi(15),
+  shape = function(cr, width, heigth)
+    gears.shape.rounded_rect(cr, width, heigth, dpi(4))
+  end
+}
+
+Theme_config.hotkeys = {
+  bg = color["Grey900"],
+  fg = color["White"],
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  shape = function(cr, width, heigth)
+    gears.shape.rounded_rect(cr, width, heigth, dpi(12))
+  end,
+  modifiers_fg = color["Cyan200"],
+  description_font = User_config.font.bold,
+  font = User_config.font.bold,
+  group_margin = dpi(20),
+  label_bg = color["Cyan200"],
+  label_fg = color["Grey900"],
+}
+
+--#endregion

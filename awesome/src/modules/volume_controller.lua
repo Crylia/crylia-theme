@@ -4,7 +4,6 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -43,12 +42,10 @@ return function(s)
         widget = wibox.container.margin
       },
       id = "background",
-      bg = color["Grey900"],
-      border_color = color["Grey800"],
-      border_width = dpi(2),
-      shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, dpi(4))
-      end,
+      bg = Theme_config.volume_controller.device_bg,
+      border_color = Theme_config.volume_controller.device_border_color,
+      border_width = Theme_config.volume_controller.device_border_width,
+      shape = Theme_config.volume_controller.device_shape,
       widget = wibox.container.background
     }
     if sink == true then
@@ -66,14 +63,14 @@ return function(s)
         function(new_node)
           if node == new_node then
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg",
-              color["Grey900"])
-            device.bg = color["Purple200"]
-            device.fg = color["Grey900"]
+              Theme_config.volume_controller.device_headphones_selected_icon_color)
+            device.bg = Theme_config.volume_controller.device_headphones_selected_bg
+            device.fg = Theme_config.volume_controller.device_headphones_selected_fg
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg",
-              color["Purple200"])
-            device.bg = color["Grey900"]
-            device.fg = color["Purple200"]
+              Theme_config.volume_controller.device_headphones_selected_icon_color)
+            device.bg = Theme_config.volume_controller.device_bg
+            device.fg = Theme_config.volume_controller.device_headphones_fg
           end
         end
       )
@@ -83,20 +80,19 @@ return function(s)
           local node_active = stdout:gsub("\n", "")
           if node == node_active then
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg",
-              color["Grey900"])
-            device.bg = color["Purple200"]
-            device.fg = color["Grey900"]
+              Theme_config.volume_controller.device_icon_color)
+            device.bg = Theme_config.volume_controller.device_headphones_selected_bg
+            device.fg = Theme_config.volume_controller.device_headphones_selected_fg
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg",
-              color["Purple200"])
-            device.bg = color["Grey900"]
-            device.fg = color["Purple200"]
+              Theme_config.volume_controller.device_headphones_selected_icon_color)
+            device.bg = Theme_config.volume_controller.device_bg
+            device.fg = Theme_config.volume_controller.device_headphones_fg
           end
         end
       )
       awesome.emit_signal("update::bg_sink", node)
     else
-
       device:connect_signal(
         "button::press",
         function()
@@ -111,14 +107,14 @@ return function(s)
         function(new_node)
           if node == new_node then
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg",
-              color["Grey900"])
-            device.bg = color["Blue200"]
-            device.fg = color["Grey900"]
+              Theme_config.volume_controller.device_icon_color)
+            device.bg = Theme_config.volume_controller.device_microphone_selected_bg
+            device.fg = Theme_config.volume_controller.device_microphone_selected_fg
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg",
-              color["Blue200"])
-            device.bg = color["Grey900"]
-            device.fg = color["Blue200"]
+              Theme_config.volume_controller.device_microphone_selected_icon_color)
+            device.bg = Theme_config.volume_controller.device_bg
+            device.fg = Theme_config.volume_controller.device_microphone_fg
           end
         end
       )
@@ -128,14 +124,14 @@ return function(s)
           local node_active = stdout:gsub("\n", "")
           if node == node_active then
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg",
-              color["Grey900"])
-            device.bg = color["Blue200"]
-            device.fg = color["Grey900"]
+              Theme_config.volume_controller.device_icon_color)
+            device.bg = Theme_config.volume_controller.device_microphone_selected_bg
+            device.fg = Theme_config.volume_controller.device_microphone_selected_fg
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg",
-              color["Blue200"])
-            device.bg = color["Grey900"]
-            device.fg = color["Blue200"]
+              Theme_config.volume_controller.device_microphone_selected_icon_color)
+            device.bg = Theme_config.volume_controller.device_bg
+            device.fg = Theme_config.volume_controller.device_microphone_fg
           end
         end
       )
@@ -165,12 +161,10 @@ return function(s)
         strategy = "max",
         widget = wibox.container.constraint
       },
-      border_color = color["Grey800"],
-      border_width = dpi(2),
+      border_color = Theme_config.volume_controller.list_border_color,
+      border_width = Theme_config.volume_controller.list_border_width,
       id = "volume_device_background",
-      shape = function(cr, width, height)
-        gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
-      end,
+      shape = Theme_config.volume_controller.list_shape,
       widget = wibox.container.background
     },
     left = dpi(10),
@@ -200,11 +194,9 @@ return function(s)
         widget = wibox.container.constraint
       },
       id = "volume_device_background",
-      border_color = color["Grey800"],
-      border_width = dpi(2),
-      shape = function(cr, width, height)
-        gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
-      end,
+      border_color = Theme_config.volume_controller.list_border_color,
+      border_width = Theme_config.volume_controller.list_border_width,
+      shape = Theme_config.volume_controller.list_shape,
       widget = wibox.container.background
     },
     left = dpi(10),
@@ -222,7 +214,8 @@ return function(s)
               {
                 {
                   resize = false,
-                  image = gears.color.recolor_image(icondir .. "menu-down.svg", color["Purple200"]),
+                  image = gears.color.recolor_image(icondir .. "menu-down.svg",
+                    Theme_config.volume_controller.device_headphones_selected_icon_color),
                   widget = wibox.widget.imagebox,
                   valign = "center",
                   halign = "center",
@@ -246,11 +239,9 @@ return function(s)
               layout = wibox.layout.fixed.horizontal
             },
             id = "audio_bg",
-            bg = color["Grey800"],
-            fg = color["Purple200"],
-            shape = function(cr, width, height)
-              gears.shape.rounded_rect(cr, width, height, dpi(4))
-            end,
+            bg = Theme_config.volume_controller.list_bg,
+            fg = Theme_config.volume_controller.list_headphones_fg,
+            shape = Theme_config.volume_controller.list_shape,
             widget = wibox.container.background
           },
           id = "audio_selector_margin",
@@ -271,7 +262,8 @@ return function(s)
               {
                 {
                   resize = false,
-                  image = gears.color.recolor_image(icondir .. "menu-down.svg", color["LightBlueA200"]),
+                  image = gears.color.recolor_image(icondir .. "menu-down.svg",
+                    Theme_config.volume_controller.device_microphone_selected_icon_color),
                   widget = wibox.widget.imagebox,
                   valign = "center",
                   halign = "center",
@@ -295,11 +287,9 @@ return function(s)
               layout = wibox.layout.fixed.horizontal
             },
             id = "mic_bg",
-            bg = color["Grey800"],
-            fg = color["LightBlueA200"],
-            shape = function(cr, width, height)
-              gears.shape.rounded_rect(cr, width, height, dpi(4))
-            end,
+            bg = Theme_config.volume_controller.list_bg,
+            fg = Theme_config.volume_controller.list_microphone_fg,
+            shape = Theme_config.volume_controller.selector_shape,
             widget = wibox.container.background
           },
           id = "mic_selector_margin",
@@ -321,7 +311,7 @@ return function(s)
               widget = wibox.widget.imagebox,
               valign = "center",
               halign = "center",
-              image = gears.color.recolor_image(icondir .. "volume-high.svg", color["Purple200"]),
+              image = gears.color.recolor_image(icondir .. "volume-high.svg", Theme_config.volume_controller.volume_fg),
               id = "icon",
             },
             {
@@ -330,11 +320,11 @@ return function(s)
                   gears.shape.rounded_rect(cr, width, height, dpi(5))
                 end,
                 bar_height = dpi(5),
-                bar_color = color["Grey800"],
-                bar_active_color = color["Purple200"],
-                handle_color = color["Purple200"],
+                bar_color = Theme_config.device_border_color,
+                bar_active_color = Theme_config.volume_controller.volume_fg,
+                handle_color = Theme_config.volume_controller.volume_fg,
                 handle_shape = gears.shape.circle,
-                handle_border_color = color["Purple200"],
+                handle_border_color = Theme_config.volume_controller.volume_fg,
                 handle_width = dpi(12),
                 maximum = 100,
                 forced_height = dpi(26),
@@ -362,7 +352,7 @@ return function(s)
               widget = wibox.widget.imagebox,
               valign = "center",
               halign = "center",
-              image = gears.color.recolor_image(icondir .. "microphone.svg", color["Blue200"]),
+              image = gears.color.recolor_image(icondir .. "microphone.svg", Theme_config.volume_controller.microphone_fg),
               id = "icon"
             },
             {
@@ -371,11 +361,11 @@ return function(s)
                   gears.shape.rounded_rect(cr, width, height, dpi(5))
                 end,
                 bar_height = dpi(5),
-                bar_color = color["Grey800"],
-                bar_active_color = color["Blue200"],
-                handle_color = color["Blue200"],
+                bar_color = Theme_config.volume_controller.device_border_color,
+                bar_active_color = Theme_config.volume_controller.microphone_fg,
+                handle_color = Theme_config.volume_controller.microphone_fg,
                 handle_shape = gears.shape.circle,
-                handle_border_color = color["Blue200"],
+                handle_border_color = Theme_config.volume_controller.microphone_fg,
                 handle_width = dpi(12),
                 maximum = 100,
                 forced_height = dpi(26),
@@ -402,12 +392,10 @@ return function(s)
       margins = dpi(10),
       widget = wibox.container.margin
     },
-    bg = color["Grey900"],
-    border_color = color["Grey800"],
-    border_width = dpi(4),
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(12))
-    end,
+    bg = Theme_config.volume_controller.bg,
+    border_color = Theme_config.volume_controller.border_color,
+    border_width = Theme_config.volume_controller.border_width,
+    shape = Theme_config.volume_controller.shape,
     forced_width = dpi(400),
     widget = wibox.container.background
   }
@@ -437,13 +425,15 @@ return function(s)
         audio_bg.shape = function(cr, width, height)
           gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
         end
-        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Purple200"]))
+        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
+          Theme_config.volume_controller.device_headphones_selected_icon_color))
       else
         rubato_timer.target = 0
         audio_bg.shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, dpi(4))
         end
-        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Purple200"]))
+        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
+          Theme_config.volume_controller.device_headphones_selected_icon_color))
       end
     end
   )
@@ -473,26 +463,26 @@ return function(s)
         mic_selector_margin.mic_bg.shape = function(cr, width, height)
           gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
         end
-        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg", color["Blue200"]))
+        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
+          Theme_config.volume_controller.device_microphone_selected_icon_color))
       else
         rubato_timer.target = 0
         mic_bg.shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, dpi(4))
         end
-        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg", color["Blue200"]))
+        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
+          Theme_config.volume_controller.device_microphone_selected_icon_color))
       end
     end
   )
 
-  local audio_slider_margin = volume_controller:get_children_by_id("audio_volume_margin")[1].audio_volume.slider_margin.
-      slider
+  local audio_slider_margin = volume_controller:get_children_by_id("audio_volume_margin")[1].audio_volume.slider_margin.slider
 
   -- Volume slider change event
   audio_slider_margin:connect_signal(
     "property::value",
     function()
-      local volume = audio_slider_margin.value
-      awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ " .. tonumber(volume) .. "%")
+      awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ " .. tonumber(audio_slider_margin.value) .. "%")
     end
   )
 
@@ -502,9 +492,7 @@ return function(s)
   mic_slider_margin:connect_signal(
     "property::value",
     function()
-      local volume = mic_slider_margin.value
-      awful.spawn("pactl set-source-volume @DEFAULT_SOURCE@ " .. tonumber(volume) .. "%")
-      awesome.emit_signal("get::mic_volume", volume)
+      awful.spawn("pactl set-source-volume @DEFAULT_SOURCE@ " .. tonumber(mic_slider_margin.value) .. "%")
     end
   )
 
@@ -512,16 +500,14 @@ return function(s)
   local volume_controller_container = awful.popup {
     widget = wibox.container.background,
     ontop = true,
-    bg = color["Grey900"],
+    bg = Theme_config.volume_controller.bg,
     stretch = false,
     visible = false,
     screen = s,
     placement = function(c) awful.placement.align(c,
         { position = "top_right", margins = { right = dpi(305), top = dpi(60) } })
     end,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(12))
-    end
+    shape = Theme_config.volume_controller.shape,
   }
 
   -- Get all source devices
@@ -558,8 +544,6 @@ return function(s)
     )
   end
 
-  get_source_devices()
-
   -- Get all input devices
   local function get_input_devices()
     awful.spawn.easy_async_with_shell(
@@ -595,64 +579,70 @@ return function(s)
     )
   end
 
-  get_input_devices()
-
-  -- Event watcher, detects when device is addes/removed
-  awful.spawn.with_line_callback(
-    [[bash -c "LC_ALL=C pactl subscribe | grep --line-buffered 'on server'"]],
-    {
-      stdout = function(line)
-        get_input_devices()
-        get_source_devices()
-        awful.spawn.with_shell("pkill pactl && pkill grep")
-      end
-    }
+  awesome.connect_signal(
+    "audio::device_changed",
+    function()
+      get_input_devices()
+    end
   )
 
   awesome.connect_signal(
-    "exit",
+    "microphone::device_changed",
     function()
-      awful.spawn.with_shell("pkill pactl && pkill grep")
+      get_source_devices()
+    end
+  )
+
+  -- Set the volume and icon
+  awesome.connect_signal(
+    "audio::get",
+    function(muted, volume)
+      if muted then
+        volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color
+          .recolor_image(icondir .. "volume-mute.svg", Theme_config.volume_controller.volume_fg))
+      else
+        volume = tonumber(volume)
+        local icon = icondir .. "volume"
+        if volume < 1 then
+          icon = icon .. "-mute"
+        elseif volume >= 1 and volume < 34 then
+          icon = icon .. "-low"
+        elseif volume >= 34 and volume < 67 then
+          icon = icon .. "-medium"
+        elseif volume >= 67 then
+          icon = icon .. "-high"
+        end
+
+        volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.slider_margin.slider:
+            set_value(volume)
+        volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color
+          .recolor_image(icon
+            .. ".svg", Theme_config.volume_controller.volume_fg))
+      end
     end
   )
 
   -- Get microphone volume
-  local function get_mic_volume()
-    awful.spawn.easy_async_with_shell(
-      "./.config/awesome/src/scripts/mic.sh volume",
-      function(stdout)
-        local volume = stdout:gsub("%%", ""):gsub("\n", "")
+  awesome.connect_signal(
+    "microphone::get",
+    function(muted, volume)
+      if muted then
+        --volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(0))
+        volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
+          .. "microphone-off.svg", Theme_config.volume_controller.microphone_fg))
+      else
+        volume = tonumber(volume)
         volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(volume))
         if volume > 0 then
-          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
-            .. "microphone.svg", color["LightBlue200"]))
+          volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir
+            .. "microphone.svg", Theme_config.volume_controller.microphone_fg))
         else
-          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
-            .. "microphone-off.svg", color["LightBlue200"]))
+          volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir
+            .. "microphone-off.svg", Theme_config.volume_controller.microphone_fg))
         end
       end
-    )
-  end
-
-  get_mic_volume()
-
-  -- Check if microphone is muted
-  local function get_mic_mute()
-    awful.spawn.easy_async_with_shell(
-      "./.config/awesome/src/scripts/mic.sh mute",
-      function(stdout)
-        if stdout:match("yes") then
-          volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(0))
-          volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
-            .. "microphone-off.svg", color["LightBlue200"]))
-        else
-          get_mic_volume()
-        end
-      end
-    )
-  end
-
-  get_mic_mute()
+    end
+  )
 
   -- When the mouse leaves the popup it stops the mousegrabber and hides the popup.
   volume_controller_container:connect_signal(
@@ -693,57 +683,6 @@ return function(s)
     layout = wibox.layout.fixed.horizontal
   }
 
-  -- Set the volume and icon
-  awesome.connect_signal(
-    "get::volume",
-    function(volume)
-      volume = tonumber(volume)
-      local icon = icondir .. "volume"
-      if volume < 1 then
-        icon = icon .. "-mute"
-
-      elseif volume >= 1 and volume < 34 then
-        icon = icon .. "-low"
-      elseif volume >= 34 and volume < 67 then
-        icon = icon .. "-medium"
-      elseif volume >= 67 then
-        icon = icon .. "-high"
-      end
-
-      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.slider_margin.slider:
-          set_value(volume)
-      volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.color.
-        recolor_image(icon .. ".svg", color["Purple200"]))
-    end
-  )
-
-  -- Check if the volume is muted
-  awesome.connect_signal(
-    "get::volume_mute",
-    function(mute)
-      if mute then
-        volume_controller.controller_margin.controller_layout.audio_volume_margin.audio_volume.icon:set_image(gears.
-          color.recolor_image(icondir .. "volume-mute.svg", color["Purple200"]))
-      end
-    end
-  )
-
-  -- Set the microphone volume
-  awesome.connect_signal(
-    "get::mic_volume",
-    function(volume)
-      if volume > 0 then
-        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir
-          .. "microphone.svg", color["LightBlue200"]))
-        awesome.emit_signal("update::microphone_widget", tonumber(volume), icondir .. "microphone.svg")
-      else
-        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir
-          .. "microphone-off.svg", color["LightBlue200"]))
-        awesome.emit_signal("update::microphone_widget", tonumber(volume), icondir .. "microphone-off.svg")
-      end
-    end
-  )
-
   -- Toggle container visibility
   awesome.connect_signal(
     "volume_controller::toggle",
@@ -751,7 +690,6 @@ return function(s)
       if scr == s then
         volume_controller_container.visible = not volume_controller_container.visible
       end
-
     end
   )
 

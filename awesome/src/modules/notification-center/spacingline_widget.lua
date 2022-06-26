@@ -3,7 +3,6 @@
 ------------------------------------------------
 
 -- Awesome Libs
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local wibox = require("wibox")
 
@@ -12,7 +11,7 @@ return function()
   return wibox.widget {
     {
       forced_height = dpi(2),
-      bg = color["Grey800"],
+      bg = Theme_config.notification_center.spacing_line.color,
       widget = wibox.container.background
     },
     left = dpi(80),

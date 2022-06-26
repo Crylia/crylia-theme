@@ -4,11 +4,9 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-local naughty = require("naughty")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
@@ -43,7 +41,8 @@ return function(s)
 
   local shuffle_button = wibox.widget {
     resize = false,
-    image = gears.color.recolor_image(icondir .. "shuffle.svg", color["Grey800"]),
+    image = gears.color.recolor_image(icondir .. "shuffle.svg",
+      Theme_config.notification_center.song_info.shuffle_disabled),
     valign = "center",
     halign = "center",
     widget = wibox.widget.imagebox,
@@ -55,10 +54,12 @@ return function(s)
       function(stdout)
         if stdout:match("On") then
           awful.spawn.with_shell("playerctl shuffle off")
-          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg", color["Grey800"])
+          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg",
+            Theme_config.notification_center.song_info.shuffle_enabled)
         else
           awful.spawn.with_shell("playerctl shuffle on")
-          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg", color["Green200"])
+          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg",
+            Theme_config.notification_center.song_info.shuffle_disabled)
         end
       end
     )
@@ -69,9 +70,11 @@ return function(s)
       "playerctl shuffle",
       function(stdout)
         if stdout:match("On") then
-          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg", color["Green200"])
+          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg",
+            Theme_config.notification_center.song_info.shuffle_enabled)
         else
-          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg", color["Grey800"])
+          shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg",
+            Theme_config.notification_center.song_info.shuffle_disabled)
         end
       end
     )
@@ -81,7 +84,7 @@ return function(s)
 
   local repeat_button = wibox.widget {
     resize = false,
-    image = gears.color.recolor_image(icondir .. "repeat.svg", color["Grey800"]),
+    image = gears.color.recolor_image(icondir .. "repeat.svg", Theme_config.notification_center.song_info.repeat_disabled),
     widget = wibox.widget.imagebox,
     valign = "center",
     halign = "center",
@@ -95,11 +98,14 @@ return function(s)
       function(stdout)
         local loop_mode = stdout:gsub("\n", "")
         if loop_mode == "Track" then
-          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat-once.svg"), color["Green200"])
+          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat-once.svg"),
+            Theme_config.notification_center.song_info.repeat_single)
         elseif loop_mode == "None" then
-          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"), color["Grey800"])
+          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"),
+            Theme_config.notification_center.song_info.repeat_disabled)
         elseif loop_mode == "Playlist" then
-          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"), color["Green200"])
+          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"),
+            Theme_config.notification_center.song_info.repeat_all)
         end
       end
     )
@@ -114,7 +120,7 @@ return function(s)
     resize = false,
     valign = "center",
     halign = "center",
-    image = gears.color.recolor_image(icondir .. "skip-prev.svg", color["Teal200"]),
+    image = gears.color.recolor_image(icondir .. "skip-prev.svg", Theme_config.notification_center.song_info.prev_enabled),
     widget = wibox.widget.imagebox
   }
 
@@ -134,7 +140,8 @@ return function(s)
     resize = false,
     valign = "center",
     halign = "center",
-    image = gears.color.recolor_image(icondir .. "play-pause.svg", color["Teal200"]),
+    image = gears.color.recolor_image(icondir .. "play-pause.svg",
+      Theme_config.notification_center.song_info.play_enabled),
     widget = wibox.widget.imagebox
   }
 
@@ -149,7 +156,7 @@ return function(s)
     resize = false,
     valign = "center",
     halign = "center",
-    image = gears.color.recolor_image(icondir .. "skip-next.svg", color["Teal200"]),
+    image = gears.color.recolor_image(icondir .. "skip-next.svg", Theme_config.notification_center.song_info.next_enabled),
     widget = wibox.widget.imagebox
   }
 
@@ -173,13 +180,16 @@ return function(s)
         local loop_mode = stdout:gsub("\n", "")
         if loop_mode == "None" then
           awful.spawn.with_shell("playerctl loop playlist")
-          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"), color["Green200"])
+          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"),
+            Theme_config.notification_center.song_info.repeat_all)
         elseif loop_mode == "Playlist" then
           awful.spawn.with_shell("playerctl loop track")
-          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat-once.svg"), color["Green200"])
+          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat-once.svg"),
+            Theme_config.notification_center.song_info.repeat_single)
         elseif loop_mode == "Track" then
           awful.spawn.with_shell("playerctl loop none")
-          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"), color["Grey800"])
+          repeat_button.image = gears.color.recolor_image(gears.surface.load_uncached(icondir .. "repeat.svg"),
+            Theme_config.notification_center.song_info.repeat_disabled)
         end
       end
     )
@@ -187,9 +197,12 @@ return function(s)
 
   repeat_button:buttons(gears.table.join(awful.button({}, 1, loop_handler)))
 
-  button_hover_effect(prev_button, "skip-prev.svg", color["Teal200"], color["Teal300"])
-  button_hover_effect(pause_play_button, "play-pause.svg", color["Teal200"], color["Teal300"])
-  button_hover_effect(next_button, "skip-next.svg", color["Teal200"], color["Teal300"])
+  button_hover_effect(prev_button, "skip-prev.svg", Theme_config.notification_center.song_info.prev_enabled,
+    Theme_config.notification_center.song_info.prev_hover)
+  button_hover_effect(pause_play_button, "play-pause.svg", Theme_config.notification_center.song_info.play_enabled,
+    Theme_config.notification_center.song_info.play_hover)
+  button_hover_effect(next_button, "skip-next.svg", Theme_config.notification_center.song_info.next_enabled,
+    Theme_config.notification_center.song_info.next_hover)
 
   --#endregion
 
@@ -202,7 +215,7 @@ return function(s)
             {
               { -- Album art
                 {
-                  image = "default image",
+                  image = icondir .. "default_image.svg",
                   resize = true,
                   clip_shape = function(cr, width, height)
                     gears.shape.rounded_rect(cr, width, height, dpi(8))
@@ -223,15 +236,16 @@ return function(s)
                   {
                     {
                       { --Title
-                        halign = "center",
+                        valign = "center",
                         align = "center",
                         widget = wibox.widget.textbox,
                         id = "textbox4"
                       },
-                      fg = color["Pink200"],
+                      fg = Theme_config.notification_center.song_info.title_fg,
                       id = "textbox5",
                       widget = wibox.container.background
                     },
+                    id = "textbox_const",
                     strategy = "max",
                     width = dpi(400),
                     widget = wibox.container.constraint
@@ -250,7 +264,7 @@ return function(s)
                         widget = wibox.widget.textbox,
                         id = "textbox3"
                       },
-                      fg = color["Teal200"],
+                      fg = Theme_config.notification_center.song_info.artist_fg,
                       id = "background",
                       widget = wibox.container.background
                     },
@@ -301,7 +315,7 @@ return function(s)
                   widget = wibox.widget.textbox,
                   id = "textbox2"
                 },
-                fg = color["Lime200"],
+                fg = Theme_config.notification_center.song_info.duration_fg,
                 widget = wibox.container.background,
                 id = "background3"
               },
@@ -311,8 +325,8 @@ return function(s)
             },
             { -- Progressbar
               {
-                color = color["Purple200"],
-                background_color = color["Grey800"],
+                color = Theme_config.notification_center.song_info.progress_color,
+                background_color = Theme_config.notification_center.song_info.progress_background_color,
                 max_value = 100,
                 value = 50,
                 forced_height = dpi(5),
@@ -335,7 +349,7 @@ return function(s)
                   id = "text1"
                 },
                 id = "background2",
-                fg = color["Lime200"],
+                fg = Theme_config.notification_center.song_info.duration_fg,
                 widget = wibox.container.background
               },
               id = "margin3",
@@ -354,11 +368,9 @@ return function(s)
         margins = dpi(10)
       },
       id = "background1",
-      border_color = color["Grey800"],
-      border_width = dpi(4),
-      shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, dpi(8))
-      end,
+      border_color = Theme_config.notification_center.song_info.border_color,
+      border_width = Theme_config.notification_center.song_info.border_width,
+      shape = Theme_config.notification_center.song_info.shape,
       widget = wibox.container.background
     },
     id = "margin1",
@@ -427,9 +439,12 @@ return function(s)
             function(stdout2)
               local length = stdout2:gsub("\n", "")
               if length ~= "" then
-                local length_formated = string.format("%02d:%02d", math.floor(tonumber(length or 1) / 60000000) or 0, (math.floor(tonumber(length or 1) / 1000000) % 60) or 0)
-                music_widget:get_children_by_id("progressbar1")[1].max_value = tonumber(math.floor(tonumber(length) / 1000000))
-                music_widget:get_children_by_id("text1")[1].markup = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, Bold 14'>%s</span>", color["Teal200"], length_formated)
+                local length_formated = string.format("%02d:%02d", math.floor(tonumber(length or 1) / 60000000) or 0,
+                  (math.floor(tonumber(length or 1) / 1000000) % 60) or 0)
+                music_widget:get_children_by_id("progressbar1")[1].max_value = tonumber(math.floor(tonumber(length) /
+                  1000000))
+                music_widget:get_children_by_id("text1")[1].markup = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, Bold 14'>%s</span>"
+                  , Theme_config.notification_center.song_info.duration_fg, length_formated)
               end
             end
           )
@@ -442,7 +457,8 @@ return function(s)
           end
         )
         -- Update track id
-        trackid, artist, title = stdout, music_widget:get_children_by_id("textbox3")[1].text, music_widget:get_children_by_id("textbox4")[1].text
+        trackid, artist, title = stdout, music_widget:get_children_by_id("textbox3")[1].text,
+            music_widget:get_children_by_id("textbox4")[1].text
       end
     )
     -- Always update the current song progression
@@ -451,8 +467,10 @@ return function(s)
       function(stdout)
         local time = stdout:gsub("\n", "")
         if time ~= "" then
-          local time_formated = string.format("%02d:%02d", math.floor(tonumber(time or "1") / 60), math.floor(tonumber(time or "1")) % 60)
-          music_widget:get_children_by_id("textbox2")[1].markup = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, Bold 14'>%s</span>", color["Teal200"], time_formated)
+          local time_formated = string.format("%02d:%02d", math.floor(tonumber(time or "1") / 60),
+            math.floor(tonumber(time or "1")) % 60)
+          music_widget:get_children_by_id("textbox2")[1].markup = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, Bold 14'>%s</span>"
+            , Theme_config.notification_center.song_info.duration_fg, time_formated)
           music_widget:get_children_by_id("progressbar1")[1].value = tonumber(time)
         end
       end

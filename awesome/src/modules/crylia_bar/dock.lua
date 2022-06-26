@@ -3,7 +3,6 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -41,7 +40,7 @@ return function(screen, programs)
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, dpi(10))
         end,
-        bg = color["Grey900"],
+        bg = Theme_config.dock.element_bg,
         widget = wibox.container.background,
         id = "background"
       },
@@ -55,11 +54,12 @@ return function(screen, programs)
 
     for _, c in ipairs(client.get()) do
       if string.lower(c.class):match(program["Icon"]) and c == client.focus then
-        dock_element.background.bg = color["Grey800"]
+        dock_element.background.bg = Theme_config.dock.element_focused_bg
       end
     end
 
-    Hover_signal(dock_element.background, color["Grey800"], color["White"])
+    Hover_signal(dock_element.background, Theme_config.dock.element_focused_hover_bg,
+      Theme_config.dock.element_focused_hover_fg)
 
     dock_element:connect_signal(
       "button::press",
@@ -84,7 +84,7 @@ return function(screen, programs)
   local dock = awful.popup {
     widget = wibox.container.background,
     ontop = true,
-    bg = color["Grey900"],
+    bg = Theme_config.dock.bg,
     visible = true,
     screen = screen,
     type = "dock",
@@ -139,24 +139,24 @@ return function(screen, programs)
     local clients = client.get()
     for index, pr in ipairs(prog) do
       local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
-      local col = color["Grey600"]
+      local col = Theme_config.dock.indicator_bg
       for i, c in ipairs(clients) do
         local icon = desktop_parser(pr)
         if icon then
           local icon_name = icon["Icon"] or ""
           if icon_name:match(string.lower(c.class or c.name or nil)) then
             if c == client.focus then
-              col = color["YellowA200"]
+              col = Theme_config.dock.indicator_focused_bg
             elseif c.urgent then
-              col = color["RedA200"]
+              col = Theme_config.dock.indicator_urgent_bg
             elseif c.maximized then
-              col = color["GreenA200"]
+              col = Theme_config.dock.indicator_maximized_bg
             elseif c.minimized then
-              col = color["BlueA200"]
+              col = Theme_config.dock.indicator_minimized_bg
             elseif c.fullscreen then
-              col = color["PinkA200"]
+              col = Theme_config.dock.indicator_fullscreen_bg
             else
-              col = color["Grey600"]
+              col = Theme_config.dock.indicator_bg
             end
             indicators[i] = wibox.widget {
               widget = wibox.container.background,

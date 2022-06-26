@@ -4,24 +4,12 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local color = require("src.theme.colors")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/brightness/"
-
-BACKLIGHT_MAX_BRIGHTNESS = 0
-BACKLIGHT_SEPS = 0
-awful.spawn.easy_async_with_shell(
-  "pkexec xfpm-power-backlight-helper --get-max-brightness",
-  function(stdout)
-    BACKLIGHT_MAX_BRIGHTNESS = tonumber(stdout)
-    BACKLIGHT_SEPS = BACKLIGHT_MAX_BRIGHTNESS / 100
-    BACKLIGHT_SEPS = math.floor(BACKLIGHT_SEPS)
-  end
-)
 
 return function(s)
 
@@ -81,30 +69,23 @@ return function(s)
     widget = wibox.container.background
   }
 
-  local update_slider = function()
-    awful.spawn.easy_async_with_shell(
-      [[ pkexec xfpm-power-backlight-helper --get-brightness ]],
-      function(stdout)
-        local brightness_value = math.floor((tonumber(stdout) - 1) / (BACKLIGHT_MAX_BRIGHTNESS - 1) * 100)
-        brightness_osd_widget:get_children_by_id("progressbar1")[1].value = brightness_value
+  awesome.connect_signal(
+    "brightness::get",
+    function(brightness)
+      brightness_osd_widget:get_children_by_id("progressbar1")[1].value = brightness
 
-        awesome.emit_signal("update::backlight", brightness_value)
-
-        local icon = icondir .. "brightness"
-        if brightness_value >= 0 and brightness_value < 34 then
-          icon = icon .. "-low"
-        elseif brightness_value >= 34 and brightness_value < 67 then
-          icon = icon .. "-medium"
-        elseif brightness_value >= 67 then
-          icon = icon .. "-high"
-        end
-        brightness_osd_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icon .. ".svg",
-          Theme_config.brightness_osd.icon_color))
+      local icon = icondir .. "brightness"
+      if brightness >= 0 and brightness < 34 then
+        icon = icon .. "-low"
+      elseif brightness >= 34 and brightness < 67 then
+        icon = icon .. "-medium"
+      elseif brightness >= 67 then
+        icon = icon .. "-high"
       end
-    )
-  end
-
-  update_slider()
+      brightness_osd_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icon .. ".svg",
+        Theme_config.brightness_osd.icon_color))
+    end
+  )
 
   local brightness_container = awful.popup {
     widget = {},
@@ -132,15 +113,13 @@ return function(s)
   }
 
   awesome.connect_signal(
-    "widget::brightness_osd:rerun",
+    "brightness::rerun",
     function()
       brightness_container.visible = true
       if hide_brightness_osd.started then
         hide_brightness_osd:again()
-        update_slider()
       else
         hide_brightness_osd:start()
-        update_slider()
       end
     end
   )
