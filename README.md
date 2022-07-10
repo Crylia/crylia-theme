@@ -122,6 +122,14 @@ meson --buildtype=release . build
 sudo ninja -C build install
 ```
 
+#### **nvidia-smi**
+
+> **Ubuntu**
+
+```bash
+sudo apt install nvidia-smi
+```
+
 </details>
 <details>
 
