@@ -67,7 +67,7 @@ end
 
 ---Look for an fallback icon
 ---@param iconname any
----@return string
+---@return string|nil nil
 local function lookup_fallback_icon(self, iconname)
   for _, dir in ipairs(self.base_directories) do
     for _, ext in ipairs(self.file_extension) do
@@ -77,6 +77,7 @@ local function lookup_fallback_icon(self, iconname)
       end
     end
   end
+  return nil
 end
 
 ---Checkes if the size equals the actual icon size
@@ -133,7 +134,7 @@ end
 ---Checks each and every sub directory for an icon
 ---@param iconname any
 ---@param size any
----@return string path_to_icon
+---@return string|unknown|nil path_to_icon
 local function lookup_icon(self, iconname, size)
   local already_checked = {}
   for _, subdir in ipairs(self.theme_index:get_subdirectories()) do
@@ -175,21 +176,23 @@ end
 ---@param icon any
 ---@param size any
 ---@param self any
----@return string path_to_icon
+---@return string|unknown|nil path_to_icon
 local function find_icon_helper(self, icon, size)
   local filename = lookup_icon(self, icon, size)
   if filename then return filename end
 
+  -- Exists purely for clients in hope to find a matching icon.
   filename = lookup_icon(self, icon:lower(), size)
   if filename then return filename end
 
-  for _, parent in ipairs(self.theme_index:get_inherits()) do
+  -- !Disabled for now until memory leak can be fixed.
+  --[[ for _, parent in ipairs(self.theme_index:get_inherits()) do
     if parent == "hicolor" then
       return
     end
     filename = find_icon_helper(xdg_icon_lookup(parent, self.base_directories), icon, size)
     if filename then return filename end
-  end
+  end ]]
 
   return nil
 end
@@ -198,13 +201,20 @@ local iconcache = {}
 ---Takes an icon and its props and theme to search for it inside the theme
 ---@param icon any
 ---@param size any
----@return string path_to_icon
+---@return string|nil path_to_icon
 function xdg_icon_lookup:find_icon(icon, size)
+  size = size or 64
+
 
   if icon_cache[icon] == "" then return nil end
   if iconcache[icon] then return iconcache[icon] end
 
   if not icon or icon == "" then return nil end
+
+  if gears.filesystem.file_readable(icon) then
+    iconcache[icon] = icon
+    return icon
+  end
 
   local filename = find_icon_helper(self, icon, size)
   if filename then

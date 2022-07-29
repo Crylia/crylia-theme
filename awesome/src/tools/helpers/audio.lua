@@ -35,6 +35,9 @@ awesome.connect_signal(
     awful.spawn.easy_async_with_shell(
       "./.config/awesome/src/scripts/vol.sh mute",
       function(stdout)
+        if stdout == "" or stdout == nil then
+          return
+        end
         local muted = false
         if stdout:match("yes") then
           muted = true
@@ -42,6 +45,9 @@ awesome.connect_signal(
         awful.spawn.easy_async_with_shell(
           "./.config/awesome/src/scripts/vol.sh volume",
           function(stdout2)
+            if stdout == "" or stdout == nil then
+              return
+            end
             awesome.emit_signal("audio::get", muted, stdout2:gsub("%%", ""):gsub("\n", "") or 0)
           end
         )
@@ -63,6 +69,9 @@ awesome.connect_signal(
         awful.spawn.easy_async_with_shell(
           "./.config/awesome/src/scripts/mic.sh volume",
           function(stdout2)
+            if stdout2 == nil or stdout2 == "awful" then
+              return
+            end
             awesome.emit_signal("microphone::get", muted, stdout2:gsub("%%", ""):gsub("\n", "") or 0)
           end
         )

@@ -13,20 +13,26 @@ local searchbar = require("src.modules.application_launcher.searchbar")()
 
 return function(s)
 
-
   local applicaton_launcher = wibox.widget {
     {
       {
         searchbar,
-        wibox.widget.inputtextbox,
-        application_grid,
+        {
+          application_grid,
+          spacing = dpi(10),
+          layout = require("src.lib.overflow_widget.overflow").vertical,
+          scrollbar_width = 0,
+          step = dpi(50),
+          id = "scroll_bar",
+        },
+        spacing = dpi(10),
         layout = wibox.layout.fixed.vertical
       },
       margins = dpi(20),
       widget = wibox.container.margin
     },
-    height = dpi(600),
-    width = dpi(800),
+    height = s.geometry.height / 100 * 60,
+    width = s.geometry.width / 100 * 60,
     strategy = "exact",
     widget = wibox.container.constraint
   }
@@ -52,9 +58,14 @@ return function(s)
   }
 
   awesome.connect_signal(
-    "application_laucher::show",
+    "application_launcher::show",
     function()
-      application_container.visible = not application_container.visible
+      if mouse.screen == s then
+        application_container.visible = not application_container.visible
+      end
+      if application_container.visible then
+        awesome.emit_signal("searchbar::start")
+      end
     end
   )
 

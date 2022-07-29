@@ -29,7 +29,7 @@ return function(s)
     bg = Theme_config.systray.bg
   }
   -- Signals
-  Hover_signal(systray.container, Theme_config.systray.bg, Theme_config.systray.bg)
+  Hover_signal(systray, Theme_config.systray.bg)
 
   awesome.connect_signal("systray::update", function()
     local num_entries = awesome.systray()

@@ -68,6 +68,9 @@ return function(s)
         audio_widget.container.audio_layout.spacing = dpi(5)
         audio_widget.container.audio_layout.label.visible = true
         volume = tonumber(volume)
+        if not volume then
+          return
+        end
         if volume < 1 then
           icon = icon .. "-mute"
           audio_widget.container.audio_layout.spacing = dpi(0)

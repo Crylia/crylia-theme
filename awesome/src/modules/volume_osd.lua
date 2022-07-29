@@ -80,6 +80,9 @@ return function(s)
         volume_osd_widget:get_children_by_id("progressbar1")[1].value = tonumber(0)
       else
         volume = tonumber(volume)
+        if not volume then
+          return
+        end
         volume_osd_widget:get_children_by_id("progressbar1")[1].value = tonumber(volume)
         local icon = icondir .. "volume"
         if volume < 1 then
@@ -126,11 +129,13 @@ return function(s)
   awesome.connect_signal(
     "widget::volume_osd:rerun",
     function()
-      volume_container.visible = true
-      if hide_volume_osd.started then
-        hide_volume_osd:again()
-      else
-        hide_volume_osd:start()
+      if mouse.screen == s then
+        volume_container.visible = true
+        if hide_volume_osd.started then
+          hide_volume_osd:again()
+        else
+          hide_volume_osd:start()
+        end
       end
     end
   )

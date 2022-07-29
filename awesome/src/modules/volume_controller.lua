@@ -63,7 +63,7 @@ return function(s)
         function(new_node)
           if node == new_node then
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg",
-              Theme_config.volume_controller.device_headphones_selected_icon_color)
+              Theme_config.volume_controller.device_icon_color)
             device.bg = Theme_config.volume_controller.device_headphones_selected_bg
             device.fg = Theme_config.volume_controller.device_headphones_selected_fg
           else
@@ -602,6 +602,9 @@ return function(s)
           .recolor_image(icondir .. "volume-mute.svg", Theme_config.volume_controller.volume_fg))
       else
         volume = tonumber(volume)
+        if not volume then
+          return
+        end
         local icon = icondir .. "volume"
         if volume < 1 then
           icon = icon .. "-mute"
@@ -632,6 +635,9 @@ return function(s)
           .. "microphone-off.svg", Theme_config.volume_controller.microphone_fg))
       else
         volume = tonumber(volume)
+        if not volume then
+          return
+        end
         volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(volume))
         if volume > 0 then
           volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir

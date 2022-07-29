@@ -237,7 +237,7 @@ naughty.connect_signal(
                             widget = wibox.container.arcchart,
                             id = "arc_chart"
                           },
-                          id = "background",
+                          id = "background1",
                           fg = Theme_config.notification.fg_close,
                           widget = wibox.container.background
                         },
@@ -245,7 +245,7 @@ naughty.connect_signal(
                         width = dpi(20),
                         height = dpi(20),
                         widget = wibox.container.constraint,
-                        id = "const"
+                        id = "const1"
                       },
                       margins = dpi(10),
                       widget = wibox.container.margin,
@@ -336,8 +336,7 @@ naughty.connect_signal(
         widget = wibox.container.background
       }
 
-      local close = w_template.max_size.min_size.widget_layout.arc_app_bg.arc_app_layout.arc_app_layout_2.arc_margin.const
-          .background
+      local close = w_template:get_children_by_id("background1")[1]
       local arc = close.arc_chart
 
       local timeout = n.timeout
@@ -378,7 +377,7 @@ naughty.connect_signal(
         )
       end
 
-      Hover_signal(close, Theme_config.notification.bg_close, Theme_config.notification.fg_close)
+      Hover_signal(close, nil, Theme_config.notification.fg_close)
 
       close:connect_signal(
         "button::press",

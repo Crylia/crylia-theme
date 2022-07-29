@@ -341,11 +341,11 @@ Theme_config.dock = {
   element_focused_hover_fg = color["White"],
   bg = color["Grey900"],
   indicator_bg = color["Grey600"],
-  indicator_bg_focus = color["YellowA200"],
-  indicator_bg_urgent = color["RedA200"],
-  indicator_bg_maximized = color["GreenA200"],
-  indicator_bg_minimized = color["BlueA200"],
-  indicator_bg_fullscreen = color["PurpleA200"],
+  indicator_focused_bg = color["YellowA200"],
+  indicator_urgent_bg = color["RedA200"],
+  indicator_maximized_bg = color["GreenA200"],
+  indicator_bg_mindicator_minimized_bginimized = color["BlueA200"],
+  indicator_fullscreen_bg = color["PurpleA200"],
 }
 
 Theme_config.left_bar = {
@@ -442,14 +442,29 @@ Theme_config.application_launcher = {
   border_color = color["Grey800"],
   border_width = dpi(4),
   application = {
-
+    border_color = color["Grey800"],
+    border_color_active = color["Purple200"],
+    border_width = dpi(2),
+    bg = "#313131",
+    hover_bg = color["Grey700"],
   },
   searchbar = {
     bg = color["Grey900"],
-    fg = color["Green200"],
-    fg_hint = color["Grey800"],
-    border_color = color["Red200"],
+    fg = color["Grey100"],
+    fg_hint = color["Grey700"],
+    fg_cursor = color["Grey900"],
+    bg_cursor = color["Grey100"],
+    border_color = color["Grey800"],
     border_width = dpi(2),
+    icon_color = color["Grey900"],
+    icon_background = color["LightBlue200"],
+    hover_bg = color["Grey800"],
+    hover_fg = color["Purple200"],
+    hover_border = color["Grey700"],
+    border_active = color["LightBlue200"],
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(4))
+    end,
   }
 }
 --#endregion

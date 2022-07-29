@@ -29,8 +29,8 @@ return function(screen, programs)
             },
             id = "icon_container",
             strategy = "exact",
-            width = size,
-            height = size,
+            width = dpi(size),
+            height = dpi(size),
             widget = wibox.container.constraint
           },
           margins = dpi(5),
@@ -58,8 +58,7 @@ return function(screen, programs)
       end
     end
 
-    Hover_signal(dock_element.background, Theme_config.dock.element_focused_hover_bg,
-      Theme_config.dock.element_focused_hover_fg)
+    Hover_signal(dock_element.background, Theme_config.dock.element_focused_hover_bg)
 
     dock_element:connect_signal(
       "button::press",
@@ -111,7 +110,7 @@ return function(screen, programs)
     local dock_elements = { layout = wibox.layout.fixed.horizontal }
 
     for i, p in ipairs(pr) do
-      dock_elements[i] = create_dock_element(desktop_parser(p), User_config.dock_icon_size)
+      dock_elements[i] = create_dock_element(desktop_parser.Get_desktop_values(p), User_config.dock_icon_size)
     end
 
     return dock_elements
@@ -141,10 +140,10 @@ return function(screen, programs)
       local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
       local col = Theme_config.dock.indicator_bg
       for i, c in ipairs(clients) do
-        local icon = desktop_parser(pr)
+        local icon = desktop_parser.Get_desktop_values(pr)
         if icon then
-          local icon_name = icon["Icon"] or ""
-          if icon_name:match(string.lower(c.class or c.name or nil)) then
+          local icon_name = string.lower(icon["Icon"] or "")
+          if icon_name:match(string.lower(c.class or c.name)) then
             if c == client.focus then
               col = Theme_config.dock.indicator_focused_bg
             elseif c.urgent then
@@ -171,7 +170,7 @@ return function(screen, programs)
       container[index] = wibox.widget {
         indicators,
         forced_height = dpi(5),
-        forced_width = dpi(50),
+        forced_width = dpi(User_config.dock_icon_size),
         left = dpi(5),
         right = dpi(5),
         widget = wibox.container.margin,
@@ -193,28 +192,36 @@ return function(screen, programs)
 
   local function check_for_dock_hide(s)
     local clients_on_tag = s.selected_tag:clients()
-    for _, client in ipairs(clients_on_tag) do
-      if client.fullscreen then
-        dock.visible = false
-        fakedock.visible = false
-      else
-        fakedock.visible = true
-      end
-    end
+
+    -- If there is no client on the current tag show the dock
     if #clients_on_tag < 1 then
       dock.visible = true
       return
     end
+
+    -- If there is a maximized client hide the dock and if fullscreened hide the activation area
+    for _, client in ipairs(clients_on_tag) do
+      if client.maximized or client.fullscreen then
+        dock.visible = false
+        if client.fullscreen then
+          fakedock.visible = false
+          awesome.emit_signal("notification_center_activation::toggle", s, false)
+        end
+      elseif not client.fullscreen then
+        fakedock.visible = true
+        awesome.emit_signal("notification_center_activation::toggle", s, true)
+      end
+    end
+
+
+
     if s == mouse.screen then
       local minimized = false
       for _, c in ipairs(clients_on_tag) do
-        if c.maximized or c.fullscreen then
-          dock.visible = false
-          return
-        end
         if c.minimized then
           minimized = true
         else
+          minimized = false
           local y = c:geometry().y
           local h = c.height
           if (y + h) >= s.geometry.height - User_config.dock_icon_size - 35 then
@@ -245,15 +252,16 @@ return function(screen, programs)
   fakedock:connect_signal(
     "mouse::enter",
     function()
-      for _, c in ipairs(screen.clients) do
-        if not c.fullscreen then
-          dock_intelligent_hide:stop()
-          dock.visible = true
-        end
-      end
       if #screen.clients < 1 then
         dock.visible = true
         dock_intelligent_hide:stop()
+        return
+      end
+      for _, c in ipairs(screen.clients) do
+        if not c.fullscreen then
+          dock.visible = true
+          dock_intelligent_hide:stop()
+        end
       end
     end
   )
@@ -316,8 +324,8 @@ return function(screen, programs)
   dock:connect_signal(
     "mouse::leave",
     function()
+      check_for_dock_hide(screen)
       dock_intelligent_hide:again()
-      dock.visible = false
     end
   )
   dock:setup {

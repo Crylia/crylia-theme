@@ -19,7 +19,7 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/"
 return function()
 
   ---Creates a layout with bar widgets based on the given table
-  ---@param widget_table string{}
+  ---@param widget_table table
   ---@return table
   local function create_bar_layout(widget_table)
     local bar_layout = { layout = wibox.layout.flex.horizontal, spacing = dpi(10) }
@@ -388,7 +388,7 @@ return function()
           "update::gpu_temp",
           function(gpu_temp)
             local temp_icon
-            local temp_num = tonumber(gpu_temp)
+            local temp_num = tonumber(gpu_temp) or "NaN"
 
             if temp_num then
 
@@ -478,6 +478,9 @@ return function()
           function(muted, volume)
             local icon = icondir .. "audio/volume"
             volume = tonumber(volume)
+            if not volume then
+              return
+            end
             if muted then
               icon = icon .. "-mute"
             else
@@ -564,8 +567,14 @@ return function()
         awesome.connect_signal(
           "microphone::get",
           function(muted, volume)
+            if not volume then
+              return
+            end
             local icon = icondir .. "audio/microphone"
             volume = tonumber(volume)
+            if not volume then
+              return
+            end
             if muted or (volume < 1) then
               icon = icon .. "-off"
             end

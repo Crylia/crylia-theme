@@ -115,11 +115,13 @@ return function(s)
   awesome.connect_signal(
     "brightness::rerun",
     function()
-      brightness_container.visible = true
-      if hide_brightness_osd.started then
-        hide_brightness_osd:again()
-      else
-        hide_brightness_osd:start()
+      if mouse.screen == s then
+        brightness_container.visible = true
+        if hide_brightness_osd.started then
+          hide_brightness_osd:again()
+        else
+          hide_brightness_osd:start()
+        end
       end
     end
   )

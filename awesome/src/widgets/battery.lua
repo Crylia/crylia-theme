@@ -99,6 +99,7 @@ return function(battery_kind)
         return device
       end
     end
+    return nil
   end
 
   local tooltip = awful.tooltip {
@@ -123,7 +124,7 @@ return function(battery_kind)
       battery_time = device.time_to_full
     end
 
-    battery_time = math.floor(battery_time / 3600) .. "h, " .. math.floor((battery_time / 60) % 60) .. "m"
+    local battery_string = math.floor(battery_time / 3600) .. "h, " .. math.floor((battery_time / 60) % 60) .. "m"
 
     if battery_temp == 0.0 then
       battery_temp = "NaN"
@@ -141,7 +142,7 @@ return function(battery_kind)
 
     tooltip.markup = "<span foreground='#64ffda'>Battery Status:</span> <span foreground='#90caf9'>"
         .. battery_status .. "</span>\n<span foreground='#64ffda'>Remaining time:</span> <span foreground='#90caf9'>"
-        .. battery_time .. "</span>\n<span foreground='#64ffda'>Temperature:</span> <span foreground='#90caf9'>"
+        .. battery_string .. "</span>\n<span foreground='#64ffda'>Temperature:</span> <span foreground='#90caf9'>"
         .. battery_temp .. "</span>"
 
     local icon = 'battery'

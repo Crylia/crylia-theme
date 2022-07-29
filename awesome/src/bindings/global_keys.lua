@@ -9,7 +9,7 @@ local modkey = User_config.modkey
 awful.keygrabber {
   keybindings        = {
     awful.key {
-      modifiers = { modkey },
+      modifiers = { "Mod1" },
       key = "Tab",
       on_press = function()
         awesome.emit_signal("window_switcher::select_next")
@@ -18,13 +18,13 @@ awful.keygrabber {
   },
   root_keybindings   = {
     awful.key {
-      modifiers = { modkey },
+      modifiers = { "Mod1" },
       key = "Tab",
       on_press = function()
       end
     }
   },
-  stop_key           = "Mod4",
+  stop_key           = "Mod1",
   stop_event         = "release",
   start_callback     = function()
     awesome.emit_signal("toggle_window_switcher")
@@ -182,7 +182,7 @@ return gears.table.join(
     { modkey },
     "#40",
     function()
-      awful.spawn("rofi -show drun -theme ~/.config/rofi/rofi.rasi")
+      awesome.emit_signal("application_launcher::show")
     end,
     { descripton = "Application launcher", group = "Application" }
   ),
@@ -301,14 +301,6 @@ return gears.table.join(
       awesome.emit_signal("kblayout::toggle")
     end,
     { description = "Toggle keyboard layout", group = "System" }
-  ),
-  awful.key(
-    { modkey },
-    "#27",
-    function()
-      awesome.emit_signal("application_laucher::show")
-    end,
-    { description = "show application launcher", group = "System" }
   ),
   awful.key(
     { modkey },

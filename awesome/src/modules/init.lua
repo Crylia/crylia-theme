@@ -19,13 +19,13 @@ awful.screen.connect_for_each_screen(
 
     require("src.modules.powermenu")(s)
     require("src.modules.volume_osd")(s)
-    --require("src.modules.brightness_osd")(s)
-    --require("src.modules.bluetooth_controller")(s)
+    require("src.modules.brightness_osd")(s)
+    require("src.modules.bluetooth_controller")(s)
     require("src.modules.titlebar")
     require("src.modules.volume_controller")(s)
     require("src.modules.crylia_bar.init")(s)
     require("src.modules.notification-center.init")(s)
     require("src.modules.window_switcher.init")(s)
-    --require("src.modules.application_launcher.init")(s)
+    require("src.modules.application_launcher.init")(s)
   end
 )

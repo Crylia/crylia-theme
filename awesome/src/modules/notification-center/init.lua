@@ -34,6 +34,15 @@ return function(s)
     layout = wibox.layout.fixed.horizontal
   })
 
+  awesome.connect_signal(
+    "notification_center_activation::toggle",
+    function(screen, hide)
+      if screen == s then
+        activation_area.visible = hide
+      end
+    end
+  )
+
   --#endregion
 
   --#region Widgets
@@ -70,7 +79,6 @@ return function(s)
       margins = dpi(10),
       widget = wibox.container.margin
     },
-    id = "place",
     widget = wibox.container.place,
     valign = "bottom",
     halign = "right",
@@ -193,7 +201,6 @@ return function(s)
     halign = "right",
   }
 
-  -- TODO: Add rubato animation. For this the widget needs to be rewritten to use a single moving square
   local no_notification_widget = wibox.widget {
     {
       {
@@ -220,7 +227,6 @@ return function(s)
     halign = "center",
     widget = wibox.container.place
   }
-
   --#endregion
 
   --#region Notification center
@@ -240,7 +246,6 @@ return function(s)
     end,
   }
 
-  -- TODO: Currently awesome doesn't come with a scroll container, there is a PR(#3309) and once its merged we can use it
   local function notification_center_setup()
     notification_center:setup({
       widget = notification_center,
@@ -363,7 +368,7 @@ return function(s)
     end
   )
 
-  Hover_signal(clear_all_widget, Theme_config.notification_center.clear_all_button.bg,
+  Hover_signal(clear_all_widget.margin3.background4, Theme_config.notification_center.clear_all_button.bg,
     Theme_config.notification_center.clear_all_button.fg)
   --#endregion
 

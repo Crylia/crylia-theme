@@ -24,7 +24,7 @@ User_config = {
     "discord",
     "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
     "setxkbmap -option caps:swapescape",
-    "whatsdesk"
+    "jamesdsp"
   },
 
   --[[
@@ -81,7 +81,7 @@ User_config = {
   ]] --
   dock_programs = {
     "com.alacritty.Alacritty.desktop",
-    "firefox.desktop",
+    "com.brave.Browser.desktop",
     "steam.desktop",
     "discord.desktop",
     "com.spotify.Client.desktop",
@@ -89,11 +89,11 @@ User_config = {
     "arduino-arduinoide.desktop",
     "us.zoom.Zoom.desktop",
     "thunderbird.desktop",
-    "com.ultimaker.cura.desktop",
+    "appimagekit_5de59b772d786d6e98102a035c80e40c-Ultimaker_Cura.desktop",
     "blender.desktop",
     "freecad.desktop",
     "The Witcher 3 Wild Hunt.desktop",
-    --"windows_11.desktop"
+    "Microsoft Flight Simulator.desktop"
   },
 
   --[[

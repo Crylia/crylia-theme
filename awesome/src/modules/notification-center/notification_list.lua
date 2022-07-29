@@ -14,7 +14,8 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
 local nl = {}
 
-nl.notification_list = { layout = wibox.layout.overflow.vertical, scrollbar_width = 0, step = dpi(10), spacing = dpi(20) }
+nl.notification_list = { layout = require("src.lib.overflow_widget.overflow").vertical, scrollbar_width = 0,
+  step = dpi(20), spacing = dpi(20) }
 
 -- @param {table} notification
 -- @return {widget} notifications_list
@@ -91,7 +92,6 @@ function nl.create_notification(n)
     },
     margins = dpi(10),
     widget = wibox.container.margin,
-    id = "arc_margin"
   }
 
   local timer_close_widget = timer_widget
@@ -224,7 +224,7 @@ function nl.create_notification(n)
       if button == 1 then
         for i, b in pairs(nl.notification_list) do
           if b.pk == notification.pk then
-            table.remove(nl.notification_list, i)
+            table.remove(nl.notification_list, math.tointeger(i))
             awesome.emit_signal("notification_center:update::needed")
             break
           end
@@ -233,7 +233,7 @@ function nl.create_notification(n)
     end
   )
 
-  Hover_signal(close_widget.const.background, Theme_config.notification_center.notification_list.close_bg,
+  Hover_signal(close_widget.const.background, nil,
     Theme_config.notification_center.notification_list.close_color)
 
   notification:connect_signal(

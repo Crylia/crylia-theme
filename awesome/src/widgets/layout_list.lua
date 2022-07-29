@@ -47,7 +47,7 @@ return function()
   }
 
   -- Signals
-  Hover_signal(layout, Theme_config.layout_list.bg, Theme_config.layout_list.fg)
+  Hover_signal(layout, Theme_config.layout_list.bg)
 
   layout:connect_signal(
     "button::press",

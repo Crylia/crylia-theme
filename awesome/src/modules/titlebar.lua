@@ -132,12 +132,9 @@ local create_titlebar = function(c, size)
     layout = wibox.layout.align.vertical,
     id = "main"
   }
-  Hover_signal(titlebar.main.margin.spacing.closebutton, Theme_config.titlebar.close_button_bg,
-    Theme_config.titlebar.close_button_fg)
-  Hover_signal(titlebar.main.margin.spacing.maximizebutton, Theme_config.titlebar.minimize_button_bg,
-    Theme_config.titlebar.minimize_button_fg)
-  Hover_signal(titlebar.main.margin.spacing.minimizebutton, Theme_config.titlebar.maximize_button_bg,
-    Theme_config.titlebar.maximize_button_fg)
+  Hover_signal(titlebar.main.margin.spacing.closebutton, Theme_config.titlebar.close_button_bg)
+  Hover_signal(titlebar.main.margin.spacing.maximizebutton, Theme_config.titlebar.minimize_button_bg)
+  Hover_signal(titlebar.main.margin.spacing.minimizebutton, Theme_config.titlebar.maximize_button_bg)
 end
 
 local create_titlebar_dialog_modal = function(c, size)
@@ -190,10 +187,8 @@ local create_titlebar_dialog_modal = function(c, size)
     layout = wibox.layout.align.vertical,
     id = "main"
   }
-  Hover_signal(titlebar.main.margin.spacing.closebutton, Theme_config.titlebar.close_button_bg,
-    Theme_config.titlebar.close_button_fg)
-  Hover_signal(titlebar.main.margin.spacing.minimizebutton, Theme_config.titlebar.minimize_button_bg,
-    Theme_config.titlebar.minimize_button_fg)
+  Hover_signal(titlebar.main.margin.spacing.closebutton, Theme_config.titlebar.close_button_bg)
+  Hover_signal(titlebar.main.margin.spacing.minimizebutton, Theme_config.titlebar.minimize_button_bg)
 end
 
 client.connect_signal(

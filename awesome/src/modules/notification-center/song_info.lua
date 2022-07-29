@@ -55,11 +55,11 @@ return function(s)
         if stdout:match("On") then
           awful.spawn.with_shell("playerctl shuffle off")
           shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg",
-            Theme_config.notification_center.song_info.shuffle_enabled)
+            Theme_config.notification_center.song_info.shuffle_disabled)
         else
           awful.spawn.with_shell("playerctl shuffle on")
           shuffle_button.image = gears.color.recolor_image(icondir .. "shuffle.svg",
-            Theme_config.notification_center.song_info.shuffle_disabled)
+            Theme_config.notification_center.song_info.shuffle_enabled)
         end
       end
     )
@@ -428,6 +428,7 @@ return function(s)
                 "curl -s " .. url .. " -o /tmp/album_art.jpg && echo /tmp/album_art.jpg && sleep 0.5",
                 function()
                   music_widget:get_children_by_id("imagebox")[1].image = gears.surface.load_uncached("/tmp/album_art.jpg")
+                      or icondir .. "default_image.svg"
                 end
               )
             end
@@ -439,8 +440,8 @@ return function(s)
             function(stdout2)
               local length = stdout2:gsub("\n", "")
               if length ~= "" then
-                local length_formated = string.format("%02d:%02d", math.floor(tonumber(length or 1) / 60000000) or 0,
-                  (math.floor(tonumber(length or 1) / 1000000) % 60) or 0)
+                local length_formated = string.format("%02d:%02d", math.floor((tonumber(length) or 1) / 60000000) or 0,
+                  (math.floor((tonumber(length) or 1) / 1000000) % 60) or 0)
                 music_widget:get_children_by_id("progressbar1")[1].max_value = tonumber(math.floor(tonumber(length) /
                   1000000))
                 music_widget:get_children_by_id("text1")[1].markup = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, Bold 14'>%s</span>"
@@ -467,8 +468,8 @@ return function(s)
       function(stdout)
         local time = stdout:gsub("\n", "")
         if time ~= "" then
-          local time_formated = string.format("%02d:%02d", math.floor(tonumber(time or "1") / 60),
-            math.floor(tonumber(time or "1")) % 60)
+          local time_formated = string.format("%02d:%02d", math.floor((tonumber(time) or 1) / 60),
+            math.floor(tonumber(time) or 1) % 60)
           music_widget:get_children_by_id("textbox2")[1].markup = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, Bold 14'>%s</span>"
             , Theme_config.notification_center.song_info.duration_fg, time_formated)
           music_widget:get_children_by_id("progressbar1")[1].value = tonumber(time)
