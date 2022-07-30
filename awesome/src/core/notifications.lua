@@ -25,6 +25,9 @@ naughty.config.defaults.border_width = Theme_config.notification.border_width
 naughty.config.defaults.border_color = Theme_config.notification.border_color
 naughty.config.defaults.spacing = Theme_config.notification.spacing
 
+--naughty.config.defaults.screen = screen.primary.index
+
+
 Theme.notification_spacing = Theme_config.notification.corner_spacing
 
 naughty.connect_signal(
@@ -392,10 +395,18 @@ naughty.connect_signal(
           if key == 3 then
             n:destroy()
           end
-          -- TODO: Find out how to get the associated client
-          -- for some reason n.clients is always empty
-          --[[ if key == 1 then
-        end ]]
+          -- Raise the client on click
+          if key == 1 then
+            for _, client in ipairs(client.get()) do
+              if client.name:match(n.app_name) then
+                if not client:isvisible() and client.first_tag then
+                  client.first_tag:view_only()
+                end
+                client:emit_signal('request::activate')
+                client:raise()
+              end
+            end
+          end
         end
       )
 
@@ -403,7 +414,7 @@ naughty.connect_signal(
         notification = n,
         timeout = 3,
         type = "notification",
-        screen = awful.screen.focused(),
+        screen = screen.primary,
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, 10)
         end,
@@ -421,27 +432,6 @@ naughty.connect_signal(
   function()
   end
 )
-
--- Test notification
---[[ naughty.notification {
-  app_name = "System Notification",
-  title    = "A notification 2",
-  message  = "This is very informative and overflowing",
-  icon     = "/home/crylia/.config/awesome/src/assets/userpfp/crylia.png",
-  urgency  = "normal",
-  timeout  = 0,
-  actions  = {
-    naughty.action {
-      name = "Accept",
-    },
-    naughty.action {
-      name = "Refuse",
-    },
-    naughty.action {
-      name = "Ignore",
-    },
-  }
-} ]]
 
 naughty.connect_signal(
   "invoked",

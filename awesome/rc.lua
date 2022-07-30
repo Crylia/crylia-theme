@@ -9,6 +9,7 @@
 -- Initialising, order is important!
 require("src.theme.user_config")
 require("src.theme.theme_config")
+require("src.tools.icon_theme")
 require("src.theme.init")
 require("src.core.error_handling")
 require("src.core.signals")

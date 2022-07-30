@@ -147,7 +147,7 @@ return function(s)
         {
           {
             spacing = dpi(10),
-            layout = wibox.layout.overflow.vertical,
+            layout = require("src.lib.overflow_widget.overflow").vertical,
             scrollbar_width = 0,
             step = dpi(50),
             id = "volume_device_list",
@@ -179,7 +179,7 @@ return function(s)
         {
           {
             spacing = dpi(10),
-            layout = wibox.layout.overflow.vertical,
+            layout = require("src.lib.overflow_widget.overflow").vertical,
             id = "volume_device_list",
             scrollbar_width = 0,
             step = dpi(50),

@@ -317,7 +317,7 @@ return gears.table.join(
               },
             }
             awful.spawn.easy_async_with_shell(
-              "cat ~/.config/awesome/src/assets/rules.txt",
+              "cat ~/.config/awesome/src/assets/cache/rules.txt",
               function(stdout2)
                 for class in stdout2:gmatch("%a+") do
                   if class:match(stdout:gsub("\n", "")) then
@@ -325,7 +325,7 @@ return gears.table.join(
                   end
                 end
                 awful.spawn.with_shell("echo -n '" ..
-                  stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/rules.txt")
+                  stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/cache/rules.txt")
                 local c = mouse.screen.selected_tag:clients()
                 for _, client in ipairs(c) do
                   if client.class:match(stdout:gsub("\n", "")) then
@@ -356,8 +356,8 @@ return gears.table.join(
             awful.spawn.easy_async_with_shell(
               [[
                 REMOVE="]] .. stdout:gsub("\n", "") .. [[;"
-                STR=$(cat ~/.config/awesome/src/assets/rules.txt)
-                echo -n ${STR//$REMOVE/} > ~/.config/awesome/src/assets/rules.txt
+                STR=$(cat ~/.config/awesome/src/assets/cache/rules.txt)
+                echo -n ${STR//$REMOVE/} > ~/.config/awesome/src/assets/cache/rules.txt
               ]],
               function()
                 local c = mouse.screen.selected_tag:clients()

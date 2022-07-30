@@ -74,7 +74,7 @@ awful.rules.rules = {
 }
 
 awful.spawn.easy_async_with_shell(
-  "cat ~/.config/awesome/src/assets/rules.txt",
+  "cat ~/.config/awesome/src/assets/cache/rules.txt",
   function(stdout)
     for class in stdout:gmatch("%a+") do
       ruled.client.append_rule {

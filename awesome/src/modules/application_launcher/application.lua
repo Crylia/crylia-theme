@@ -4,14 +4,12 @@
 
 -- Awesome Libs
 local awful = require("awful")
+local Gio = require("lgi").Gio
 local dpi = require("beautiful").xresources.apply_dpi
-local desktop_parser = require("src.tools.desktop_parser")
 local gears = require("gears")
 local wibox = require("wibox")
 
 return function()
-
-  local desktop_files = desktop_parser.Get_all_visible_desktop()
 
   local application_grid = wibox.widget {
     homogenous = true,
@@ -36,8 +34,12 @@ return function()
   ---@return table widgets Unsorted widget table
   local function get_applications_from_file()
     local list = {}
-    for _, file in ipairs(desktop_files) do
-      if not file.nodisplay then
+    --for _, file in ipairs(desktop_files) do
+    local app_info = Gio.AppInfo
+    local apps = app_info.get_all()
+    for _, app in ipairs(apps) do
+      if app.should_show(app) then -- check no display
+        local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
         local app_widget = wibox.widget {
           {
             {
@@ -46,7 +48,9 @@ return function()
                   { -- Icon
                     valign = "center",
                     halign = "center",
-                    image = xdg_icon_lookup:find_icon(file.icon, 64) or "/home/crylia/Bilder/yes.png",
+                    --[[ image = xdg_icon_lookup:find_icon(Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon"), 64) or
+                        awful.util.getdir("config") .. "src/assets/icons/fallback.svg", -- fallback icon ]]
+                    image = Get_gicon_path(app_info.get_icon(app)),
                     resize = true,
                     widget = wibox.widget.imagebox
                   },
@@ -57,7 +61,7 @@ return function()
                 },
                 {
                   { -- Name
-                    text = file.name,
+                    text = app_info.get_name(app),
                     align = "center",
                     valign = "center",
                     widget = wibox.widget.textbox
@@ -77,12 +81,12 @@ return function()
             margins = dpi(10),
             widget = wibox.container.margin
           },
-          name = file.name,
-          comment = file.comment,
-          exec = file.exec,
-          keywords = file.keywords,
-          categories = file.categories,
-          terminal = file.terminal,
+          name = app_info.get_name(app),
+          comment = Gio.DesktopAppInfo.get_string(desktop_app_info, "Comment") or "",
+          exec = Gio.DesktopAppInfo.get_string(desktop_app_info, "Exec"),
+          keywords = Gio.DesktopAppInfo.get_string(desktop_app_info, "Keywords") or "",
+          categories = Gio.DesktopAppInfo.get_string(desktop_app_info, "Cathegory") or "",
+          terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true",
           border_color = Theme_config.application_launcher.application.border_color,
           border_width = Theme_config.application_launcher.application.border_width,
           bg = Theme_config.application_launcher.application.bg,
@@ -100,7 +104,7 @@ return function()
               1,
               nil,
               function()
-                awful.spawn.with_shell(file.exec)
+                awful.spawn.with_shell(app_widget.exec)
                 awesome.emit_signal("application_launcher::show")
               end
             )
@@ -207,8 +211,8 @@ return function()
 
   awesome.connect_signal(
     "update::application_list",
-    function(filter)
-      application_grid = get_applications(filter)
+    function(f)
+      application_grid = get_applications(f)
     end
   )
 
@@ -219,9 +223,10 @@ return function()
 
       local selected_widget = application_grid:get_widgets_at(curser.y, curser.x)[1]
       if selected_widget.terminal then
-        awful.spawn.with_shell(selected_widget.exec)
+        awful.spawn(User_config.terminal .. " -e " .. selected_widget.exec)
       else
-        awful.spawn(selected_widget.exec)
+        print(selected_widget.exec)
+        awful.spawn.with_shell(selected_widget.exec)
       end
     end
   )
