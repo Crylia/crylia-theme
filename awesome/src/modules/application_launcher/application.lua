@@ -48,8 +48,6 @@ return function()
                   { -- Icon
                     valign = "center",
                     halign = "center",
-                    --[[ image = xdg_icon_lookup:find_icon(Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon"), 64) or
-                        awful.util.getdir("config") .. "src/assets/icons/fallback.svg", -- fallback icon ]]
                     image = Get_gicon_path(app_info.get_icon(app)),
                     resize = true,
                     widget = wibox.widget.imagebox

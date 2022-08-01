@@ -47,7 +47,7 @@ return function()
                 {
                   id = "icon",
                   --!ADD FALLBACK ICON!--
-                  image = xdg_icon_lookup:find_icon(client.class, 64) or client.icon,
+                  image = Get_icon(client.class, client.name) or client.icon,
                   valign = "center",
                   halign = "center",
                   widget = wibox.widget.imagebox

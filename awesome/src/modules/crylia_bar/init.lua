@@ -3,8 +3,6 @@
 --------------------------------------------------------------------------------------------------------------
 
 return function(s)
-  xdg_icon_lookup = require("src.tools.xdg_icon_lookup")()
-
   ---Lookup function to return the widget from its easy name string
   ---@param widgets table
   ---@return widget

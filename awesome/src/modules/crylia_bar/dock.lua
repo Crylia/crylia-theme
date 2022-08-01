@@ -4,15 +4,23 @@
 -- Awesome Libs
 local awful = require("awful")
 local dpi = require("beautiful").xresources.apply_dpi
+local Gio = require("lgi").Gio
 local gears = require("gears")
 local wibox = require("wibox")
-
-local desktop_parser = require("src.tools.desktop_parser")
 
 return function(screen, programs)
 
   local function create_dock_element(program, size)
     if not program then
+      return
+    end
+
+    local desktop_app_info = Gio.DesktopAppInfo.new_from_filename(program)
+    if not desktop_app_info then
+      return
+    end
+    local gicon = Gio.Icon.new_for_string(Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon"))
+    if not gicon then
       return
     end
 
@@ -23,6 +31,7 @@ return function(screen, programs)
             {
               resize = true,
               widget = wibox.widget.imagebox,
+              image = Get_gicon_path(gicon) or "",
               valign = "center",
               halign = "center",
               id = "icon",
@@ -50,8 +59,6 @@ return function(screen, programs)
       widget = wibox.container.margin
     }
 
-    dock_element.background.margin.icon_container.icon.image = xdg_icon_lookup:find_icon(program["Icon"], 64)
-
     for _, c in ipairs(client.get()) do
       if string.lower(c.class):match(program["Icon"]) and c == client.focus then
         dock_element.background.bg = Theme_config.dock.element_focused_bg
@@ -71,7 +78,7 @@ return function(screen, programs)
 
     awful.tooltip {
       objects = { dock_element },
-      text = program["Name"],
+      text = Gio.DesktopAppInfo.get_string(desktop_app_info, "Name"),
       mode = "outside",
       preferred_alignments = "middle",
       margins = dpi(10)
@@ -110,7 +117,7 @@ return function(screen, programs)
     local dock_elements = { layout = wibox.layout.fixed.horizontal }
 
     for i, p in ipairs(pr) do
-      dock_elements[i] = create_dock_element(desktop_parser.Get_desktop_values(p), User_config.dock_icon_size)
+      dock_elements[i] = create_dock_element(Get_desktop_values(p), User_config.dock_icon_size)
     end
 
     return dock_elements
@@ -140,7 +147,7 @@ return function(screen, programs)
       local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
       local col = Theme_config.dock.indicator_bg
       for i, c in ipairs(clients) do
-        local icon = desktop_parser.Get_desktop_values(pr)
+        local icon = Get_desktop_values(pr)
         if icon then
           local icon_name = string.lower(icon["Icon"] or "")
           if icon_name:match(string.lower(c.class or c.name)) then

@@ -23,6 +23,7 @@
 -- @supermodule wibox.widget.base
 ---------------------------------------------------------------------------
 
+---@diagnostic disable-next-line: deprecated
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 local base   = require("wibox.widget.base")
 local table  = table
