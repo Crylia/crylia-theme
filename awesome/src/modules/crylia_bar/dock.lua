@@ -10,6 +10,10 @@ local wibox = require("wibox")
 
 return function(screen, programs)
 
+  ---Creates a new program widget for the dock
+  ---@param program string | nil The name of the .desktop file
+  ---@param size number The size of the widget
+  ---@return widox.widget | nil The widget or nil if the program is not found
   local function create_dock_element(program, size)
     if not program then
       return
@@ -60,7 +64,7 @@ return function(screen, programs)
     }
 
     for _, c in ipairs(client.get()) do
-      if string.lower(c.class):match(program["Icon"]) and c == client.focus then
+      if string.lower(c.class):match(Get_gicon_path(gicon) or "") and c == client.focus then
         dock_element.background.bg = Theme_config.dock.element_focused_bg
       end
     end
@@ -71,7 +75,7 @@ return function(screen, programs)
       "button::press",
       function(_, _, _, button)
         if button == 1 then
-          awful.spawn(program["Exec"])
+          awful.spawn(Gio.DesktopAppInfo.get_string(desktop_app_info, "Exec"))
         end
       end
     )
@@ -87,6 +91,7 @@ return function(screen, programs)
     return dock_element
   end
 
+  --- The container bar where the elements/program widgets sit in
   local dock = awful.popup {
     widget = wibox.container.background,
     ontop = true,
@@ -101,6 +106,7 @@ return function(screen, programs)
     end
   }
 
+  --- A fakedock to send a signal when the mouse is over it
   local fakedock = awful.popup {
     widget = wibox.container.background,
     ontop = true,
@@ -113,6 +119,9 @@ return function(screen, programs)
     placement = function(c) awful.placement.bottom(c) end,
   }
 
+  --- This function creates a list with all dock elements/program widgets
+  ---@param pr table A list of .desktop files
+  ---@return table string list of widgets
   local function get_dock_elements(pr)
     local dock_elements = { layout = wibox.layout.fixed.horizontal }
 
@@ -123,8 +132,10 @@ return function(screen, programs)
     return dock_elements
   end
 
+  --- List of all elements/program widgets
   local dock_elements = get_dock_elements(programs)
 
+  --- Function to get an empty list with the same ammount as dock_element
   local function get_fake_elements(amount)
     local fake_elements = { layout = wibox.layout.fixed.horizontal }
 
@@ -140,48 +151,53 @@ return function(screen, programs)
     return fake_elements
   end
 
+  --- Indicators under the elements to indicate various open states
   local function create_incicator_widget(prog)
     local container = { layout = wibox.layout.flex.horizontal }
     local clients = client.get()
     for index, pr in ipairs(prog) do
-      local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
-      local col = Theme_config.dock.indicator_bg
-      for i, c in ipairs(clients) do
-        local icon = Get_desktop_values(pr)
-        if icon then
-          local icon_name = string.lower(icon["Icon"] or "")
-          if icon_name:match(string.lower(c.class or c.name)) then
-            if c == client.focus then
-              col = Theme_config.dock.indicator_focused_bg
-            elseif c.urgent then
-              col = Theme_config.dock.indicator_urgent_bg
-            elseif c.maximized then
-              col = Theme_config.dock.indicator_maximized_bg
-            elseif c.minimized then
-              col = Theme_config.dock.indicator_minimized_bg
-            elseif c.fullscreen then
-              col = Theme_config.dock.indicator_fullscreen_bg
-            else
-              col = Theme_config.dock.indicator_bg
+      local desktop_app_info = Gio.DesktopAppInfo.new_from_filename(Get_desktop_values(pr))
+      if desktop_app_info then
+        local gicon = Gio.Icon.new_for_string(Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon"))
+        if gicon then
+          local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
+          local col = Theme_config.dock.indicator_bg
+          for i, c in ipairs(clients) do
+            local icon_name = Get_gicon_path(gicon) or ""
+            if icon_name:match(string.lower(c.class or c.name)) or c.class:match(string.lower(icon_name)) or
+                c.name:match(string.lower(icon_name)) then
+              if c == client.focus then
+                col = Theme_config.dock.indicator_focused_bg
+              elseif c.urgent then
+                col = Theme_config.dock.indicator_urgent_bg
+              elseif c.maximized then
+                col = Theme_config.dock.indicator_maximized_bg
+              elseif c.minimized then
+                col = Theme_config.dock.indicator_minimized_bg
+              elseif c.fullscreen then
+                col = Theme_config.dock.indicator_fullscreen_bg
+              else
+                col = Theme_config.dock.indicator_bg
+              end
+              indicators[i] = wibox.widget {
+                widget = wibox.container.background,
+                shape = gears.shape.rounded_rect,
+                forced_height = dpi(3),
+                bg = col,
+                forced_width = dpi(5),
+              }
             end
-            indicators[i] = wibox.widget {
-              widget = wibox.container.background,
-              shape = gears.shape.rounded_rect,
-              forced_height = dpi(3),
-              bg = col,
-              forced_width = dpi(5),
-            }
           end
+          container[index] = wibox.widget {
+            indicators,
+            forced_height = dpi(5),
+            forced_width = dpi(User_config.dock_icon_size),
+            left = dpi(5),
+            right = dpi(5),
+            widget = wibox.container.margin,
+          }
         end
       end
-      container[index] = wibox.widget {
-        indicators,
-        forced_height = dpi(5),
-        forced_width = dpi(User_config.dock_icon_size),
-        left = dpi(5),
-        right = dpi(5),
-        widget = wibox.container.margin,
-      }
     end
 
     return wibox.widget {
@@ -197,6 +213,8 @@ return function(screen, programs)
     layout = wibox.layout.fixed.vertical
   }
 
+  ---Check if the dock needs to be hidden, I also put the topbar check here since it shares that logic
+  ---@param s screen The screen to check for hide
   local function check_for_dock_hide(s)
     local clients_on_tag = s.selected_tag:clients()
 
@@ -247,6 +265,7 @@ return function(screen, programs)
     end
   end
 
+  -- Call the function every second to check if the dock needs to be hidden
   local dock_intelligent_hide = gears.timer {
     timeout = 1,
     autostart = true,
@@ -256,6 +275,7 @@ return function(screen, programs)
     end
   }
 
+  --- Hover function to show the dock
   fakedock:connect_signal(
     "mouse::enter",
     function()
