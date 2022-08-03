@@ -90,7 +90,7 @@ return function(s)
   )
 
   -- Signals
-  Hover_signal(audio_widget, Theme_config.audio.bg, Theme_config.audio.fg)
+  Hover_signal(audio_widget)
 
   audio_widget:connect_signal(
     "button::press",

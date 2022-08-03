@@ -32,8 +32,8 @@ end
 ---@param name string
 ---@return string | nil icon_path
 function Get_icon(class, name)
-  class = string.lower(class) or ""
-  name = string.lower(name) or ""
+  class = string.lower(class or "")
+  name = string.lower(name or "")
   for _, app in ipairs(app_list) do
     local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
     local icon_string = Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon")

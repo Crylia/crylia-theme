@@ -102,61 +102,7 @@ local list_update = function(widget, buttons, _, _, objects)
       })
     end
 
-    --#region Hover_signal
-    local old_wibox, old_cursor
-    tag_widget:connect_signal(
-      "mouse::enter",
-      function()
-        if object == awful.screen.focused().selected_tag then
-          tag_widget.bg = Theme_config.taglist.bg_focus_hover .. 'dd'
-        else
-          tag_widget.bg = Theme_config.taglist.bg .. 'dd'
-        end
-        local w = mouse.current_wibox
-        if w then
-          old_cursor, old_wibox = w.cursor, w
-          w.cursor = "hand1"
-        end
-      end
-    )
-
-    tag_widget:connect_signal(
-      "button::press",
-      function()
-        if object == awful.screen.focused().selected_tag then
-          tag_widget.bg = Theme_config.taglist.bg_focus_pressed .. 'dd'
-        else
-          tag_widget.bg = Theme_config.taglist.bg .. 'dd'
-        end
-      end
-    )
-
-    tag_widget:connect_signal(
-      "button::release",
-      function()
-        if object == awful.screen.focused().selected_tag then
-          tag_widget.bg = Theme_config.taglist.bg_focus_hover .. 'dd'
-        else
-          tag_widget.bg = Theme_config.taglist.bg .. 'dd'
-        end
-      end
-    )
-
-    tag_widget:connect_signal(
-      "mouse::leave",
-      function()
-        if object == awful.screen.focused().selected_tag then
-          tag_widget.bg = Theme_config.taglist.bg_focus
-        else
-          tag_widget.bg = Theme_config.taglist.bg
-        end
-        if old_wibox then
-          old_wibox.cursor = old_cursor
-          old_wibox = nil
-        end
-      end
-    )
-    --#endregion
+    Hover_signal(tag_widget)
 
     widget:add(tag_widget)
     widget:set_spacing(dpi(6))

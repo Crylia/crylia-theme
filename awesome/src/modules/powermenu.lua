@@ -149,11 +149,11 @@ return function(s)
   local lock_button = button("Lock", icondir .. "lock.svg", Theme_config.powermenu.lock_button_bg, lock_command)
 
   -- Signals to change color on hover
-  Hover_signal(shutdown_button.background, Theme_config.powermenu.shutdown_button_bg, Theme_config.powermenu.button_fg)
-  Hover_signal(reboot_button.background, Theme_config.powermenu.reboot_button_bg, Theme_config.powermenu.button_fg)
-  Hover_signal(suspend_button.background, Theme_config.powermenu.suspend_button_bg, Theme_config.powermenu.button_fg)
-  Hover_signal(logout_button.background, Theme_config.powermenu.logout_button_bg, Theme_config.powermenu.button_fg)
-  Hover_signal(lock_button.background, Theme_config.powermenu.lock_button_bg, Theme_config.powermenu.button_fg)
+  Hover_signal(shutdown_button.background)
+  Hover_signal(reboot_button.background)
+  Hover_signal(suspend_button.background)
+  Hover_signal(logout_button.background)
+  Hover_signal(lock_button.background)
 
   -- The powermenu widget
   local powermenu = wibox.widget {

@@ -13,7 +13,6 @@ local rubato = require("src.lib.rubato")
 
 local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
--- TODO: Figure out how to use hover effects without messing up the actions
 naughty.config.defaults.ontop = true
 naughty.config.defaults.icon_size = dpi(80)
 naughty.config.defaults.timeout = Theme_config.notification.timeout
@@ -24,9 +23,6 @@ naughty.config.defaults.shape = Theme_config.notification.shape
 naughty.config.defaults.border_width = Theme_config.notification.border_width
 naughty.config.defaults.border_color = Theme_config.notification.border_color
 naughty.config.defaults.spacing = Theme_config.notification.spacing
-
---naughty.config.defaults.screen = screen.primary.index
-
 
 Theme.notification_spacing = Theme_config.notification.corner_spacing
 
@@ -242,6 +238,7 @@ naughty.connect_signal(
                           },
                           id = "background1",
                           fg = Theme_config.notification.fg_close,
+                          bg = Theme_config.notification.bg_close,
                           widget = wibox.container.background
                         },
                         strategy = "exact",
@@ -380,7 +377,7 @@ naughty.connect_signal(
         )
       end
 
-      Hover_signal(close, nil, Theme_config.notification.fg_close)
+      Hover_signal(close)
 
       close:connect_signal(
         "button::press",

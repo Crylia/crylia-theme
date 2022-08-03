@@ -88,6 +88,7 @@ return function()
           border_color = Theme_config.application_launcher.application.border_color,
           border_width = Theme_config.application_launcher.application.border_width,
           bg = Theme_config.application_launcher.application.bg,
+          fg = Theme_config.application_launcher.application.fg,
           shape = function(cr, width, height)
             gears.shape.rounded_rect(cr, width, height, dpi(8))
           end,
@@ -108,6 +109,7 @@ return function()
             )
           )
         )
+        Hover_signal(app_widget)
         table.insert(list, app_widget)
       end
     end
@@ -151,8 +153,6 @@ return function()
           end
         )
         awesome.emit_signal("update::selected")
-        Hover_signal(application, Theme_config.application_launcher.application.bg,
-          Theme_config.application_launcher.application.fg, application.border_color)
       end
     end
 
@@ -221,10 +221,13 @@ return function()
 
       local selected_widget = application_grid:get_widgets_at(curser.y, curser.x)[1]
       if selected_widget.terminal then
-        awful.spawn(User_config.terminal .. " -e " .. selected_widget.exec)
+        awful.spawn(User_config.terminal ..
+          " -e " ..
+          selected_widget.exec:gsub("%%F", ""):gsub("%%u", ""):gsub("%%U", ""):gsub("%%f", ""):gsub("%%i", ""):gsub("%%c"
+            , ""):gsub("%%k", ""))
       else
-        print(selected_widget.exec)
-        awful.spawn.with_shell(selected_widget.exec)
+        awful.spawn.with_shell(selected_widget.exec:gsub("%%F", ""):gsub("%%u", ""):gsub("%%U", ""):gsub("%%f", ""):gsub("%%i"
+          , ""):gsub("%%c", ""):gsub("%%k", ""))
       end
     end
   )

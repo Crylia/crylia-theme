@@ -51,11 +51,13 @@ return function(s)
     if sink == true then
       device:connect_signal(
         "button::press",
-        function()
-          if node then
-            awful.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
+        function(_, _, _, key)
+          if key == 1 then
+            if node then
+              awful.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
+              awesome.emit_signal("update::bg_sink", node)
+            end
           end
-          awesome.emit_signal("update::bg_sink", node)
         end
       )
       awesome.connect_signal(
@@ -92,14 +94,17 @@ return function(s)
         end
       )
       awesome.emit_signal("update::bg_sink", node)
+      Hover_signal(device)
     else
       device:connect_signal(
         "button::press",
-        function()
-          if node then
-            awful.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
+        function(_, _, _, key)
+          if key == 1 then
+            if node then
+              awful.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
+              awesome.emit_signal("update::bg_source", node)
+            end
           end
-          awesome.emit_signal("update::bg_source", node)
         end
       )
       awesome.connect_signal(
@@ -136,6 +141,7 @@ return function(s)
         end
       )
       awesome.emit_signal("update::bg_source", node)
+      Hover_signal(device)
     end
     return device
   end
@@ -320,7 +326,7 @@ return function(s)
                   gears.shape.rounded_rect(cr, width, height, dpi(5))
                 end,
                 bar_height = dpi(5),
-                bar_color = Theme_config.device_border_color,
+                bar_color = Theme_config.volume_controller.border_color,
                 bar_active_color = Theme_config.volume_controller.volume_fg,
                 handle_color = Theme_config.volume_controller.volume_fg,
                 handle_shape = gears.shape.circle,
@@ -409,31 +415,33 @@ return function(s)
   -- Click event for the audio dropdown
   audio_selector_margin:connect_signal(
     "button::press",
-    function()
-      local rubato_timer = rubato.timed {
-        duration = 0.4,
-        intro = 0.1,
-        outro = 0.1,
-        pos = volume_list.forced_height,
-        easing = rubato.linear,
-        subscribed = function(v)
-          volume_list.forced_height = v
+    function(_, _, _, key)
+      if key == 1 then
+        local rubato_timer = rubato.timed {
+          duration = 0.4,
+          intro = 0.1,
+          outro = 0.1,
+          pos = volume_list.forced_height,
+          easing = rubato.linear,
+          subscribed = function(v)
+            volume_list.forced_height = v
+          end
+        }
+        if volume_list.forced_height == 0 then
+          rubato_timer.target = dpi(200)
+          audio_bg.shape = function(cr, width, height)
+            gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+          end
+          audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
+            Theme_config.volume_controller.device_headphones_selected_icon_color))
+        else
+          rubato_timer.target = 0
+          audio_bg.shape = function(cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, dpi(4))
+          end
+          audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
+            Theme_config.volume_controller.device_headphones_selected_icon_color))
         end
-      }
-      if volume_list.forced_height == 0 then
-        rubato_timer.target = dpi(200)
-        audio_bg.shape = function(cr, width, height)
-          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
-        end
-        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
-          Theme_config.volume_controller.device_headphones_selected_icon_color))
-      else
-        rubato_timer.target = 0
-        audio_bg.shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(4))
-        end
-        audio_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
-          Theme_config.volume_controller.device_headphones_selected_icon_color))
       end
     end
   )
@@ -447,31 +455,33 @@ return function(s)
   -- Click event for the microphone dropdown
   mic_selector_margin:connect_signal(
     "button::press",
-    function()
-      local rubato_timer = rubato.timed {
-        duration = 0.4,
-        intro = 0.1,
-        outro = 0.1,
-        pos = mic_list.forced_height,
-        easing = rubato.linear,
-        subscribed = function(v)
-          mic_list.forced_height = v
+    function(_, _, _, key)
+      if key == 1 then
+        local rubato_timer = rubato.timed {
+          duration = 0.4,
+          intro = 0.1,
+          outro = 0.1,
+          pos = mic_list.forced_height,
+          easing = rubato.linear,
+          subscribed = function(v)
+            mic_list.forced_height = v
+          end
+        }
+        if mic_list.forced_height == 0 then
+          rubato_timer.target = dpi(200)
+          mic_selector_margin.mic_bg.shape = function(cr, width, height)
+            gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+          end
+          mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
+            Theme_config.volume_controller.device_microphone_selected_icon_color))
+        else
+          rubato_timer.target = 0
+          mic_bg.shape = function(cr, width, height)
+            gears.shape.rounded_rect(cr, width, height, dpi(4))
+          end
+          mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
+            Theme_config.volume_controller.device_microphone_selected_icon_color))
         end
-      }
-      if mic_list.forced_height == 0 then
-        rubato_timer.target = dpi(200)
-        mic_selector_margin.mic_bg.shape = function(cr, width, height)
-          gears.shape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
-        end
-        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-up.svg",
-          Theme_config.volume_controller.device_microphone_selected_icon_color))
-      else
-        rubato_timer.target = 0
-        mic_bg.shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(4))
-        end
-        mic_volume.icon:set_image(gears.color.recolor_image(icondir .. "menu-down.svg",
-          Theme_config.volume_controller.device_microphone_selected_icon_color))
       end
     end
   )
@@ -482,7 +492,7 @@ return function(s)
   audio_slider_margin:connect_signal(
     "property::value",
     function()
-      awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ " .. tonumber(audio_slider_margin.value) .. "%")
+      awful.spawn.with_shell("pactl set-sink-volume @DEFAULT_SINK@ " .. tonumber(audio_slider_margin.value) .. "%")
     end
   )
 

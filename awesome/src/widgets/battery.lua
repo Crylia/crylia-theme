@@ -67,7 +67,7 @@ return function(battery_kind)
   }
 
   -- Color change on mouse over
-  Hover_signal(battery_widget, Theme_config.battery.bg, Theme_config.battery.fg)
+  Hover_signal(battery_widget)
 
   -- Open an energy manager on click
   battery_widget:connect_signal(
@@ -90,7 +90,7 @@ return function(battery_kind)
 
   ---Takes a path and returns the glib object
   ---@param path string battery device path
-  ---@return UPowerGlib.Device battery battery device object
+  ---@return UPowerGlib.Device | nil battery battery device object
   local function get_device_from_path(path)
     local devices = upower_glib.Client():get_devices()
 

@@ -145,8 +145,7 @@ return function(s)
         end
       )
     end
-    Hover_signal(device_widget, Theme_config.bluetooth_controller.device_bg_hover,
-      Theme_config.bluetooth_controller.device_fg_hover)
+    Hover_signal(device_widget)
     return device_widget
   end
 

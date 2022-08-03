@@ -164,7 +164,6 @@ return function(widget, _)
         temp_color = Theme_config.cpu_temp.bg_high
         temp_icon = icon_dir .. "thermometer-high.svg"
       end
-      Hover_signal(cpu_temp, temp_color, Theme_config.cpu_temp.fg)
       cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
       cpu_temp:set_bg(temp_color)
       cpu_temp.container.cpu_layout.label.text = math.floor(temp) .. "°C"
@@ -186,8 +185,9 @@ return function(widget, _)
     end
   )
 
-  Hover_signal(cpu_usage_widget, Theme_config.cpu_usage.bg, Theme_config.cpu_usage.fg)
-  Hover_signal(cpu_clock, Theme_config.cpu_freq.bg, Theme_config.cpu_freq.bg)
+  Hover_signal(cpu_temp)
+  Hover_signal(cpu_usage_widget)
+  Hover_signal(cpu_clock)
 
   if widget == "usage" then
     return cpu_usage_widget

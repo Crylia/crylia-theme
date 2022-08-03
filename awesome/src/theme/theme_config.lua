@@ -446,6 +446,7 @@ Theme_config.application_launcher = {
     border_color_active = color["Purple200"],
     border_width = dpi(2),
     bg = "#313131",
+    fg = color["Grey100"],
     hover_bg = color["Grey700"],
   },
   searchbar = {

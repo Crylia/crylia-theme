@@ -115,65 +115,10 @@ local list_update = function(widget, buttons, label, _, objects)
 			task_widget.container.layout_it.title:set_text('')
 		end
 
+		Hover_signal(task_widget)
+
 		widget:add(task_widget)
 		widget:set_spacing(dpi(6))
-
-		--#region Hover_signal
-		local old_wibox, old_cursor
-		task_widget:connect_signal(
-			"mouse::enter",
-			function()
-				if object == client.focus then
-					task_widget.bg = Theme_config.tasklist.bg_focus_hover .. "dd"
-				else
-					task_widget.bg = Theme_config.tasklist.bg .. 'dd'
-				end
-				local w = mouse.current_wibox
-				if w then
-					old_cursor, old_wibox = w.cursor, w
-					w.cursor = "hand1"
-				end
-			end
-		)
-
-		task_widget:connect_signal(
-			"button::press",
-			function()
-				if object == client.focus then
-					task_widget.bg = Theme_config.tasklist.bg_focus_pressed .. "dd"
-				else
-					task_widget.bg = Theme_config.tasklist.bg .. "dd"
-				end
-			end
-		)
-
-		task_widget:connect_signal(
-			"button::release",
-			function()
-				if object == client.focus then
-					task_widget.bg = Theme_config.tasklist.bg_focus_hover .. "dd"
-				else
-					task_widget.bg = Theme_config.tasklist.bg .. "dd"
-				end
-			end
-		)
-
-		task_widget:connect_signal(
-			"mouse::leave",
-			function()
-				if object == client.focus then
-					task_widget.bg = Theme_config.tasklist.bg_focus
-				else
-					task_widget.bg = Theme_config.tasklist.bg
-				end
-				if old_wibox then
-					old_wibox.cursor = old_cursor
-					old_wibox = nil
-				end
-			end
-		)
-		--#endregion
-
 	end
 	return widget
 end

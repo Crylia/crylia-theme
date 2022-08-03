@@ -83,32 +83,29 @@ client.connect_signal(
 
 --- Takes a wibox.container.background and connects four signals to it
 ---@param widget wibox.container.background
----@param bg string | nil
----@param fg string | nil
----@param border_color string | nil
-function Hover_signal(widget, bg, fg, border_color)
+function Hover_signal(widget, bg_override)
   local old_wibox, old_cursor, old_bg, old_fg, old_border
 
   local r, g, b
 
-  bg = bg or nil
-  fg = fg or nil
-  border_color = border_color or nil
+  widget.bg = widget.bg or ""
+  widget.fg = widget.fg or ""
+  widget.border_color = widget.border_color or ""
 
   local mouse_enter = function()
-    if bg ~= nil then
-      _, r, g, b, _ = widget.bg:get_rgba()
-      old_bg = RGB_to_hex(r, g, b)
-      widget.bg = bg .. "dd"
+    _, r, g, b, _ = widget.bg:get_rgba()
+    old_bg = RGB_to_hex(r, g, b)
+    if bg_override or old_bg then
+      widget.bg = bg_override or old_bg .. "dd"
     end
-    if fg then
-      _, r, g, b, _ = widget.fg:get_rgba()
-      old_fg = RGB_to_hex(r, g, b)
-      widget.fg = fg .. "dd"
+    _, r, g, b, _ = widget.fg:get_rgba()
+    old_fg = RGB_to_hex(r, g, b)
+    if old_fg then
+      widget.fg = old_fg .. "dd"
     end
-    if border_color then
-      old_border = widget.border_color
-      widget.border_color = border_color .. "dd"
+    old_border = widget.border_color
+    if old_border then
+      widget.border_color = old_border .. "dd"
     end
     local w = mouse.current_wibox
     if w then
@@ -118,31 +115,31 @@ function Hover_signal(widget, bg, fg, border_color)
   end
 
   local button_press = function()
-    if bg then
-      widget.bg = bg
+    if old_bg or bg_override then
+      widget.bg = bg_override or old_bg .. "bb"
     end
-    if fg then
-      widget.fg = fg
+    if old_fg then
+      widget.fg = old_fg .. "bb"
     end
   end
 
   local button_release = function()
-    if bg then
-      widget.bg = bg
+    if old_bg or bg_override then
+      widget.bg = bg_override or old_bg .. "dd"
     end
-    if fg then
-      widget.fg = fg
+    if old_fg then
+      widget.fg = old_fg .. "dd"
     end
   end
 
   local mouse_leave = function()
-    if bg then
+    if old_bg then
       widget.bg = old_bg
     end
-    if fg then
+    if old_fg then
       widget.fg = old_fg
     end
-    if border_color then
+    if old_border then
       widget.border_color = old_border
     end
     if old_wibox then
@@ -151,13 +148,8 @@ function Hover_signal(widget, bg, fg, border_color)
     end
   end
 
-  --[[ widget:disconnect_signal("mouse::enter", mouse_enter)
-  widget:disconnect_signal("button::press", button_press)
-  widget:disconnect_signal("button::release", button_release)
-  widget:disconnect_signal("mouse::leave", mouse_leave) ]]
   widget:connect_signal("mouse::enter", mouse_enter)
   widget:connect_signal("button::press", button_press)
   widget:connect_signal("button::release", button_release)
   widget:connect_signal("mouse::leave", mouse_leave)
-
 end

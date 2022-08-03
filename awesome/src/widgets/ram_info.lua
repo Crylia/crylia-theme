@@ -55,7 +55,7 @@ return function()
     widget = wibox.container.background
   }
 
-  Hover_signal(ram_widget, Theme_config.ram_info.bg, Theme_config.ram_info.fg)
+  Hover_signal(ram_widget)
 
   awesome.connect_signal(
     "update::ram_widget",

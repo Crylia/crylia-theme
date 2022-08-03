@@ -20,7 +20,7 @@ User_config = {
     "picom --experimental-backends",
     "xfce4-power-manager",
     "light-locker --lock-on-suspend --lock-on-lid &",
-    "flatpak run com.spotify.Client",
+    "spotify",
     "discord",
     "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
     "setxkbmap -option caps:swapescape",
@@ -66,9 +66,9 @@ User_config = {
   --[[
       Dock program size in dpi.
       Example:
-        dock_size = dpi(50)
+        dock_size = dpi(48)
   ]] --
-  dock_icon_size = dpi(50),
+  dock_icon_size = dpi(64),
 
   --[[
       Add your programs to the dock. You need to provide the name of the .desktop file
@@ -84,7 +84,7 @@ User_config = {
     "com.brave.Browser.desktop",
     "steam.desktop",
     "discord.desktop",
-    "com.spotify.Client.desktop",
+    "spotify.desktop",
     "code.desktop",
     "arduino-arduinoide.desktop",
     "us.zoom.Zoom.desktop",

@@ -368,8 +368,7 @@ return function(s)
     end
   )
 
-  Hover_signal(clear_all_widget.margin3.background4, Theme_config.notification_center.clear_all_button.bg,
-    Theme_config.notification_center.clear_all_button.fg)
+  Hover_signal(clear_all_widget.margin3.background4)
   --#endregion
 
 end

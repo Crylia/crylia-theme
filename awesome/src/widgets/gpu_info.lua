@@ -53,7 +53,6 @@ return function(widget)
     end,
     widget = wibox.container.background
   }
-  Hover_signal(gpu_usage_widget, Theme_config.gpu_usage.bg, Theme_config.gpu_usage.fg)
 
   local gpu_temp_widget = wibox.widget {
     {
@@ -98,6 +97,9 @@ return function(widget)
     widget = wibox.container.background
   }
 
+  Hover_signal(gpu_temp_widget)
+  Hover_signal(gpu_usage_widget)
+
   -- GPU Utilization
   awesome.connect_signal(
     "update::gpu_usage",
@@ -113,7 +115,7 @@ return function(widget)
 
       local temp_icon
       local temp_color
-      local temp_num = tonumber(stdout)
+      local temp_num = tonumber(stdout) or "N/A"
 
       if temp_num then
 
@@ -128,7 +130,7 @@ return function(widget)
           temp_icon = icon_dir .. "thermometer-high.svg"
         end
       else
-        temp_num = "NaN"
+        temp_num = "N/A"
         temp_color = Theme_config.gpu_temp.bg_low
         temp_icon = icon_dir .. "thermometer-low.svg"
       end

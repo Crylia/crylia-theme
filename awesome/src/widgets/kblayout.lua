@@ -214,7 +214,6 @@ return function(s)
       keymap = keymap
     }
 
-    -- TODO: Hover effects, this is more pain than I'm willing to take for now
     awesome.connect_signal(
       "update::background:kblayout",
       function()
@@ -235,7 +234,6 @@ return function(s)
         )
       end
     )
-
     get_kblayout()
 
     kb_layout_item:connect_signal(
@@ -352,7 +350,7 @@ return function(s)
   )
 
   -- Signals
-  Hover_signal(kblayout_widget, Theme_config.kblayout.bg, Theme_config.kblayout.fg)
+  Hover_signal(kblayout_widget)
 
   local kblayout_keygrabber = awful.keygrabber {
     autostart = false,

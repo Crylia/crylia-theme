@@ -227,7 +227,6 @@ return function()
   searchbar:buttons(gears.table.join(
     awful.button({}, 1, function()
       if not awful.keygrabber.is_running then
-        keygrabber_start()
         searchbar.s_background.border_color = Theme_config.application_launcher.searchbar.border_active
         searchbar.s_background.fg = Theme_config.application_launcher.searchbar.fg
         search_text:set_markup(promt_text_with_cursor("", 1))

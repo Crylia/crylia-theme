@@ -10,10 +10,11 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local gears = require("gears")
 
+require("src.theme.user_config")
+require("src.theme.theme_config")
+
 Theme_path = awful.util.getdir("config") .. "/src/theme/"
 Theme = {}
-
---dofile(Theme_path .. "theme_config.lua")
 
 -- Default font, change it in user_config, not here.
 Theme.font = User_config.font.bold

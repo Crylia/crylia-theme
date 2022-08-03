@@ -50,7 +50,7 @@ return function()
   }
 
   -- Signals
-  Hover_signal(power_widget, Theme_config.power_button.bg, Theme_config.power_button.fg)
+  Hover_signal(power_widget)
 
   power_widget:connect_signal(
     "button::release",

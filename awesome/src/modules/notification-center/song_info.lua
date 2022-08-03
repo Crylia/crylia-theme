@@ -394,8 +394,6 @@ return function(s)
       function(stdout)
         -- Only fetch info if the track changed or if the title/artist is empty
         if skip_check or (not stdout:match(trackid)) or (not stdout:match(artist)) or (not stdout:match(title)) then
-          update_loop()
-          update_shuffle()
           -- Get the song title
           awful.spawn.easy_async_with_shell(
             "playerctl metadata xesam:title",

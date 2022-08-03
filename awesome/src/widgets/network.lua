@@ -328,7 +328,7 @@ return function()
   }
 
   -- Signals
-  Hover_signal(network_widget, Theme_config.network.bg, Theme_config.network.fg)
+  Hover_signal(network_widget)
 
   network_widget:connect_signal(
     "button::press",

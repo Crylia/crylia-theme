@@ -40,7 +40,7 @@ return function(s)
     widget = wibox.container.background
   }
   -- Hover signal to change color when mouse is over
-  Hover_signal(bluetooth_widget, Theme_config.bluetooth.bg, Theme_config.bluetooth.fg)
+  Hover_signal(bluetooth_widget)
 
   awesome.connect_signal("state", function(state)
     if state then

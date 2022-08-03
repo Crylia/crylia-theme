@@ -60,7 +60,7 @@ return function()
   }
 
   -- Signals
-  Hover_signal(date_widget, Theme_config.date.bg, Theme_config.date.fg)
+  Hover_signal(date_widget)
 
   return date_widget
 end

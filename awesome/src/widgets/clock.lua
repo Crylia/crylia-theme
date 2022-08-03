@@ -58,7 +58,7 @@ return function()
     widget = wibox.container.background
   }
 
-  Hover_signal(clock_widget, Theme_config.clock.bg, Theme_config.clock.fg)
+  Hover_signal(clock_widget)
 
   return clock_widget
 end

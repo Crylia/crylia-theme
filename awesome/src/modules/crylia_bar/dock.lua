@@ -54,6 +54,7 @@ return function(screen, programs)
           gears.shape.rounded_rect(cr, width, height, dpi(10))
         end,
         bg = Theme_config.dock.element_bg,
+        fg = "#000000",
         widget = wibox.container.background,
         id = "background"
       },
@@ -69,7 +70,7 @@ return function(screen, programs)
       end
     end
 
-    Hover_signal(dock_element.background, Theme_config.dock.element_focused_hover_bg)
+    Hover_signal(dock_element.background, Theme_config.dock.element_focused_bg .. "dd")
 
     dock_element:connect_signal(
       "button::press",

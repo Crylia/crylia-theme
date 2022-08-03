@@ -82,6 +82,7 @@ function nl.create_notification(n)
         },
         id = "background",
         fg = Theme_config.notification_center.notification_list.close_color,
+        bg = Theme_config.notification_center.notification_list.close_bg,
         widget = wibox.container.background
       },
       strategy = "exact",
@@ -233,8 +234,7 @@ function nl.create_notification(n)
     end
   )
 
-  Hover_signal(close_widget.const.background, nil,
-    Theme_config.notification_center.notification_list.close_color)
+  Hover_signal(close_widget.const.background)
 
   notification:connect_signal(
     "mouse::enter",
