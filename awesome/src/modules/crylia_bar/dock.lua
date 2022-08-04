@@ -76,7 +76,9 @@ return function(screen, programs)
       "button::press",
       function(_, _, _, button)
         if button == 1 then
-          awful.spawn(Gio.DesktopAppInfo.get_string(desktop_app_info, "Exec"))
+          awful.spawn(Gio.DesktopAppInfo.get_string(desktop_app_info, "Exec"):gsub("%%F", ""):gsub("%%u", ""):gsub("%%U"
+            , ""):gsub("%%f", ""):gsub("%%i", ""):gsub("%%c"
+            , ""):gsub("%%k", ""))
         end
       end
     )
