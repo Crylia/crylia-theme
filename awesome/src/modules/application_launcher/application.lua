@@ -9,6 +9,12 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local json = require("src.lib.json-lua.json-lua")
+
+local cm = require("src.modules.context_menu")
+
+local icondir = awful.util.getdir("config") .. "src/assets/icons/context_menu/"
+
 return function()
 
   local application_grid = wibox.widget {
@@ -34,7 +40,6 @@ return function()
   ---@return table widgets Unsorted widget table
   local function get_applications_from_file()
     local list = {}
-    --for _, file in ipairs(desktop_files) do
     local app_info = Gio.AppInfo
     local apps = app_info.get_all()
     for _, app in ipairs(apps) do
@@ -83,8 +88,9 @@ return function()
           comment = Gio.DesktopAppInfo.get_string(desktop_app_info, "Comment") or "",
           exec = Gio.DesktopAppInfo.get_string(desktop_app_info, "Exec"),
           keywords = Gio.DesktopAppInfo.get_string(desktop_app_info, "Keywords") or "",
-          categories = Gio.DesktopAppInfo.get_string(desktop_app_info, "Cathegory") or "",
+          categories = Gio.DesktopAppInfo.get_categories(desktop_app_info) or "",
           terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true",
+          actions = Gio.DesktopAppInfo.list_actions(desktop_app_info),
           border_color = Theme_config.application_launcher.application.border_color,
           border_width = Theme_config.application_launcher.application.border_width,
           bg = Theme_config.application_launcher.application.bg,
@@ -95,18 +101,84 @@ return function()
           widget = wibox.container.background
         }
 
+        local context_menu = cm({
+          entries = {
+            {
+              name = "Execute as sudo",
+              icon = gears.color.recolor_image(icondir .. "launch.svg", Theme_config.context_menu.icon_color),
+              callback = function()
+                awesome.emit_signal("application_launcher::show")
+                awful.spawn("/home/crylia/.config/awesome/src/scripts/start_as_admin.sh " .. app_widget.exec)
+              end
+            },
+            {
+              name = "Pin to dock",
+              icon = gears.color.recolor_image(icondir .. "pin.svg", Theme_config.context_menu.icon_color),
+              callback = function()
+                local handler = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
+                if not handler then
+                  return
+                end
+                local dock_table = json:decode(handler:read("a")) or {}
+                handler:close()
+
+                ---@diagnostic disable-next-line: param-type-mismatch
+                table.insert(dock_table, {
+                  name = app_widget.name or "",
+                  icon = Get_gicon_path(app_info.get_icon(app)) or "",
+                  comment = app_widget.comment or "",
+                  exec = app_widget.exec or "",
+                  keywords = app_widget.keywords or "",
+                  categories = app_widget.categories or "",
+                  terminal = app_widget.terminal or "",
+                  actions = app_widget.actions or "",
+                  desktop_file = Gio.DesktopAppInfo.get_filename(desktop_app_info) or ""
+                })
+                local dock_encoded = json:encode(dock_table)
+                handler = io.open("/home/crylia/.config/awesome/src/config/dock.json", "w")
+                if not handler then
+                  return
+                end
+                handler:write(dock_encoded)
+                handler:close()
+                awesome.emit_signal("dock::changed")
+              end
+            },
+            {
+              name = "Add to desktop",
+              icon = gears.color.recolor_image(icondir .. "desktop.svg", Theme_config.context_menu.icon_color),
+              callback = function()
+                awesome.emit_signal("application_launcher::show")
+                --!TODO: Add to desktop
+              end
+            }
+          }
+        })
+
         -- Execute command on left click and hide launcher
         app_widget:buttons(
           gears.table.join(
-            awful.button(
-              {},
-              1,
-              nil,
-              function()
-                awful.spawn.with_shell(app_widget.exec)
+            awful.button({
+              modifiers = {},
+              button = 1,
+              on_release = function()
+                Gio.AppInfo.launch_uris_async(app)
                 awesome.emit_signal("application_launcher::show")
               end
-            )
+            }),
+            awful.button({
+              modifiers = {},
+              button = 3,
+              on_release = function()
+                if not context_menu then
+                  return
+                end
+                -- add offset so mouse is above widget, this is so the mouse::leave event triggers always
+                context_menu.x = mouse.coords().x - 10
+                context_menu.y = mouse.coords().y - 10
+                context_menu.visible = not context_menu.visible
+              end
+            })
           )
         )
         Hover_signal(app_widget)
@@ -220,15 +292,7 @@ return function()
       awesome.emit_signal("searchbar::stop")
 
       local selected_widget = application_grid:get_widgets_at(curser.y, curser.x)[1]
-      if selected_widget.terminal then
-        awful.spawn(User_config.terminal ..
-          " -e " ..
-          selected_widget.exec:gsub("%%F", ""):gsub("%%u", ""):gsub("%%U", ""):gsub("%%f", ""):gsub("%%i", ""):gsub("%%c"
-            , ""):gsub("%%k", ""))
-      else
-        awful.spawn.with_shell(selected_widget.exec:gsub("%%F", ""):gsub("%%u", ""):gsub("%%U", ""):gsub("%%f", ""):gsub("%%i"
-          , ""):gsub("%%c", ""):gsub("%%k", ""))
-      end
+      Gio.AppInfo.launch_uris_async(Gio.AppInfo.create_from_commandline(selected_widget.exec, nil, 0))
     end
   )
 

@@ -62,6 +62,9 @@ return function(s)
     function()
       if mouse.screen == s then
         application_container.visible = not application_container.visible
+        if application_container.visible == false then
+          awesome.emit_signal("searchbar::stop")
+        end
       end
       if application_container.visible then
         awesome.emit_signal("searchbar::start")

@@ -36,7 +36,10 @@ awful.rules.rules = {
       role = {
         "AlarmWindow",
         "ConfigManager",
-        "pop-up"
+        "pop-up",
+        "dialog",
+        "modal",
+        "utility"
       }
     },
     properties = {

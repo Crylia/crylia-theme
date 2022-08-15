@@ -67,5 +67,5 @@ return function(s)
       end
     end
   end
-  require("src.modules.crylia_bar.dock")(s, User_config.dock_programs)
+  require("src.modules.crylia_bar.dock")(s)
 end

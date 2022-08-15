@@ -243,7 +243,6 @@ return function()
         searchbar.s_background.fg = Theme_config.application_launcher.searchbar.fg
         search_text:set_markup(promt_text_with_cursor("", 1))
       end
-
     end
   )
 

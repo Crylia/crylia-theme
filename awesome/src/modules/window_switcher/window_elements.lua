@@ -48,6 +48,7 @@ return function()
                   id = "icon",
                   --!ADD FALLBACK ICON!--
                   image = Get_icon(client.class, client.name) or client.icon,
+                  --image = gears.surface(client.content),
                   valign = "center",
                   halign = "center",
                   widget = wibox.widget.imagebox

@@ -3,30 +3,29 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
+local async = require("async")
 local dpi = require("beautiful").xresources.apply_dpi
 local Gio = require("lgi").Gio
 local gears = require("gears")
 local wibox = require("wibox")
 
-return function(screen, programs)
+local json = require("src.lib.json-lua.json-lua")
+
+local icondir = awful.util.getdir("config") .. "src/assets/icons/context_menu/"
+
+local cm = require("src.modules.context_menu")
+
+return function(screen)
+
+  local cm_open = false
+
+  local dock_element_ammount = 0
 
   ---Creates a new program widget for the dock
-  ---@param program string | nil The name of the .desktop file
+  ---@param program string | function The name of the .desktop file
   ---@param size number The size of the widget
   ---@return widox.widget | nil The widget or nil if the program is not found
   local function create_dock_element(program, size)
-    if not program then
-      return
-    end
-
-    local desktop_app_info = Gio.DesktopAppInfo.new_from_filename(program)
-    if not desktop_app_info then
-      return
-    end
-    local gicon = Gio.Icon.new_for_string(Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon"))
-    if not gicon then
-      return
-    end
 
     local dock_element = wibox.widget {
       {
@@ -35,7 +34,7 @@ return function(screen, programs)
             {
               resize = true,
               widget = wibox.widget.imagebox,
-              image = Get_gicon_path(gicon) or "",
+              image = program.icon or "",
               valign = "center",
               halign = "center",
               id = "icon",
@@ -64,34 +63,151 @@ return function(screen, programs)
       widget = wibox.container.margin
     }
 
-    for _, c in ipairs(client.get()) do
-      if string.lower(c.class):match(Get_gicon_path(gicon) or "") and c == client.focus then
-        dock_element.background.bg = Theme_config.dock.element_focused_bg
-      end
-    end
-
     Hover_signal(dock_element.background, Theme_config.dock.element_focused_bg .. "dd")
 
-    dock_element:connect_signal(
-      "button::press",
-      function(_, _, _, button)
-        if button == 1 then
-          awful.spawn(Gio.DesktopAppInfo.get_string(desktop_app_info, "Exec"):gsub("%%F", ""):gsub("%%u", ""):gsub("%%U"
-            , ""):gsub("%%f", ""):gsub("%%i", ""):gsub("%%c"
-            , ""):gsub("%%k", ""))
+    local DAI = Gio.DesktopAppInfo.new_from_filename(program.desktop_file)
+
+    local action_entries = {}
+    for _, action in ipairs(program.actions) do
+      table.insert(action_entries, {
+        name = Gio.DesktopAppInfo.get_action_name(DAI, action) or "",
+        icon = action.icon or icondir .. "entry.svg",
+        callback = function()
+          Gio.DesktopAppInfo.launch_action(DAI, action)
         end
+      })
+    end
+
+    table.insert(action_entries, {
+      name = "Remove from Dock",
+      icon = icondir .. "entry.svg",
+      callback = function()
+        local data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
+        if not data then
+          return
+        end
+        local dock = json:decode(data:read("a"))
+        data:close()
+        for i, v in ipairs(dock) do
+          if v.desktop_file == program.desktop_file then
+            if type(dock) == "table" then
+              table.remove(dock, i)
+            end
+            break
+          end
+        end
+        data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "w")
+        if not data then
+          return
+        end
+        data:write(json:encode(dock))
+        data:close()
+        awesome.emit_signal("dock::changed")
+      end
+    })
+
+    local context_menu = cm({
+      entries = action_entries
+    })
+
+    dock_element:buttons(gears.table.join(
+      awful.button({
+        modifiers = {},
+        button = 1,
+        on_release = function()
+          Gio.AppInfo.launch_uris_async(Gio.AppInfo.create_from_commandline(program.exec, nil, 0))
+        end
+      }),
+      awful.button({
+        modifiers = {},
+        button = 3,
+        on_release = function()
+          if not context_menu then
+            return
+          end
+          -- add offset so mouse is above widget, this is so the mouse::leave event triggers always
+          context_menu.x = mouse.coords().x - 10
+          context_menu.y = mouse.coords().y + 10 - context_menu.height
+          context_menu.visible = not context_menu.visible
+          cm_open = context_menu.visible
+        end
+      })
+    ))
+
+    awesome.connect_signal(
+      "context_menu::hide",
+      function()
+        cm_open = false
+        awesome.emit_signal("dock::check_for_dock_hide")
       end
     )
 
     awful.tooltip {
       objects = { dock_element },
-      text = Gio.DesktopAppInfo.get_string(desktop_app_info, "Name"),
+      text = program.name,
       mode = "outside",
       preferred_alignments = "middle",
       margins = dpi(10)
     }
+    dock_element_ammount = dock_element_ammount + 1
 
     return dock_element
+  end
+
+  --- Indicators under the elements to indicate various open states
+  local function create_incicator_widget()
+    local container = { layout = wibox.layout.flex.horizontal }
+
+    local data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
+
+    if not data then
+      return
+    end
+
+    local prog = json:decode(data:read("a"))
+    for _, pr in ipairs(prog) do
+      local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
+      local col = Theme_config.dock.indicator_bg
+      for _, c in ipairs(client.get()) do
+        local icon_name = pr.icon
+        if icon_name:match(string.lower(c.class or c.name)) or c.class:match(string.lower(icon_name)) or
+            c.name:match(string.lower(icon_name)) then
+          if c == client.focus then
+            col = Theme_config.dock.indicator_focused_bg
+          elseif c.urgent then
+            col = Theme_config.dock.indicator_urgent_bg
+          elseif c.maximized then
+            col = Theme_config.dock.indicator_maximized_bg
+          elseif c.minimized then
+            col = Theme_config.dock.indicator_minimized_bg
+          elseif c.fullscreen then
+            col = Theme_config.dock.indicator_fullscreen_bg
+          else
+            col = Theme_config.dock.indicator_bg
+          end
+          table.insert(indicators, wibox.widget {
+            widget = wibox.container.background,
+            shape = gears.shape.rounded_rect,
+            forced_height = dpi(3),
+            bg = col,
+            forced_width = dpi(5),
+          })
+        end
+      end
+      table.insert(container, wibox.widget {
+        indicators,
+        forced_height = dpi(5),
+        forced_width = dpi(User_config.dock_icon_size),
+        left = dpi(5),
+        right = dpi(5),
+        widget = wibox.container.margin,
+      })
+    end
+    return wibox.widget {
+      container,
+      bottom = dpi(5),
+      widget = wibox.container.margin,
+    }
   end
 
   --- The container bar where the elements/program widgets sit in
@@ -122,27 +238,37 @@ return function(screen, programs)
     placement = function(c) awful.placement.bottom(c) end,
   }
 
+  --- List of all elements/program widgets
+  local dock_elements = { layout = wibox.layout.fixed.horizontal }
+
   --- This function creates a list with all dock elements/program widgets
-  ---@param pr table A list of .desktop files
-  ---@return table string list of widgets
-  local function get_dock_elements(pr)
-    local dock_elements = { layout = wibox.layout.fixed.horizontal }
+  ---@return table|nil string list of widgets
+  local function get_dock_elements()
+    dock_element_ammount = 0
+    dock_elements = { layout = wibox.layout.fixed.horizontal }
 
-    for i, p in ipairs(pr) do
-      dock_elements[i] = create_dock_element(Get_desktop_values(p), User_config.dock_icon_size)
+    local data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
+    if not data then
+      return
     end
-
-    return dock_elements
+    local dock_data = json:decode(data:read("a"))
+    for _, program in ipairs(dock_data) do
+      table.insert(dock_elements, create_dock_element(program, User_config.dock_icon_size))
+    end
+    dock:setup {
+      dock_elements,
+      create_incicator_widget(),
+      layout = wibox.layout.fixed.vertical
+    }
   end
 
-  --- List of all elements/program widgets
-  local dock_elements = get_dock_elements(programs)
+  get_dock_elements()
 
   --- Function to get an empty list with the same ammount as dock_element
-  local function get_fake_elements(amount)
+  local function get_fake_elements()
     local fake_elements = { layout = wibox.layout.fixed.horizontal }
 
-    for i = 0, amount, 1 do
+    for i = 0, dock_element_ammount, 1 do
       fake_elements[i] = wibox.widget {
         bg = '00000000',
         forced_width = User_config.dock_icon_size + dpi(20),
@@ -154,64 +280,8 @@ return function(screen, programs)
     return fake_elements
   end
 
-  --- Indicators under the elements to indicate various open states
-  local function create_incicator_widget(prog)
-    local container = { layout = wibox.layout.flex.horizontal }
-    local clients = client.get()
-    for index, pr in ipairs(prog) do
-      local desktop_app_info = Gio.DesktopAppInfo.new_from_filename(Get_desktop_values(pr))
-      if desktop_app_info then
-        local gicon = Gio.Icon.new_for_string(Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon"))
-        if gicon then
-          local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
-          local col = Theme_config.dock.indicator_bg
-          for i, c in ipairs(clients) do
-            local icon_name = Get_gicon_path(gicon) or ""
-            if icon_name:match(string.lower(c.class or c.name)) or c.class:match(string.lower(icon_name)) or
-                c.name:match(string.lower(icon_name)) then
-              if c == client.focus then
-                col = Theme_config.dock.indicator_focused_bg
-              elseif c.urgent then
-                col = Theme_config.dock.indicator_urgent_bg
-              elseif c.maximized then
-                col = Theme_config.dock.indicator_maximized_bg
-              elseif c.minimized then
-                col = Theme_config.dock.indicator_minimized_bg
-              elseif c.fullscreen then
-                col = Theme_config.dock.indicator_fullscreen_bg
-              else
-                col = Theme_config.dock.indicator_bg
-              end
-              indicators[i] = wibox.widget {
-                widget = wibox.container.background,
-                shape = gears.shape.rounded_rect,
-                forced_height = dpi(3),
-                bg = col,
-                forced_width = dpi(5),
-              }
-            end
-          end
-          container[index] = wibox.widget {
-            indicators,
-            forced_height = dpi(5),
-            forced_width = dpi(User_config.dock_icon_size),
-            left = dpi(5),
-            right = dpi(5),
-            widget = wibox.container.margin,
-          }
-        end
-      end
-    end
-
-    return wibox.widget {
-      container,
-      bottom = dpi(5),
-      widget = wibox.container.margin,
-    }
-  end
-
   fakedock:setup {
-    get_fake_elements(#programs),
+    get_fake_elements(),
     type = 'dock',
     layout = wibox.layout.fixed.vertical
   }
@@ -302,7 +372,12 @@ return function(screen, programs)
       check_for_dock_hide(screen)
       dock:setup {
         dock_elements,
-        create_incicator_widget(programs),
+        create_incicator_widget(),
+        layout = wibox.layout.fixed.vertical
+      }
+      fakedock:setup {
+        get_fake_elements(),
+        type = 'dock',
         layout = wibox.layout.fixed.vertical
       }
     end
@@ -314,7 +389,12 @@ return function(screen, programs)
       check_for_dock_hide(screen)
       dock:setup {
         dock_elements,
-        create_incicator_widget(programs),
+        create_incicator_widget(),
+        layout = wibox.layout.fixed.vertical
+      }
+      fakedock:setup {
+        get_fake_elements(),
+        type = 'dock',
         layout = wibox.layout.fixed.vertical
       }
     end
@@ -326,7 +406,12 @@ return function(screen, programs)
       check_for_dock_hide(screen)
       dock:setup {
         dock_elements,
-        create_incicator_widget(programs),
+        create_incicator_widget(),
+        layout = wibox.layout.fixed.vertical
+      }
+      fakedock:setup {
+        get_fake_elements(),
+        type = 'dock',
         layout = wibox.layout.fixed.vertical
       }
     end
@@ -338,9 +423,38 @@ return function(screen, programs)
       check_for_dock_hide(screen)
       dock:setup {
         dock_elements,
-        create_incicator_widget(programs),
+        create_incicator_widget(),
         layout = wibox.layout.fixed.vertical
       }
+      fakedock:setup {
+        get_fake_elements(),
+        type = 'dock',
+        layout = wibox.layout.fixed.vertical
+      }
+    end
+  )
+
+  awesome.connect_signal(
+    "dock::changed",
+    function()
+      get_dock_elements()
+      dock:setup {
+        dock_elements,
+        create_incicator_widget(),
+        layout = wibox.layout.fixed.vertical
+      }
+      fakedock:setup {
+        get_fake_elements(),
+        type = 'dock',
+        layout = wibox.layout.fixed.vertical
+      }
+    end
+  )
+
+  awesome.connect_signal(
+    "dock::check_for_dock_hide",
+    function()
+      dock_intelligent_hide:again()
     end
   )
 
@@ -354,13 +468,16 @@ return function(screen, programs)
   dock:connect_signal(
     "mouse::leave",
     function()
+      if cm_open then
+        return
+      end
       check_for_dock_hide(screen)
       dock_intelligent_hide:again()
     end
   )
   dock:setup {
     dock_elements,
-    create_incicator_widget(programs),
+    create_incicator_widget(),
     layout = wibox.layout.fixed.vertical
   }
 end

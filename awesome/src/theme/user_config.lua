@@ -71,32 +71,6 @@ User_config = {
   dock_icon_size = dpi(64),
 
   --[[
-      Add your programs to the dock. You need to provide the name of the .desktop file
-      You can find those in the /usr/share/applications or $HOME/.local/share/applications directory.
-      Some .desktop files are more hidden, for more information look at: $XDG_DATA_DIRS/applications
-      Example:
-        "com.alacritty.Alacritty.desktop",
-        "com.spotify.Client.desktop",
-        "firefox.desktop",
-  ]] --
-  dock_programs = {
-    "com.alacritty.Alacritty.desktop",
-    "com.brave.Browser.desktop",
-    "steam.desktop",
-    "discord.desktop",
-    "spotify.desktop",
-    "code.desktop",
-    "arduino-arduinoide.desktop",
-    "us.zoom.Zoom.desktop",
-    "thunderbird.desktop",
-    "appimagekit_5de59b772d786d6e98102a035c80e40c-Ultimaker_Cura.desktop",
-    "blender.desktop",
-    "freecad.desktop",
-    "The Witcher 3 Wild Hunt.desktop",
-    "Microsoft Flight Simulator.desktop"
-  },
-
-  --[[
     This is the program that will be started when clicking on the battery widget
     If you don't want any just leave it as nil
   ]] --

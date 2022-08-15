@@ -468,6 +468,29 @@ Theme_config.application_launcher = {
     end,
   }
 }
+
+Theme_config.context_menu = {
+  bg = color["Grey900"],
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  shape = function(cr, width, height)
+    gears.shape.rounded_rect(cr, width, height, dpi(8))
+  end,
+  fg = color["Grey100"],
+  entry = {
+    bg = color["Grey900"],
+    fg = color["Grey100"],
+    border_color = color["Grey800"],
+    border_width = dpi(2),
+    hover_fg = color["Teal200"],
+    hover_border = color["Teal200"],
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(4))
+    end,
+    icon_color = color["Grey100"],
+    icon_color_hover = color["Teal200"]
+  }
+}
 --#endregion
 
 --[[
