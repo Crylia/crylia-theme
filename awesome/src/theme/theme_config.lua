@@ -368,13 +368,30 @@ Theme_config.right_bar = {
 
 Theme_config.titlebar = {
   bg = "#121212AA",
-  close_button_bg = color["Red200"],
-  close_button_fg = color["Grey900"],
-  minimize_button_bg = color["Yellow200"],
-  minimize_button_fg = color["Grey900"],
-  maximize_button_bg = color["Green200"],
-  maximize_button_fg = color["Grey900"],
-
+  close_button = {
+    border_color = "#00000000",
+    bg = "#00000000",
+    fg = color["Grey100"],
+    hover_border = color["Red800"],
+    hover_bg = color["Red800"] .. "bb",
+    hover_fg = color["Red800"],
+  },
+  minimize_button = {
+    border_color = "#00000000",
+    fg = color["Grey100"],
+    bg = "#00000000",
+    hover_border = color["Orange800"],
+    hover_fg = color["Orange800"],
+    hover_bg = color["Orange800"] .. "bb",
+  },
+  maximize_button = {
+    border_color = "#00000000",
+    fg = color["Grey100"],
+    bg = "#00000000",
+    hover_border = color["Green800"],
+    hover_fg = color["Green800"],
+    hover_bg = color["Green800"] .. "bb",
+  },
 }
 
 Theme_config.volume_controller = {
@@ -505,7 +522,7 @@ Theme_config.context_menu = {
 --#region General Settings
 
 Theme_config.window = {
-  border_width = dpi(0),
+  border_width = dpi(2),
   border_normal = color["Grey800"],
   border_marked = color["Red200"],
   useless_gap = dpi(5)

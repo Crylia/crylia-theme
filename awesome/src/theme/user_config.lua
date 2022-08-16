@@ -216,6 +216,13 @@ User_config = {
   titlebar_exception = {},
 
   --[[
+      The titlebar position can be "left" (default) or "top"
+      Example:
+        titlebar_position = "top"
+  ]] --
+  titlebar_position = "top",
+
+  --[[
       This is the path to your wallpaper.
       home is $HOME, you can also use an absolute path.
   ]] --
