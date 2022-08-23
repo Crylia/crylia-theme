@@ -1,4 +1,3 @@
----@diagnostic disable: undefined-field
 --------------------------------
 -- This is the battery widget --
 --------------------------------

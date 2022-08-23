@@ -7,6 +7,8 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local ruled = require("ruled")
 
+local json = require("src.lib.json-lua.json-lua")
+
 awful.rules.rules = {
   {
     rule = {},
@@ -18,33 +20,8 @@ awful.rules.rules = {
       keys         = require("src.bindings.client_keys"),
       buttons      = require("src.bindings.client_buttons"),
       screen       = awful.screen.preferred,
-      placement    = awful.placement.under_mouse + awful.placement.no_overlap + awful.placement.no_offscreen
-    }
-  },
-  {
-    rule_any = {
-      instance = {},
-      class = {
-        "Arandr",
-        "Lxappearance",
-        "kdeconnect.app",
-        "zoom",
-        "file-roller",
-        "File-roller"
-      },
-      name = {},
-      role = {
-        "AlarmWindow",
-        "ConfigManager",
-        "pop-up",
-        "dialog",
-        "modal",
-        "utility"
-      }
-    },
-    properties = {
-      floating = true,
-      titlebars_enabled = true
+      placement    = awful.placement.under_mouse + awful.placement.no_overlap + awful.placement.no_offscreen +
+          awful.placement.centered
     }
   },
   {
@@ -76,16 +53,19 @@ awful.rules.rules = {
   }
 }
 
-awful.spawn.easy_async_with_shell(
-  "cat ~/.config/awesome/src/assets/cache/rules.txt",
-  function(stdout)
-    for class in stdout:gmatch("%a+") do
-      ruled.client.append_rule {
-        rule = { class = class },
-        properties = {
-          floating = true
-        },
-      }
-    end
-  end
-)
+local handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "r")
+
+if not handler then return end
+local data = json:decode(handler:read("a"))
+handler:close()
+
+if type(data) ~= "table" then return end
+
+for _, c in ipairs(data) do
+  ruled.client.append_rule {
+    rule = { class = c.WM_CLASS, instance = c.WM_INSTANCE },
+    properties = {
+      floating = true
+    },
+  }
+end

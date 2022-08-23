@@ -354,24 +354,19 @@ naughty.connect_signal(
 
         rubato_timer.target = 0
 
-        local last_position = n.timeout
-
         w_template:connect_signal(
           "mouse::enter",
           function()
             n.timeout = 99999
-            last_position = rubato_timer.pos
-            rubato_timer:abort()
+            rubato_timer.pause = true
           end
         )
 
         w_template:connect_signal(
           "mouse::leave",
           function()
-            n.timeout = last_position
-            rubato_timer.pos = last_position
-            rubato_timer.duration = last_position
-            rubato_timer:reset()
+            n.timeout = rubato_timer.pos
+            rubato_timer.pause = false
             rubato_timer.target = 0
           end
         )

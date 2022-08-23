@@ -93,7 +93,7 @@ Theme_config.layout_list = {
 Theme_config.network = {
   bg = color["Red200"],
   fg = color["Grey900"],
-  notify_icon_color = color["White"]
+  notify_icon_color = color["Grey100"]
 }
 
 Theme_config.power_button = {
@@ -112,23 +112,23 @@ Theme_config.systray = {
 
 Theme_config.taglist = {
   bg = "#3A475C",
-  fg = color["White"],
+  fg = color["Grey100"],
   bg_urgent = color["RedA200"],
   fg_urgent = color["Grey900"],
-  bg_focus = color["White"],
+  bg_focus = color["Grey100"],
   bg_focus_pressed = "#dddddd",
-  bg_focus_hover = color["White"],
+  bg_focus_hover = color["Grey100"],
   fg_focus = color["Grey900"],
 }
 
 Theme_config.tasklist = {
   bg = "#3A475C",
-  fg = color["White"],
+  fg = color["Grey100"],
   bg_urgent = color["RedA200"],
   fg_urgent = color["Grey900"],
-  bg_focus = color["White"],
+  bg_focus = color["Grey100"],
   bg_focus_pressed = "#dddddd",
-  bg_focus_hover = color["White"],
+  bg_focus_hover = color["Grey100"],
   fg_focus = color["Grey900"],
 }
 --#endregion
@@ -338,7 +338,7 @@ Theme_config.dock = {
   element_bg = color["Grey900"],
   element_focused_bg = color["Grey800"],
   element_focused_hover_bg = color["Grey800"],
-  element_focused_hover_fg = color["White"],
+  element_focused_hover_fg = color["Grey100"],
   bg = color["Grey900"],
   indicator_bg = color["Grey600"],
   indicator_focused_bg = color["YellowA200"],
@@ -541,7 +541,7 @@ Theme_config.tooltip = {
 
 Theme_config.hotkeys = {
   bg = color["Grey900"],
-  fg = color["White"],
+  fg = color["Grey100"],
   border_color = color["Grey800"],
   border_width = dpi(4),
   shape = function(cr, width, heigth)

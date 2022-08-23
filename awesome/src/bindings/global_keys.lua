@@ -4,6 +4,8 @@ local awful = require("awful")
 local hotkeys_popup = require("awful.hotkeys_popup")
 local ruled = require("ruled")
 
+local json = require("src.lib.json-lua.json-lua")
+
 local modkey = User_config.modkey
 
 awful.keygrabber {
@@ -306,36 +308,54 @@ return gears.table.join(
     { modkey },
     "#22",
     function()
-      awful.spawn.easy_async_with_shell(
-        [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
-        function(stdout)
-          if stdout then
+      mousegrabber.run(
+        function(m)
+          if m.buttons[1] then
+
+            local handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "r")
+            if not handler then return end
+            local data_table = json:decode(handler:read("a")) or {}
+            handler:close()
+
+            if type(data_table) ~= "table" then return end
+
+            local c = mouse.current_client
+            if not c then return end
+
+            local client_data = {
+              WM_NAME = c.name,
+              WM_CLASS = c.class,
+              WM_INSTANCE = c.instance,
+            }
+
+            -- Check if data_table already had the client then return
+            for _, v in ipairs(data_table) do
+              if v.WM_NAME == client_data.WM_NAME and
+                  v.WM_CLASS == client_data.WM_CLASS and
+                  v.WM_INSTANCE == client_data.WM_INSTANCE then
+                return
+              end
+            end
+
+            table.insert(data_table, client_data)
+
             ruled.client.append_rule {
-              rule = { class = stdout:gsub("\n", "") },
+              rule = { class = c.class, instance = c.instance },
               properties = {
                 floating = true
               },
             }
-            awful.spawn.easy_async_with_shell(
-              "cat ~/.config/awesome/src/assets/cache/rules.txt",
-              function(stdout2)
-                for class in stdout2:gmatch("%a+") do
-                  if class:match(stdout:gsub("\n", "")) then
-                    return
-                  end
-                end
-                awful.spawn.with_shell("echo -n '" ..
-                  stdout:gsub("\n", "") .. ";' >> ~/.config/awesome/src/assets/cache/rules.txt")
-                local c = mouse.screen.selected_tag:clients()
-                for _, client in ipairs(c) do
-                  if client.class:match(stdout:gsub("\n", "")) then
-                    client.floating = true
-                  end
-                end
-              end
-            )
+            c.floating = true
+
+            handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "w")
+            if not handler then return end
+            handler:write(json:encode(data_table))
+            handler:close()
+            mousegrabber.stop()
           end
-        end
+          return true
+        end,
+        "crosshair"
       )
     end
   ),
@@ -343,33 +363,51 @@ return gears.table.join(
     { modkey, "Shift" },
     "#22",
     function()
-      awful.spawn.easy_async_with_shell(
-        [[xprop | grep WM_CLASS | awk '{gsub(/"/, "", $4); print $4}']],
-        function(stdout)
-          if stdout then
-            ruled.client.append_rule {
-              rule = { class = stdout:gsub("\n", "") },
-              properties = {
-                floating = false
-              },
+      mousegrabber.run(
+        function(m)
+          if m.buttons[1] then
+
+            local handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "r")
+            if not handler then return end
+            local data_table = json:decode(handler:read("a")) or {}
+            handler:close()
+
+            if type(data_table) ~= "table" then return end
+
+            local c = mouse.current_client
+            if not c then return end
+
+            local client_data = {
+              WM_NAME = c.name,
+              WM_CLASS = c.class,
+              WM_INSTANCE = c.instance,
             }
-            awful.spawn.easy_async_with_shell(
-              [[
-                REMOVE="]] .. stdout:gsub("\n", "") .. [[;"
-                STR=$(cat ~/.config/awesome/src/assets/cache/rules.txt)
-                echo -n ${STR//$REMOVE/} > ~/.config/awesome/src/assets/cache/rules.txt
-              ]],
-              function()
-                local c = mouse.screen.selected_tag:clients()
-                for _, client in ipairs(c) do
-                  if client.class:match(stdout:gsub("\n", "")) then
-                    client.floating = false
-                  end
-                end
+
+            -- Remove client_data from data_table
+            for k, v in ipairs(data_table) do
+              if v.WM_CLASS == client_data.WM_CLASS and
+                  v.WM_INSTANCE == client_data.WM_INSTANCE then
+                table.remove(data_table, k)
+                ruled.client.remove_rule {
+                  rule = { class = c.class, instance = c.instance },
+                  properties = {
+                    floating = true
+                  },
+                }
+                c.floating = false
+                break
               end
-            )
+            end
+
+            handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "w")
+            if not handler then return end
+            handler:write(json:encode(data_table))
+            handler:close()
+            mousegrabber.stop()
           end
-        end
+          return true
+        end,
+        "crosshair"
       )
     end
   )

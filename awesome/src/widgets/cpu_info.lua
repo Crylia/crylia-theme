@@ -8,6 +8,9 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local color = require("src.lib.color")
+local rubato = require("src.lib.rubato")
+
 local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
 
 --TODO: Add tooltip with more CPU and per core information
@@ -149,11 +152,32 @@ return function(widget, _)
     end
   )
 
+  local r_timed_cpu_bg = rubato.timed { duration = 2.5 }
+  local g_timed_cpu_bg = rubato.timed { duration = 2.5 }
+  local b_timed_cpu_bg = rubato.timed { duration = 2.5 }
+
+  r_timed_cpu_bg.pos, g_timed_cpu_bg.pos, b_timed_cpu_bg.pos = color.utils.hex_to_rgba(Theme_config.cpu_temp.bg_low)
+
+  -- Subscribable function to have rubato set the bg/fg color
+  local function update_bg()
+    cpu_temp:set_bg("#" .. color.utils.rgba_to_hex { r_timed_cpu_bg.pos, g_timed_cpu_bg.pos, b_timed_cpu_bg.pos })
+  end
+
+  r_timed_cpu_bg:subscribe(update_bg)
+  g_timed_cpu_bg:subscribe(update_bg)
+  b_timed_cpu_bg:subscribe(update_bg)
+
+  -- Both functions to set a color, if called they take a new color
+  local function set_bg(newbg)
+    r_timed_cpu_bg.target, g_timed_cpu_bg.target, b_timed_cpu_bg.target = color.utils.hex_to_rgba(newbg)
+  end
+
   awesome.connect_signal(
     "update::cpu_temp",
     function(temp)
       local temp_icon
       local temp_color
+
       if temp < 50 then
         temp_color = Theme_config.cpu_temp.bg_low
         temp_icon = icon_dir .. "thermometer-low.svg"
@@ -165,7 +189,7 @@ return function(widget, _)
         temp_icon = icon_dir .. "thermometer-high.svg"
       end
       cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
-      cpu_temp:set_bg(temp_color)
+      set_bg(temp_color)
       cpu_temp.container.cpu_layout.label.text = math.floor(temp) .. "°C"
       awesome.emit_signal("update::cpu_temp_widget", temp, temp_icon)
     end

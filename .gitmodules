@@ -1,3 +1,9 @@
 [submodule "awesome/src/lib/rubato"]
 	path = awesome/src/lib/rubato
 	url = https://github.com/andOrlando/rubato
+[submodule "awesome/src/lib/awesome/src/lib/color"]
+	path = awesome/src/lib/awesome/src/lib/color
+	url = https://github.com/andOrlando/color
+[submodule "awesome/src/lib/color"]
+	path = awesome/src/lib/color
+	url = https://github.com/andOrlando/color

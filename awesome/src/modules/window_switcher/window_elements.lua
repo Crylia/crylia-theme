@@ -8,6 +8,9 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local color = require("src.lib.color")
+local rubato = require("src.lib.rubato")
+
 return function()
 
   local elements = wibox.widget {
@@ -38,7 +41,7 @@ return function()
 
     selected = selected
 
-    for i, client in ipairs(clients_sorted) do
+    for _, client in ipairs(clients_sorted) do
       local window_element = wibox.widget {
         {
           {
@@ -89,20 +92,10 @@ return function()
         end,
         border_color = Theme_config.window_switcher.border_color,
         border_width = Theme_config.window_switcher.border_width,
-        bg = Theme_config.window_switcher.element_bg,
+        bg = Theme_config.window_switcher.bg,
         fg = Theme_config.window_switcher.element_fg,
         widget = wibox.container.background
       }
-
-      if i == selected then
-        window_element.border_color = Theme_config.window_switcher.selected_border_color
-        window_element.fg = Theme_config.window_switcher.selected_fg
-        window_element.bg = Theme_config.window_switcher.selected_bg
-      else
-        window_element.border_color = Theme_config.window_switcher.border_color
-        window_element.fg = Theme_config.window_switcher.element_fg
-        window_element.bg = Theme_config.window_switcher.bg
-      end
 
       elements:add(window_element)
     end
@@ -115,14 +108,93 @@ return function()
       end
 
       for i, element in ipairs(elements.children) do
+
+        -- Background rubato init
+        local r_timed_bg = rubato.timed { duration = 0.5 }
+        local g_timed_bg = rubato.timed { duration = 0.5 }
+        local b_timed_bg = rubato.timed { duration = 0.5 }
+
+        -- starting color
+        r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.bg)
+
+
+        -- Foreground rubato init
+        local r_timed_fg = rubato.timed { duration = 0.5 }
+        local g_timed_fg = rubato.timed { duration = 0.5 }
+        local b_timed_fg = rubato.timed { duration = 0.5 }
+
+        -- starting color
+        r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.element_fg)
+
+        -- Border rubato init
+        local r_timed_border = rubato.timed { duration = 0.5 }
+        local g_timed_border = rubato.timed { duration = 0.5 }
+        local b_timed_border = rubato.timed { duration = 0.5 }
+
+        -- starting color
+        r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
+          .border_color)
+
+        local function set_bg(newbg)
+          r_timed_bg.target, g_timed_bg.target, b_timed_bg.target = color.utils.hex_to_rgba(newbg)
+        end
+
+        local function set_fg(newfg)
+          r_timed_fg.target, g_timed_fg.target, b_timed_fg.target = color.utils.hex_to_rgba(newfg)
+        end
+
+        local function set_border(newborder)
+          r_timed_border.target, g_timed_border.target, b_timed_border.target = color.utils.hex_to_rgba(newborder)
+        end
+
+        local function update_bg()
+          element:set_bg("#" .. color.utils.rgba_to_hex { r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos })
+        end
+
+        local function update_fg()
+          element:set_fg("#" .. color.utils.rgba_to_hex { r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos })
+        end
+
+        local function update_border()
+          element.border_color = "#" ..
+              color.utils.rgba_to_hex { r_timed_border.pos, g_timed_border.pos, b_timed_border.pos }
+        end
+
+        -- Subscribe to the function bg and fg
+        r_timed_bg:subscribe(update_bg)
+        g_timed_bg:subscribe(update_bg)
+        b_timed_bg:subscribe(update_bg)
+        r_timed_fg:subscribe(update_fg)
+        g_timed_fg:subscribe(update_fg)
+        b_timed_fg:subscribe(update_fg)
+        r_timed_border:subscribe(update_border)
+        g_timed_border:subscribe(update_border)
+        b_timed_border:subscribe(update_border)
+
         if i == selected then
-          element.border_color = Theme_config.window_switcher.selected_border_color
-          element.fg = Theme_config.window_switcher.selected_fg
-          element.bg = Theme_config.window_switcher.selected_bg
+          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.bg)
+          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.element_fg)
+          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
+            .border_color)
+          set_border(Theme_config.window_switcher.selected_border_color)
+          set_fg(Theme_config.window_switcher.selected_fg)
+          set_bg(Theme_config.window_switcher.selected_bg)
+        elseif i == selected - 1 or (selected == 1 and i == #clients_sorted) then
+          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.selected_bg)
+          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.selected_fg)
+          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
+            .selected_border_color)
+          set_border(Theme_config.window_switcher.border_color)
+          set_fg(Theme_config.window_switcher.element_fg)
+          set_bg(Theme_config.window_switcher.bg)
         else
-          element.border_color = Theme_config.window_switcher.border_color
-          element.fg = Theme_config.window_switcher.element_fg
-          element.bg = Theme_config.window_switcher.bg
+          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.bg)
+          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.element_fg)
+          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
+            .border_color)
+          set_border(Theme_config.window_switcher.border_color)
+          set_fg(Theme_config.window_switcher.element_fg)
+          set_bg(Theme_config.window_switcher.bg)
         end
       end
     elseif fn == "raise" then

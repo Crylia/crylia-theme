@@ -2,7 +2,9 @@
 -- Awesome Libs
 local awful = require("awful")
 local gears = require("gears")
-local wibox = require("wibox")
+
+local color = require("src.lib.color")
+local rubato = require("src.lib.rubato")
 
 screen.connect_signal(
   "added",
@@ -71,7 +73,7 @@ tag.connect_signal(
 )
 
 -- Sloppy focus
-client.connect_signal(
+--[[ client.connect_signal(
   "mouse::enter",
   function(c)
     c:emit_signal(
@@ -82,7 +84,7 @@ client.connect_signal(
       }
     )
   end
-)
+) ]]
 
 --- Takes a wibox.container.background and connects four signals to it
 ---@param widget wibox.container.background a background widget
@@ -96,25 +98,41 @@ function Hover_signal(widget, bg_override, fg_override, border_override, icon_ov
 
   local r, g, b
 
-  widget.bg = widget.bg or ""
-  widget.fg = widget.fg or ""
-  widget.border_color = widget.border_color or ""
+  widget.bg = widget.bg or "#000000"
+  widget.fg = widget.fg or "#000000"
+  widget.border_color = widget.border_color or "#000000"
   local icon = nil
   if icon_override and icon_override_hover then
     icon = widget:get_children_by_id("icon")[1].icon
     widget.icon = widget:get_children_by_id("icon")[1]
   end
 
+  --[[ local r_timed_bg = rubato.timed { duration = 0.5 }
+  local g_timed_bg = rubato.timed { duration = 0.5 }
+  local b_timed_bg = rubato.timed { duration = 0.5 }
+
+  local function update_bg()
+    widget:set_bg("#" .. color.utils.rgba_to_hex { r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos })
+  end
+
+  r_timed_bg:subscribe(update_bg)
+  g_timed_bg:subscribe(update_bg)
+  b_timed_bg:subscribe(update_bg)
+
+  local function set_bg(newbg)
+    r_timed_bg.target, g_timed_bg.target, b_timed_bg.target = color.utils.hex_to_rgba(newbg)
+  end ]]
+
   local mouse_enter = function()
     _, r, g, b, _ = widget.bg:get_rgba()
     old_bg = RGB_to_hex(r, g, b)
     if bg_override or old_bg then
-      widget.bg = bg_override or old_bg .. "dd"
+      widget:set_bg(bg_override or old_bg .. "dd")
     end
     _, r, g, b, _ = widget.fg:get_rgba()
     old_fg = RGB_to_hex(r, g, b)
     if fg_override or old_fg then
-      widget.fg = fg_override or old_fg .. "dd"
+      widget:set_fg(fg_override or old_fg .. "dd")
     end
     old_border = widget.border_color
     if border_override or old_border then
@@ -162,10 +180,10 @@ function Hover_signal(widget, bg_override, fg_override, border_override, icon_ov
 
   local mouse_leave = function()
     if old_bg then
-      widget.bg = old_bg
+      widget:set_bg(old_bg)
     end
     if old_fg then
-      widget.fg = old_fg
+      widget:set_fg(old_fg)
     end
     if old_border then
       widget.border_color = old_border

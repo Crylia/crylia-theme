@@ -8,6 +8,9 @@ local wibox = require('wibox')
 local dpi = require('beautiful').xresources.apply_dpi
 local gears = require('gears')
 
+local color = require("src.lib.color")
+local rubato = require("src.lib.rubato")
+
 local list_update = function(widget, buttons, label, _, objects)
 	widget:reset()
 	for _, object in ipairs(objects) do
@@ -90,6 +93,55 @@ local list_update = function(widget, buttons, label, _, objects)
 		task_widget:buttons(create_buttons(buttons, object))
 
 		local text, _ = label(object, task_widget.container.layout_it.title)
+
+
+		--#region Rubato and Color animation
+
+		-- Background rubato init
+		local r_timed_bg = rubato.timed { duration = 0.5 }
+		local g_timed_bg = rubato.timed { duration = 0.5 }
+		local b_timed_bg = rubato.timed { duration = 0.5 }
+
+		-- starting color
+		r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.tasklist.bg)
+
+
+		-- Foreground rubato init
+		local r_timed_fg = rubato.timed { duration = 0.5 }
+		local g_timed_fg = rubato.timed { duration = 0.5 }
+		local b_timed_fg = rubato.timed { duration = 0.5 }
+
+		-- starting color
+		r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.tasklist.fg)
+
+		-- Subscribable function to have rubato set the bg/fg color
+		local function update_bg()
+			task_widget:set_bg("#" .. color.utils.rgba_to_hex { r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos })
+		end
+
+		local function update_fg()
+			task_widget:set_fg("#" .. color.utils.rgba_to_hex { r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos })
+		end
+
+		-- Subscribe to the function bg and fg
+		r_timed_bg:subscribe(update_bg)
+		g_timed_bg:subscribe(update_bg)
+		b_timed_bg:subscribe(update_bg)
+		r_timed_fg:subscribe(update_fg)
+		g_timed_fg:subscribe(update_fg)
+		b_timed_fg:subscribe(update_fg)
+
+		-- Both functions to set a color, if called they take a new color
+		local function set_bg(newbg)
+			r_timed_bg.target, g_timed_bg.target, b_timed_bg.target = color.utils.hex_to_rgba(newbg)
+		end
+
+		local function set_fg(newfg)
+			r_timed_fg.target, g_timed_fg.target, b_timed_fg.target = color.utils.hex_to_rgba(newfg)
+		end
+
+		--#endregion
+
 		if object == client.focus then
 			if text == nil or text == '' then
 				task_widget.container.layout_it.title:set_margins(0)
@@ -107,11 +159,11 @@ local list_update = function(widget, buttons, label, _, objects)
 					task_tool_tip:remove_from_object(task_widget)
 				end
 			end
-			task_widget:set_bg(Theme_config.tasklist.bg_focus)
-			task_widget:set_fg(Theme_config.tasklist.fg_focus)
+			set_bg(Theme_config.tasklist.bg_focus)
+			set_fg(Theme_config.tasklist.fg_focus)
 			task_widget.container.layout_it.title:set_text(text)
 		else
-			task_widget:set_bg(Theme_config.tasklist.bg)
+			set_bg(Theme_config.tasklist.bg)
 			task_widget.container.layout_it.title:set_text('')
 		end
 

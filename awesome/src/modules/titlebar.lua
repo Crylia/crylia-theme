@@ -8,6 +8,9 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local color = require("src.lib.color")
+local rubato = require("src.lib.rubato")
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/titlebar/"
 

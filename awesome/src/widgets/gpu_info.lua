@@ -1,5 +1,5 @@
 ---------------------------------
--- This is the CPU Info widget --
+-- This is the gpu Info widget --
 ---------------------------------
 
 -- Awesome Libs
@@ -7,6 +7,9 @@ local awful = require("awful")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+
+local color = require("src.lib.color")
+local rubato = require("src.lib.rubato")
 
 local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
 
@@ -64,7 +67,7 @@ return function(widget)
               widget = wibox.widget.imagebox,
               valign = "center",
               halign = "center",
-              image = gears.color.recolor_image(icon_dir .. "cpu.svg", Theme_config.gpu_temp.fg),
+              image = gears.color.recolor_image(icon_dir .. "gpu.svg", Theme_config.gpu_temp.fg),
               resize = false
             },
             id = "icon_layout",
@@ -108,6 +111,28 @@ return function(widget)
     end
   )
 
+  local r_timed_gpu_bg = rubato.timed { duration = 2.5 }
+  local g_timed_gpu_bg = rubato.timed { duration = 2.5 }
+  local b_timed_gpu_bg = rubato.timed { duration = 2.5 }
+
+  r_timed_gpu_bg.pos, g_timed_gpu_bg.pos, b_timed_gpu_bg.pos = color.utils.hex_to_rgba(Theme_config.cpu_temp.bg_low)
+
+  -- Subscribable function to have rubato set the bg/fg color
+  local function update_bg()
+    gpu_temp_widget:set_bg("#" ..
+      color.utils.rgba_to_hex { math.max(0, r_timed_gpu_bg.pos), math.max(0, g_timed_gpu_bg.pos),
+        math.max(0, b_timed_gpu_bg.pos) })
+  end
+
+  r_timed_gpu_bg:subscribe(update_bg)
+  g_timed_gpu_bg:subscribe(update_bg)
+  b_timed_gpu_bg:subscribe(update_bg)
+
+  -- Both functions to set a color, if called they take a new color
+  local function set_bg(newbg)
+    r_timed_gpu_bg.target, g_timed_gpu_bg.target, b_timed_gpu_bg.target = color.utils.hex_to_rgba(newbg)
+  end
+
   -- GPU Temperature
   awesome.connect_signal(
     "update::gpu_temp",
@@ -135,7 +160,7 @@ return function(widget)
         temp_icon = icon_dir .. "thermometer-low.svg"
       end
       gpu_temp_widget.container.gpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
-      gpu_temp_widget:set_bg(temp_color)
+      set_bg(temp_color)
       gpu_temp_widget.container.gpu_layout.label.text = tostring(temp_num) .. "°C"
     end
   )
