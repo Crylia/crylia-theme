@@ -649,12 +649,20 @@ return function()
         }
 
         awesome.connect_signal(
-          "update::backlight",
-          function(backlight, backlight_icon)
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(backlight_icon,
+          "brightness::get",
+          function(brightness)
+            local icon = icondir .. "brightness/brightness"
+            if brightness >= 0 and brightness < 34 then
+              icon = icon .. "-low"
+            elseif brightness >= 34 and brightness < 67 then
+              icon = icon .. "-medium"
+            elseif brightness >= 67 then
+              icon = icon .. "-high"
+            end
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(icon .. ".svg",
               Theme_config.notification_center.status_bar.backlight_color)
-            tooltip.text = "Backlight: " .. backlight .. "%"
-            rubato_timer.target = backlight
+            tooltip.text = "Backlight: " .. brightness .. "%"
+            rubato_timer.target = brightness
           end
         )
       elseif widget == "battery" then

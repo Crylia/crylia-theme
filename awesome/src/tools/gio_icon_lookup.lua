@@ -17,6 +17,7 @@ Gtk.IconTheme.set_custom_theme(gtk_theme, User_config.icon_theme)
 ---@param app Gio.AppInfo
 ---@return string path
 function Get_gicon_path(app)
+  if not app then return "" end
   local icon_info = gtk_theme:lookup_by_gicon(app, 64, 0)
   if icon_info then
     local path = icon_info:get_filename()
@@ -36,12 +37,12 @@ function Get_icon(class, name)
   name = string.lower(name or "")
   for _, app in ipairs(app_list) do
     local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
-    local icon_string = Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon")
+    local icon_string = Gio.DesktopAppInfo.get_string(desktop_app_info, "Name")
     if icon_string then
       icon_string = string.lower(icon_string)
       if icon_string:match(class) or class:match(icon_string) then
         return Get_gicon_path(app_info.get_icon(app))
-      elseif icon_string:match(name) or name:match(icon_string) then
+      elseif (icon_string == name) or icon_string:match(name) or name:match(icon_string) then
         return Get_gicon_path(app_info.get_icon(app))
       end
     end
