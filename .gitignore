@@ -1,6 +1,4 @@
 awesome/.idea
 awesome/.vscode
 awesome/start-xephyr.sh
-awesome/src/config
-awesome/src/theme/theme_config.lua
-awesome/src/theme/user_config.lua
+awesome/src/config/**
