@@ -214,6 +214,8 @@ return function(s)
       keymap = keymap
     }
 
+    Hover_signal(kb_layout_item)
+
     awesome.connect_signal(
       "update::background:kblayout",
       function()

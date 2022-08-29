@@ -144,6 +144,52 @@ Theme_config.tasklist = {
 ]] --
 
 --#region Module Settings
+Theme_config.calendar = {
+  bg = color["Grey900"],
+  fg = color["Grey100"],
+  border_color = color["Grey800"],
+  border_width = dpi(2),
+  day = {
+    today_border_color = color["Blue200"],
+    bg = color["Grey900"],
+    bg_focus = color["Teal200"],
+    bg_unfocus = color["Grey900"],
+    fg = color["Grey100"],
+    fg_focus = color["Grey900"],
+    fg_unfocus = color["Grey600"],
+    border_color = color["Grey800"],
+    border_width = dpi(2),
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(4))
+    end,
+  },
+  task = {
+    bg = color["Purple200"],
+    fg = color["Grey900"],
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(4))
+    end,
+  },
+  weekdays = {
+    bg = color["Grey900"],
+    fg = color["Blue200"]
+  },
+  add_ical = {
+    bg = color["Red200"],
+    fg = color["Grey900"],
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(4))
+    end,
+  },
+  add_task = {
+    bg = color["LightBlue200"],
+    fg = color["Grey900"],
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(4))
+    end,
+  }
+}
+
 Theme_config.notification = {
   border_color = color["Grey800"],
   border_width = dpi(4),

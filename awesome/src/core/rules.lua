@@ -38,18 +38,25 @@ awful.rules.rules = {
       titlebars_enabled = true
     }
   },
-  rule_any = {
-    class = {
-      'Wine',
-      'dolphin-emu',
-      'Steam',
-      'Citra',
+  {
+    id = "games",
+    rule_any = {
+      class = {
+        "steam_app_.%d+",
+        "gta5.exe",
+      },
     },
-    name = { 'Steam' }
-  },
-  properties = {
-    skip_decoration = true,
-    placement = awful.placement.centered
+    properties = {
+      tag = "9",
+      switchtotag = true,
+      fullscreen = true,
+      screen = screen[1],
+      floating = true,
+    },
+    focus = true,
+    callback = function(c)
+      awful.screen.focused()
+    end
   }
 }
 

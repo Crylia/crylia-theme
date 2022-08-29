@@ -22,7 +22,7 @@ return function(s)
           spacing = dpi(10),
           layout = require("src.lib.overflow_widget.overflow").vertical,
           scrollbar_width = 0,
-          step = dpi(50),
+          step = dpi(100),
           id = "scroll_bar",
         },
         spacing = dpi(10),

@@ -235,7 +235,7 @@ return gears.table.join(
   awful.key(
     {},
     "XF86AudioMute",
-    function()
+    function(c)
       awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
       awesome.emit_signal("widget::volume_osd:rerun")
     end,
@@ -244,11 +244,11 @@ return gears.table.join(
   awful.key(
     {},
     "XF86MonBrightnessUp",
-    function()
+    function(c)
       awful.spawn.easy_async_with_shell(
-        "xfpm-power-backlight-helper --get-brightness",
+        "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn(awful.util.getdir("config") .. "src/scripts/backlight.sh set " ..
+          awful.spawn("pkexec xfpm-power-backlight-helper --set-brightness " ..
             tostring(tonumber(stdout) + BACKLIGHT_SEPS))
           awesome.emit_signal("brightness::update")
         end
@@ -259,11 +259,12 @@ return gears.table.join(
   awful.key(
     {},
     "XF86MonBrightnessDown",
-    function()
+    function(c)
       awful.spawn.easy_async_with_shell(
-        "xfpm-power-backlight-helper --get-brightness",
+        "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn(awful.util.getdir("config") .. "src/scripts/backlight.sh set " ..
+          awful.spawn(
+            "pkexec xfpm-power-backlight-helper --set-brightness " ..
             tostring(tonumber(stdout) - BACKLIGHT_SEPS))
           awesome.emit_signal("brightness::update")
         end

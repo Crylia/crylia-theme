@@ -62,5 +62,13 @@ return function()
   -- Signals
   Hover_signal(date_widget)
 
+  date_widget:buttons {
+    gears.table.join(
+      awful.button({}, 1, function()
+        awesome.emit_signal("calendar::toggle", date_widget)
+      end)
+    )
+  }
+
   return date_widget
 end

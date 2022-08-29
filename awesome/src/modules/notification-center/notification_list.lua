@@ -15,7 +15,7 @@ local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 local nl = {}
 
 nl.notification_list = { layout = require("src.lib.overflow_widget.overflow").vertical, scrollbar_width = 0,
-  step = dpi(20), spacing = dpi(20) }
+  step = dpi(100), spacing = dpi(20) }
 
 -- @param {table} notification
 -- @return {widget} notifications_list

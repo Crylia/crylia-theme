@@ -20,9 +20,11 @@ User_config = {
     "picom --experimental-backends",
     "xfce4-power-manager",
     "light-locker --lock-on-suspend --lock-on-lid &",
+    "spotify",
+    "discord",
     "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
     "setxkbmap -option caps:swapescape",
-    "protonmail-bridge"
+    "jamesdsp"
   },
 
   --[[
@@ -45,7 +47,7 @@ User_config = {
       "MEDIA_PLAYER"
       More information at: https://lazka.github.io/pgi-docs/UPowerGlib-1.0/enums.html#UPowerGlib.DeviceKind.KEYBOARD
   ]] --
-  battery_kind = "BATTERY",
+  battery_kind = "LINE_POWER",
 
   --[[
     If your battery is not found you can specify its path here.
@@ -191,8 +193,8 @@ User_config = {
     "ram_usage",
     "microphone",
     "volume",
-    "backlight",
-    "battery"
+    "gpu_temp",
+    "gpu_usage"
   },
 
   --[[
@@ -275,8 +277,10 @@ User_config = {
         "Tasklist"
       },
       right_bar = {
-        "Battery",
-        "Bluetooth",
+        "Gpu Usage",
+        "Gpu Temperature",
+        "Cpu Usage",
+        "Cpu Temperature",
         "Audio",
         "Keyboard Layout",
         "Date",

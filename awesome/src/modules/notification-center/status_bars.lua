@@ -90,6 +90,14 @@ return function()
           margins = dpi(10)
         }
 
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
+
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
+
         awesome.connect_signal(
           "update::cpu_usage",
           function(cpu_usage)
@@ -160,7 +168,13 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
           "update::cpu_temp",
           function(cpu_temp)
@@ -239,7 +253,13 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
           "update::ram_widget",
           function(MemTotal, _, MemAvailable)
@@ -312,7 +332,13 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
           "update::gpu_usage",
           function(gpu_usage)
@@ -383,7 +409,13 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
           "update::gpu_temp",
           function(gpu_temp)
@@ -472,7 +504,13 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
           "audio::get",
           function(muted, volume)
@@ -563,7 +601,13 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
           "microphone::get",
           function(muted, volume)
@@ -647,22 +691,20 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
-          "brightness::get",
-          function(brightness)
-            local icon = icondir .. "brightness/brightness"
-            if brightness >= 0 and brightness < 34 then
-              icon = icon .. "-low"
-            elseif brightness >= 34 and brightness < 67 then
-              icon = icon .. "-medium"
-            elseif brightness >= 67 then
-              icon = icon .. "-high"
-            end
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(icon .. ".svg",
+          "update::backlight",
+          function(backlight, backlight_icon)
+            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(backlight_icon,
               Theme_config.notification_center.status_bar.backlight_color)
-            tooltip.text = "Backlight: " .. brightness .. "%"
-            rubato_timer.target = brightness
+            tooltip.text = "Backlight: " .. backlight .. "%"
+            rubato_timer.target = backlight
           end
         )
       elseif widget == "battery" then
@@ -728,7 +770,13 @@ return function()
           preferred_alignments = "middle",
           margins = dpi(10)
         }
+        w:connect_signal("mouse::enter", function()
+          awesome.emit_signal("notification_center::block_mouse_events")
+        end)
 
+        w:connect_signal("mouse::leave", function()
+          awesome.emit_signal("notification_center::unblock_mouse_events")
+        end)
         awesome.connect_signal(
           "update::battery_widget",
           function(battery, battery_icon)

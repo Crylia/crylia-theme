@@ -3,6 +3,7 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
+local async = require("async")
 local dpi = require("beautiful").xresources.apply_dpi
 local Gio = require("lgi").Gio
 local gears = require("gears")
@@ -25,7 +26,7 @@ return function(screen)
   ---@param size number The size of the widget
   ---@return widox.widget | nil The widget or nil if the program is not found
   local function create_dock_element(program, size)
-    if not program then return end
+
     local dock_element = wibox.widget {
       {
         {
@@ -164,15 +165,14 @@ return function(screen)
     end
 
     local prog = json:decode(data:read("a"))
-    if (not prog) or prog == "" then return end
+    data:close()
     for _, pr in ipairs(prog) do
       local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
       local col = Theme_config.dock.indicator_bg
       for _, c in ipairs(client.get()) do
         local icon_name = pr.icon
-        if not c.class then return end
-        if icon_name:match(string.lower(c.class)) or c.class:match(string.lower(icon_name)) or
-            (string.lower(c.name) == string.lower(icon_name)) or c.name:match(string.lower(icon_name)) then
+        if icon_name:match(string.lower(c.class or c.name)) or c.class:match(string.lower(icon_name)) or
+            c.name:match(string.lower(icon_name)) then
           if c == client.focus then
             col = Theme_config.dock.indicator_focused_bg
           elseif c.urgent then
@@ -253,9 +253,7 @@ return function(screen)
       return
     end
     local dock_data = json:decode(data:read("a"))
-    if (not dock_data) or dock_data == "" then
-      return
-    end
+    data:close()
     for _, program in ipairs(dock_data) do
       table.insert(dock_elements, create_dock_element(program, User_config.dock_icon_size))
     end

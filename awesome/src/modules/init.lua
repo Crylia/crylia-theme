@@ -27,5 +27,6 @@ awful.screen.connect_for_each_screen(
     require("src.modules.notification-center.init")(s)
     require("src.modules.window_switcher.init")(s)
     require("src.modules.application_launcher.init")(s)
+    require("src.modules.calendar.calendar")(s)
   end
 )

@@ -68,11 +68,13 @@ return function(s)
               Theme_config.volume_controller.device_icon_color)
             device.bg = Theme_config.volume_controller.device_headphones_selected_bg
             device.fg = Theme_config.volume_controller.device_headphones_selected_fg
+            Hover_signal(device)
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg",
               Theme_config.volume_controller.device_headphones_selected_icon_color)
             device.bg = Theme_config.volume_controller.device_bg
             device.fg = Theme_config.volume_controller.device_headphones_fg
+            Hover_signal(device)
           end
         end
       )
@@ -85,16 +87,17 @@ return function(s)
               Theme_config.volume_controller.device_icon_color)
             device.bg = Theme_config.volume_controller.device_headphones_selected_bg
             device.fg = Theme_config.volume_controller.device_headphones_selected_fg
+            Hover_signal(device)
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "headphones.svg",
               Theme_config.volume_controller.device_headphones_selected_icon_color)
             device.bg = Theme_config.volume_controller.device_bg
             device.fg = Theme_config.volume_controller.device_headphones_fg
+            Hover_signal(device)
           end
         end
       )
       awesome.emit_signal("update::bg_sink", node)
-      Hover_signal(device)
     else
       device:connect_signal(
         "button::press",
@@ -115,11 +118,13 @@ return function(s)
               Theme_config.volume_controller.device_icon_color)
             device.bg = Theme_config.volume_controller.device_microphone_selected_bg
             device.fg = Theme_config.volume_controller.device_microphone_selected_fg
+            Hover_signal(device)
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg",
               Theme_config.volume_controller.device_microphone_selected_icon_color)
             device.bg = Theme_config.volume_controller.device_bg
             device.fg = Theme_config.volume_controller.device_microphone_fg
+            Hover_signal(device)
           end
         end
       )
@@ -132,16 +137,17 @@ return function(s)
               Theme_config.volume_controller.device_icon_color)
             device.bg = Theme_config.volume_controller.device_microphone_selected_bg
             device.fg = Theme_config.volume_controller.device_microphone_selected_fg
+            Hover_signal(device)
           else
             device:get_children_by_id("icon")[1].image = gears.color.recolor_image(icondir .. "microphone.svg",
               Theme_config.volume_controller.device_microphone_selected_icon_color)
             device.bg = Theme_config.volume_controller.device_bg
             device.fg = Theme_config.volume_controller.device_microphone_fg
+            Hover_signal(device)
           end
         end
       )
       awesome.emit_signal("update::bg_source", node)
-      Hover_signal(device)
     end
     return device
   end

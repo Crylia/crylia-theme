@@ -130,11 +130,46 @@ return function(s)
     widget = wibox.container.place,
   }
 
+  local rubato = require("src.lib.rubato")
+
+  local rubato_timed = rubato.timed { duration = 1, pos = 0 }
+
   local toggle_button = wibox.widget {
     {
-      left_button,
-      right_button,
-      widget = wibox.layout.flex.horizontal
+      id = "background",
+      widget = wibox.widget {
+        fit = function(_, width, height)
+          return width, height
+        end,
+        draw = function(_, _, cr, width, height)
+          -- Clear for next drawing
+          --cr:set_operator(cairo.Operator.CLEAR);
+          local function move_dnd()
+            cr:set_source(gears.color(Theme_config.notification_center.dnd.bg));
+            cr:paint();
+            cr:set_source(gears.color(Theme_config.notification_center.dnd.disabled))
+            cr:move_to(rubato_timed.pos, 0)
+            local x = rubato_timed.pos
+            local y = 5
+            local newwidth = width / 2 - 10
+            local newheight = height - 10
+
+            local radius = height / 6.0
+            local degrees = math.pi / 180.0;
+
+            cr:new_sub_path()
+            cr:arc(x + newwidth - radius, y + radius, radius, -90 * degrees, 0 * degrees)
+            cr:arc(x + newwidth - radius, y + newheight - radius, radius, 0 * degrees, 90 * degrees)
+            cr:arc(x + radius, y + newheight - radius, radius, 90 * degrees, 180 * degrees)
+            cr:arc(x + radius, y + radius, radius, 180 * degrees, 270 * degrees)
+            cr:close_path()
+            cr:fill()
+          end
+
+          rubato_timed:subscribe(move_dnd)
+          rubato_timed.target = width / 2 + 5
+        end
+      }
     },
     active = false,
     widget = wibox.container.background,
@@ -152,22 +187,20 @@ return function(s)
     "button::press",
     function()
       if toggle_button.active then
-        left_button.visible = true
-        right_button.visible = false
         toggle_button.active = not toggle_button.active
         toggle_button.border_color = Theme_config.notification_center.dnd.border_disabled
         User_config.dnd = false
+        rubato_timed.target = 5
       else
-        left_button.visible = false
-        right_button.visible = true
         toggle_button.active = not toggle_button.active
         toggle_button.border_color = Theme_config.notification_center.dnd.border_enabled
         User_config.dnd = true
+        rubato_timed.target = 50
       end
     end
   )
 
-  local dnd = wibox.widget { -- Clear all button
+  local dnd = wibox.widget {
     {
       {
         {
@@ -348,12 +381,22 @@ return function(s)
     end
   )
 
+  local function mouse_leave()
+    notification_center.visible = false
+  end
+
+  awesome.connect_signal("notification_center::block_mouse_events", function()
+    notification_center:disconnect_signal("mouse::leave", mouse_leave)
+  end)
+
+  awesome.connect_signal("notification_center::unblock_mouse_events", function()
+    notification_center:connect_signal("mouse::leave", mouse_leave)
+  end)
+
   -- Hide notification_center when mouse leaves it
   notification_center:connect_signal(
     "mouse::leave",
-    function()
-      notification_center.visible = false
-    end
+    mouse_leave
   )
 
   -- Clear all notifications on button press
