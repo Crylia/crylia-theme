@@ -7,3 +7,6 @@
 [submodule "awesome/src/lib/color"]
 	path = awesome/src/lib/color
 	url = https://github.com/andOrlando/color
+[submodule "awesome/src/lib/dbus_proxy"]
+	path = awesome/src/lib/dbus_proxy
+	url = https://github.com/stefano-m/lua-dbus_proxy

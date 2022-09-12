@@ -121,15 +121,20 @@ function Hover_signal(widget, bg_override, fg_override, border_override, icon_ov
   local b_timed_border = rubato.timed { duration = 0.3, pos = math.floor(bbo) }
 
   local function update_bg()
-    widget:set_bg("#" .. color.utils.rgba_to_hex { r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos })
+    widget:set_bg("#" ..
+      color.utils.rgba_to_hex { math.min(r_timed_bg.pos, 255), math.min(g_timed_bg.pos, 255),
+        math.min(b_timed_bg.pos, 255) })
   end
 
   local function update_fg()
-    widget:set_fg("#" .. color.utils.rgba_to_hex { r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos })
+    widget:set_fg("#" .. color.utils.rgba_to_hex { math.min(r_timed_fg.pos, 255), math.min(g_timed_fg.pos, 255),
+      math.min(b_timed_fg.pos, 255) })
   end
 
   local function update_border()
-    widget:set_border_color("#" .. color.utils.rgba_to_hex { r_timed_border.pos, g_timed_border.pos, b_timed_border.pos })
+    widget:set_border_color("#" ..
+      color.utils.rgba_to_hex { math.min(r_timed_border.pos, 255), math.min(g_timed_border.pos, 255),
+        math.min(b_timed_border.pos, 255) })
   end
 
   r_timed_bg:subscribe(update_bg)
@@ -260,24 +265,8 @@ function Hover_signal(widget, bg_override, fg_override, border_override, icon_ov
     --widget:connect_signal("mouse::leave", mouse_leave)
   end
 
-  local button_press = function()
-    --[[ if old_bg or bg_override then
-      if bg_override then
-        bg_override = bg_override .. "bb"
-      end
-      widget.bg = bg_override or old_bg .. "bb"
-    end
-    if fg_override or old_fg then
-      if fg_override then
-        fg_override = fg_override .. "bb"
-      end
-      widget.fg = fg_override or old_fg .. "bb"
-    end ]]
-    --widget:disconnect_signal("mouse::leave", mouse_leave)
-  end
-
   widget:connect_signal("mouse::enter", mouse_enter)
-  widget:connect_signal("button::press", button_press)
+  --widget:connect_signal("button::press", button_press)
   --widget:connect_signal("button::release", button_release)
   widget:connect_signal("mouse::leave", mouse_leave)
 end

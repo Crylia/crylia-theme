@@ -325,20 +325,20 @@ function overflow:set_scroll_factor(factor)
 
 
   local function update_scroll()
-    self._private.scroll_factor = overflow.rubato_timed.pos
+    self._private.scroll_factor = self.rubato_timed.pos
     self:emit_signal("widget::layout_changed")
     self:emit_signal("property::scroll_factor", factor)
   end
 
   -- Make sure it only subscribes once
   if first_call then
-    overflow.rubato_timed:subscribe(update_scroll)
+    self.rubato_timed:subscribe(update_scroll)
     --first_call = false
   end
 
   -- Set the target to the new target + remaining target from last scroll. This makes it scroll faster and correctly.
-  overflow.rubato_timed.target = math.min(1,
-    math.max(factor + (overflow.rubato_timed.target - overflow.rubato_timed.pos), 0))
+  self.rubato_timed.target = math.min(1,
+    math.max(factor + (self.rubato_timed.target - self.rubato_timed.pos), 0))
 end
 
 function overflow:get_scroll_factor()

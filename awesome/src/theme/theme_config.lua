@@ -149,6 +149,9 @@ Theme_config.calendar = {
   fg = color["Grey100"],
   border_color = color["Grey800"],
   border_width = dpi(2),
+  shape = function(cr, w, h)
+    gears.shape.rounded_rect(cr, w, h, dpi(8))
+  end,
   day = {
     today_border_color = color["Blue200"],
     bg = color["Grey900"],
@@ -160,7 +163,7 @@ Theme_config.calendar = {
     border_color = color["Grey800"],
     border_width = dpi(2),
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(4))
+      gears.shape.rounded_rect(cr, width, height, dpi(8))
     end,
   },
   task = {

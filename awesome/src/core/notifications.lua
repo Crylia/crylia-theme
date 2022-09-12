@@ -404,7 +404,7 @@ naughty.connect_signal(
 
       local box = naughty.layout.box {
         notification = n,
-        timeout = 3,
+        timeout = 5,
         type = "notification",
         screen = screen.primary,
         shape = function(cr, width, height)
@@ -412,6 +412,10 @@ naughty.connect_signal(
         end,
         widget_template = w_template
       }
+
+      awful.spawn.easy_async_with_shell(
+        "paplay /usr/share/sounds/freedesktop/stereo/message.oga"
+      )
 
       box.buttons = {}
       n.buttons = {}

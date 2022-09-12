@@ -1,6 +1,6 @@
 local awful = require("awful")
 local gears = require("gears")
-local dbus_proxy = require("dbus_proxy")
+local dbus_proxy = require("src.lib.dbus_proxy")
 local lgi = require("lgi")
 local naughty = require("naughty")
 

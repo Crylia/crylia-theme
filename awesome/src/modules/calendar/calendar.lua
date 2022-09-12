@@ -389,7 +389,6 @@ local function create_tasks()
     end
   end
 
-
   return tasks
 end
 
@@ -405,7 +404,7 @@ local selected_day = {
 
 return function(s)
   -- The calendar grid
-  local calendar_matrix = wibox.widget { layout = wibox.layout.grid }
+  local calendar_matrix = wibox.widget { layout = wibox.layout.grid, spacing = dpi(2) }
 
   local weeks = wibox.widget { layout = wibox.layout.fixed.vertical }
 
@@ -541,7 +540,7 @@ return function(s)
             border_color = border,
             border_width = Theme_config.calendar.day.border_width,
             shape = function(cr, width, height)
-              gears.shape.rounded_rect(cr, width, height, dpi(0))
+              gears.shape.rounded_rect(cr, width, height, dpi(8))
             end
           },
           widget = wibox.container.constraint,
@@ -642,7 +641,7 @@ return function(s)
           border_color = border,
           border_width = Theme_config.calendar.day.border_width,
           shape = function(cr, width, height)
-            gears.shape.rounded_rect(cr, width, height, dpi(0))
+            gears.shape.rounded_rect(cr, width, height, dpi(8))
           end
         },
         widget = wibox.container.constraint,
@@ -752,7 +751,7 @@ return function(s)
             border_color = border,
             border_width = Theme_config.calendar.day.border_width,
             shape = function(cr, width, height)
-              gears.shape.rounded_rect(cr, width, height, dpi(0))
+              gears.shape.rounded_rect(cr, width, height, dpi(8))
             end
           },
           widget = wibox.container.constraint,

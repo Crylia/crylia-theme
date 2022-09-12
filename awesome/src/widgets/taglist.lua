@@ -67,64 +67,17 @@ local list_update = function(widget, buttons, _, _, objects)
 
     tag_widget:buttons(create_buttons(buttons, object))
 
-    --#region Rubato and Color animation
-
-    -- Background rubato init
-    local r_timed_bg = rubato.timed { duration = 0.5 }
-    local g_timed_bg = rubato.timed { duration = 0.5 }
-    local b_timed_bg = rubato.timed { duration = 0.5 }
-
-    -- starting color
-    r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.taglist.bg)
-
-
-    -- Foreground rubato init
-    local r_timed_fg = rubato.timed { duration = 0.5 }
-    local g_timed_fg = rubato.timed { duration = 0.5 }
-    local b_timed_fg = rubato.timed { duration = 0.5 }
-
-    -- starting color
-    r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.taglist.fg)
-
-    -- Subscribable function to have rubato set the bg/fg color
-    local function update_bg()
-      tag_widget:set_bg("#" ..
-        color.utils.rgba_to_hex { math.max(0, r_timed_bg.pos), math.max(0, g_timed_bg.pos), math.max(0, b_timed_bg.pos) })
-    end
-
-    local function update_fg()
-      tag_widget:set_fg("#" ..
-        color.utils.rgba_to_hex { math.max(0, r_timed_fg.pos), math.max(0, g_timed_fg.pos), math.max(0, b_timed_fg.pos) })
-    end
-
-    -- Subscribe to the function bg and fg
-    r_timed_bg:subscribe(update_bg)
-    g_timed_bg:subscribe(update_bg)
-    b_timed_bg:subscribe(update_bg)
-    r_timed_fg:subscribe(update_fg)
-    g_timed_fg:subscribe(update_fg)
-    b_timed_fg:subscribe(update_fg)
-
-    -- Both functions to set a color, if called they take a new color
-    local function set_bg(newbg)
-      r_timed_bg.target, g_timed_bg.target, b_timed_bg.target = color.utils.hex_to_rgba(newbg)
-    end
-
-    local function set_fg(newfg)
-      r_timed_fg.target, g_timed_fg.target, b_timed_fg.target = color.utils.hex_to_rgba(newfg)
-    end
-
     tag_widget.container.margin.label:set_text(object.index)
     -- Use the wraper function to call the set_bg and set_fg based on the client state
-    if object.urgent == true then
-      set_bg(Theme_config.taglist.bg_urgent)
-      set_fg(Theme_config.taglist.fg_urgent)
-    elseif object == awful.screen.focused().selected_tag then
-      set_bg(Theme_config.taglist.bg_focus)
-      set_fg(Theme_config.taglist.fg_focus)
+    if object == awful.screen.focused().selected_tag then
+      tag_widget:set_bg(Theme_config.taglist.bg_focus)
+      tag_widget:set_fg(Theme_config.taglist.fg_focus)
+    elseif object.urgent == true then
+      tag_widget:set_bg(Theme_config.taglist.bg_urgent)
+      tag_widget:set_fg(Theme_config.taglist.fg_urgent)
     else
-      set_fg(Theme_config.taglist.fg)
-      set_bg(Theme_config.taglist.bg)
+      tag_widget:set_bg(Theme_config.taglist.bg)
+      tag_widget:set_fg(Theme_config.taglist.fg)
     end
     --#endregion
 
@@ -154,6 +107,16 @@ local list_update = function(widget, buttons, _, _, objects)
         strategy = "exact",
         layout = wibox.container.constraint,
       })
+
+      --[[ awful.spawn.easy_async_with_shell(
+        "ps -o cmd " .. client.pid .. " | tail -n 1",
+        function(stdout)
+          local cmd = stdout:gsub("\n", "")
+          local app_info = Gio.AppInfo.create_from_commandline(cmd, client.name, {})
+          local exec = Gio.AppInfo.get_executable(app_info)
+          icon:get_children_by_id("icon")[1].image = Get_icon(exec)
+        end
+      ) ]]
     end
 
     Hover_signal(tag_widget)

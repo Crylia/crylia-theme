@@ -482,7 +482,8 @@ return function(s)
     autostart = true,
     call_now = true,
     callback = function()
-      get_spotify_metadata()
+      --!Rewrite entire playerctl module for better performance
+      --get_spotify_metadata()
     end
   }
 

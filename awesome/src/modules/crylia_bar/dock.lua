@@ -3,7 +3,6 @@
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
 local awful = require("awful")
-local async = require("async")
 local dpi = require("beautiful").xresources.apply_dpi
 local Gio = require("lgi").Gio
 local gears = require("gears")
@@ -170,9 +169,12 @@ return function(screen)
       local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
       local col = Theme_config.dock.indicator_bg
       for _, c in ipairs(client.get()) do
-        local icon_name = pr.icon
-        if icon_name:match(string.lower(c.class or c.name)) or c.class:match(string.lower(icon_name)) or
-            c.name:match(string.lower(icon_name)) then
+        local icon_name = string.lower(pr.icon)
+        if not c or not c.valid then return end
+        if not c.class then c.class = "" end
+        local class = string.lower(c.class)
+        icon_name = string.match(icon_name, ".*/(.*)%.[svg|png]")
+        if class == icon_name or class:match(icon_name) or icon_name:match(class) then
           if c == client.focus then
             col = Theme_config.dock.indicator_focused_bg
           elseif c.urgent then

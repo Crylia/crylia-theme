@@ -8,6 +8,8 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local rubato = require("src.lib.rubato")
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
@@ -84,92 +86,44 @@ return function(s)
     halign = "right",
   }
 
-  local left_button = wibox.widget {
-    {
-      {
-        widget = wibox.container.background,
-        bg = Theme_config.notification_center.dnd.disabled,
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(8))
-        end,
-        forced_height = dpi(30),
-        forced_width = dpi(30),
-        id = "circle"
-      },
-      left = dpi(5),
-      right = dpi(5),
-      widget = wibox.container.margin,
-      id = "margin"
-    },
-    visible = true,
-    valign = "center",
-    halign = "left",
-    widget = wibox.container.place,
-  }
+  local color = Theme_config.notification_center.dnd.disabled
 
-  local right_button = wibox.widget {
-    {
-      {
-        widget = wibox.container.background,
-        bg = Theme_config.notification_center.dnd.border_enabled,
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(8))
-        end,
-        forced_height = dpi(30),
-        forced_width = dpi(30),
-        id = "circle"
-      },
-      left = dpi(5),
-      right = dpi(5),
-      widget = wibox.container.margin,
-      id = "margin"
-    },
-    valign = "center",
-    halign = "right",
-    visible = false,
-    widget = wibox.container.place,
-  }
+  local function toggle_animation(pos)
+    if pos > 43 then return end
+    return function(_, _, cr, width, height)
+      cr:set_source(gears.color(Theme_config.notification_center.dnd.bg));
+      cr:paint();
+      cr:set_source(gears.color(color))
+      cr:move_to(pos, 0)
+      local x = pos
+      local y = 5
+      local newwidth = width / 2 - 10
+      local newheight = height - 10
 
-  local rubato = require("src.lib.rubato")
+      local radius = height / 6.0
+      local degrees = math.pi / 180.0;
 
-  local rubato_timed = rubato.timed { duration = 1, pos = 0 }
+      cr:new_sub_path()
+      cr:arc(x + newwidth - radius, y + radius, radius, -90 * degrees, 0 * degrees)
+      cr:arc(x + newwidth - radius, y + newheight - radius, radius, 0 * degrees, 90 * degrees)
+      cr:arc(x + radius, y + newheight - radius, radius, 90 * degrees, 180 * degrees)
+      cr:arc(x + radius, y + radius, radius, 180 * degrees, 270 * degrees)
+      cr:close_path()
+      cr:fill()
+    end
+  end
+
+  local rubato_timed
 
   local toggle_button = wibox.widget {
     {
-      id = "background",
       widget = wibox.widget {
         fit = function(_, width, height)
           return width, height
         end,
-        draw = function(_, _, cr, width, height)
-          -- Clear for next drawing
-          --cr:set_operator(cairo.Operator.CLEAR);
-          local function move_dnd()
-            cr:set_source(gears.color(Theme_config.notification_center.dnd.bg));
-            cr:paint();
-            cr:set_source(gears.color(Theme_config.notification_center.dnd.disabled))
-            cr:move_to(rubato_timed.pos, 0)
-            local x = rubato_timed.pos
-            local y = 5
-            local newwidth = width / 2 - 10
-            local newheight = height - 10
-
-            local radius = height / 6.0
-            local degrees = math.pi / 180.0;
-
-            cr:new_sub_path()
-            cr:arc(x + newwidth - radius, y + radius, radius, -90 * degrees, 0 * degrees)
-            cr:arc(x + newwidth - radius, y + newheight - radius, radius, 0 * degrees, 90 * degrees)
-            cr:arc(x + radius, y + newheight - radius, radius, 90 * degrees, 180 * degrees)
-            cr:arc(x + radius, y + radius, radius, 180 * degrees, 270 * degrees)
-            cr:close_path()
-            cr:fill()
-          end
-
-          rubato_timed:subscribe(move_dnd)
-          rubato_timed.target = width / 2 + 5
-        end
-      }
+        draw = toggle_animation(0, Theme_config.notification_center.dnd.disabled),
+      },
+      id = "background",
     },
     active = false,
     widget = wibox.container.background,
@@ -183,22 +137,35 @@ return function(s)
     end,
   }
 
-  toggle_button:connect_signal(
-    "button::press",
-    function()
-      if toggle_button.active then
-        toggle_button.active = not toggle_button.active
-        toggle_button.border_color = Theme_config.notification_center.dnd.border_disabled
-        User_config.dnd = false
-        rubato_timed.target = 5
-      else
-        toggle_button.active = not toggle_button.active
-        toggle_button.border_color = Theme_config.notification_center.dnd.border_enabled
-        User_config.dnd = true
-        rubato_timed.target = 50
+  toggle_button:buttons(
+    gears.table.join(
+      awful.button({}, 1, function()
+        if toggle_button.active then
+          toggle_button.active = not toggle_button.active
+          toggle_button.border_color = Theme_config.notification_center.dnd.border_disabled
+          color = Theme_config.notification_center.dnd.disabled
+          User_config.dnd = false
+          rubato_timed.target = 5
+        else
+          toggle_button.active = not toggle_button.active
+          toggle_button.border_color = Theme_config.notification_center.dnd.border_enabled
+          color = Theme_config.notification_center.dnd.enabled
+          User_config.dnd = true
+          rubato_timed.target = 43
+        end
       end
-    end
+      )
+    )
   )
+
+  rubato_timed = rubato.timed {
+    duration = 0.5,
+    pos = 5,
+    subscribed = function(pos)
+      toggle_button:get_children_by_id("background")[1].draw = toggle_animation(pos)
+      toggle_button:emit_signal("widget::redraw_needed")
+    end
+  }
 
   local dnd = wibox.widget {
     {

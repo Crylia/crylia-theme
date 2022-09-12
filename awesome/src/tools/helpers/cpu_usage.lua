@@ -4,12 +4,13 @@ local watch = awful.widget.watch
 local total_prev = 0
 local idle_prev = 0
 
+--!Find a better way that doesn't need manual GC since it has a huge performance impact
 watch(
   [[ cat "/proc/stat" | grep '^cpu ' ]],
   3,
   function(_, stdout)
-    local user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice =
-    stdout:match("(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s")
+    local user, nice, system, idle, iowait, irq, softirq, steal =
+    stdout:match("(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s")
 
     local total = user + nice + system + idle + iowait + irq + softirq + steal
 
@@ -21,6 +22,7 @@ watch(
 
     total_prev = total
     idle_prev = idle
+
     collectgarbage("collect")
   end
 )

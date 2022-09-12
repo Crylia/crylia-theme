@@ -20,11 +20,8 @@ User_config = {
     "picom --experimental-backends",
     "xfce4-power-manager",
     "light-locker --lock-on-suspend --lock-on-lid &",
-    "spotify",
-    "discord",
     "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
     "setxkbmap -option caps:swapescape",
-    "jamesdsp"
   },
 
   --[[

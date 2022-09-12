@@ -1,5 +1,23 @@
 local awful = require("awful")
 
+--[[ local lgi = require("lgi")
+local pulseaudio = require("lua_libpulse_glib")
+local ppretty = require("pl.ppretty")
+
+local pa = pulseaudio.new()
+
+local ctx = pa:context("My Test App")
+
+ctx:connect(nil, function(state)
+  if state == 4 then
+    print("Connection is ready")
+
+    ctx:get_sinks(function(sinks)
+      ppretty.dump(sinks)
+    end)
+  end
+end) ]]
+
 awful.spawn.with_line_callback(
   [[bash -c "LC_ALL=C pactl subscribe"]],
   {

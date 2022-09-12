@@ -37,26 +37,6 @@ awful.rules.rules = {
     properties = {
       titlebars_enabled = true
     }
-  },
-  {
-    id = "games",
-    rule_any = {
-      class = {
-        "steam_app_.%d+",
-        "gta5.exe",
-      },
-    },
-    properties = {
-      tag = "9",
-      switchtotag = true,
-      fullscreen = true,
-      screen = screen[1],
-      floating = true,
-    },
-    focus = true,
-    callback = function(c)
-      awful.screen.focused()
-    end
   }
 }
 

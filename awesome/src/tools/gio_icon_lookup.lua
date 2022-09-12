@@ -39,9 +39,9 @@ function Get_icon(class, name)
     local icon_string = Gio.DesktopAppInfo.get_string(desktop_app_info, "Icon")
     if icon_string then
       icon_string = string.lower(icon_string)
-      if icon_string:match(class) or class:match(icon_string) then
+      if icon_string == class or icon_string == name then
         return Get_gicon_path(app_info.get_icon(app))
-      elseif icon_string:match(name) or name:match(icon_string) then
+      elseif icon_string:match(class) then
         return Get_gicon_path(app_info.get_icon(app))
       end
     end
