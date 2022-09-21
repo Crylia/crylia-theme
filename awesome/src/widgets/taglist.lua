@@ -8,8 +8,11 @@ local awful = require("awful")
 local gears = require("gears")
 local dpi = require("beautiful").xresources.apply_dpi
 
-local color = require("src.lib.color")
-local rubato = require("src.lib.rubato")
+local capi = {
+  client = client,
+}
+
+local modkey = User_config.modkey
 
 local list_update = function(widget, buttons, _, _, objects)
   widget:reset()
@@ -142,8 +145,8 @@ return function(s)
         { modkey },
         1,
         function(t)
-          if client.focus then
-            client.focus:move_to_tag(t)
+          if capi.client.focus then
+            capi.client.focus:move_to_tag(t)
           end
         end
       ),
@@ -151,8 +154,8 @@ return function(s)
         {},
         3,
         function(t)
-          if client.focus then
-            client.focus:toggle_tag(t)
+          if capi.client.focus then
+            capi.client.focus:toggle_tag(t)
           end
         end
       ),
@@ -160,8 +163,8 @@ return function(s)
         { modkey },
         3,
         function(t)
-          if client.focus then
-            client.focus:toggle_tag(t)
+          if capi.client.focus then
+            capi.client.focus:toggle_tag(t)
           end
         end
       ),

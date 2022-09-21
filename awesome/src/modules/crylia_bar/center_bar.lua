@@ -7,6 +7,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  client = client,
+}
+
 return function(s, widgets)
 
   local top_center = awful.popup {
@@ -74,7 +79,7 @@ return function(s, widgets)
     layout = wibox.layout.fixed.horizontal
   }
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "manage",
     function(c)
       if #s.selected_tag:clients() < 1 then
@@ -85,7 +90,7 @@ return function(s, widgets)
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "unmanage",
     function(c)
       if #s.selected_tag:clients() < 1 then
@@ -96,7 +101,7 @@ return function(s, widgets)
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "property::selected",
     function(c)
       if #s.selected_tag:clients() < 1 then
@@ -107,7 +112,7 @@ return function(s, widgets)
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "refresh",
     function(c)
       if #s.selected_tag:clients() < 1 then

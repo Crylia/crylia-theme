@@ -9,6 +9,11 @@ local gears = require("gears")
 local wibox = require("wibox")
 local ical_parser = require("src.tools.ical_parser")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 local icondir = awful.util.getdir("config") .. "src/assets/icons/calendar/"
 
 --- Month name lookup table
@@ -124,7 +129,7 @@ local function get_weeks_in_month(month, year)
 end
 
 ---Gets the last month and accounts for year changes
----@param d date date object
+---@param d table date object
 ---@return table|nil date returns a date object
 local function get_last_month(d)
   if not (d) then return end
@@ -410,7 +415,7 @@ return function(s)
 
   ---Main function to create the calendar widget
   ---Probably needs some refractor at some point since it's a bit messy
-  ---@return widget calendar_widget
+  ---@return wibox.widget calendar_widget
   local function create_calendar()
 
     calendar_matrix:reset()
@@ -562,12 +567,12 @@ return function(s)
 
         day:connect_signal("day::update_selected", function()
           if column == selected_day.col and 1 == selected_day.row then
-            awesome.emit_signal("day::reset_border")
+            capi.awesome.emit_signal("day::reset_border")
             day.background.border_color = Theme_config.calendar.day.today_border_color
           end
         end)
 
-        awesome.connect_signal("day::reset_border", function()
+        capi.awesome.connect_signal("day::reset_border", function()
           day.background.border_color = Theme_config.calendar.day.border_color
         end)
 
@@ -663,12 +668,12 @@ return function(s)
 
       day:connect_signal("day::update_selected", function()
         if col == selected_day.col and row == selected_day.row then
-          awesome.emit_signal("day::reset_border")
+          capi.awesome.emit_signal("day::reset_border")
           day.background.border_color = Theme_config.calendar.day.today_border_color
         end
       end)
 
-      awesome.connect_signal("day::reset_border", function()
+      capi.awesome.connect_signal("day::reset_border", function()
         day.background.border_color = Theme_config.calendar.day.border_color
       end)
 
@@ -773,12 +778,12 @@ return function(s)
 
         day:connect_signal("day::update_selected", function()
           if i == selected_day.col and months[date.month].weeks == selected_day.row then
-            awesome.emit_signal("day::reset_border")
+            capi.awesome.emit_signal("day::reset_border")
             day.background.border_color = Theme_config.calendar.day.today_border_color
           end
         end)
 
-        awesome.connect_signal("day::reset_border", function()
+        capi.awesome.connect_signal("day::reset_border", function()
           day.background.border_color = Theme_config.calendar.day.border_color
         end)
         calendar_matrix:add_widget_at(day, months[date.month].weeks, months[date.month].last_day + i)
@@ -1073,8 +1078,8 @@ return function(s)
   )
 
   --- Toggle calendar visibility
-  awesome.connect_signal("calendar::toggle", function(widget)
-    if s == mouse.screen then
+  capi.awesome.connect_signal("calendar::toggle", function(widget)
+    if s == capi.mouse.screen then
       cal_popup.x = 3765
       cal_popup.y = 60
       cal_popup.visible = not cal_popup.visible

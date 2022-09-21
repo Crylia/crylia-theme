@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mousegrabber = mousegrabber,
+}
+
 local rubato = require("src.lib.rubato")
 
 -- Icon directory path
@@ -55,12 +60,12 @@ return function(s)
           if key == 1 then
             if node then
               awful.spawn("./.config/awesome/src/scripts/vol.sh set_sink " .. node)
-              awesome.emit_signal("update::bg_sink", node)
+              capi.awesome.emit_signal("update::bg_sink", node)
             end
           end
         end
       )
-      awesome.connect_signal(
+      capi.awesome.connect_signal(
         "update::bg_sink",
         function(new_node)
           if node == new_node then
@@ -97,7 +102,7 @@ return function(s)
           end
         end
       )
-      awesome.emit_signal("update::bg_sink", node)
+      capi.awesome.emit_signal("update::bg_sink", node)
     else
       device:connect_signal(
         "button::press",
@@ -105,12 +110,12 @@ return function(s)
           if key == 1 then
             if node then
               awful.spawn("./.config/awesome/src/scripts/mic.sh set_source " .. node)
-              awesome.emit_signal("update::bg_source", node)
+              capi.awesome.emit_signal("update::bg_source", node)
             end
           end
         end
       )
-      awesome.connect_signal(
+      capi.awesome.connect_signal(
         "update::bg_source",
         function(new_node)
           if node == new_node then
@@ -147,7 +152,7 @@ return function(s)
           end
         end
       )
-      awesome.emit_signal("update::bg_source", node)
+      capi.awesome.emit_signal("update::bg_source", node)
     end
     return device
   end
@@ -595,14 +600,15 @@ return function(s)
     )
   end
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "audio::device_changed",
     function()
       get_input_devices()
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
+
     "microphone::device_changed",
     function()
       get_source_devices()
@@ -610,7 +616,8 @@ return function(s)
   )
 
   -- Set the volume and icon
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
+
     "audio::get",
     function(muted, volume)
       if muted then
@@ -642,12 +649,12 @@ return function(s)
   )
 
   -- Get microphone volume
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "microphone::get",
     function(muted, volume)
       if muted then
         --volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.slider_margin.slider:set_value(tonumber(0))
-        volume_controller:get_children_by_id("mic_volume_margin")[1].icon:set_image(gears.color.recolor_image(icondir
+        volume_controller:get_children_by_id("mic_volume_margin")[1].mic_volume.icon:set_image(gears.color.recolor_image(icondir
           .. "microphone-off.svg", Theme_config.volume_controller.microphone_fg))
       else
         volume = tonumber(volume)
@@ -670,10 +677,10 @@ return function(s)
   volume_controller_container:connect_signal(
     "mouse::leave",
     function()
-      mousegrabber.run(
+      capi.mousegrabber.run(
         function()
-          awesome.emit_signal("volume_controller::toggle", s)
-          mousegrabber.stop()
+          capi.awesome.emit_signal("volume_controller::toggle", s)
+          capi.mousegrabber.stop()
           return true
         end,
         "arrow"
@@ -684,7 +691,7 @@ return function(s)
   volume_controller_container:connect_signal(
     "mouse::enter",
     function()
-      mousegrabber.stop()
+      capi.mousegrabber.stop()
     end
   )
 
@@ -694,8 +701,8 @@ return function(s)
     autostart = false,
     stop_event = 'release',
     keypressed_callback = function()
-      awesome.emit_signal("volume_controller::toggle", s)
-      mousegrabber.stop()
+      capi.awesome.emit_signal("volume_controller::toggle", s)
+      capi.mousegrabber.stop()
     end
   }
 
@@ -706,7 +713,7 @@ return function(s)
   }
 
   -- Toggle container visibility
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "volume_controller::toggle",
     function(scr)
       if scr == s then

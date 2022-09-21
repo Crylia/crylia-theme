@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mousegrabber = mousegrabber,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/kblayout/"
 
@@ -61,7 +66,7 @@ return function(s)
       function(stdout)
         local layout = stdout:gsub("\n", "")
         kblayout_widget.container.kblayout_layout.label.text = layout
-        awesome.emit_signal("update::background:kblayout")
+        capi.awesome.emit_signal("update::background:kblayout")
       end
     )
   end
@@ -216,7 +221,7 @@ return function(s)
 
     Hover_signal(kb_layout_item)
 
-    awesome.connect_signal(
+    capi.awesome.connect_signal(
       "update::background:kblayout",
       function()
         awful.spawn.easy_async_with_shell(
@@ -244,8 +249,8 @@ return function(s)
         awful.spawn.easy_async_with_shell(
           "setxkbmap " .. keymap,
           function()
-            awesome.emit_signal("kblayout::hide:kbmenu")
-            mousegrabber.stop()
+            capi.awesome.emit_signal("kblayout::hide:kbmenu")
+            capi.mousegrabber.stop()
             get_kblayout()
           end
         )
@@ -294,11 +299,11 @@ return function(s)
   kb_menu_widget:connect_signal(
     "mouse::leave",
     function()
-      mousegrabber.run(
+      capi.mousegrabber.run(
         function()
           kblayout_widget.bg = Theme_config.kblayout.bg
-          awesome.emit_signal("kblayout::hide:kbmenu")
-          mousegrabber.stop()
+          capi.awesome.emit_signal("kblayout::hide:kbmenu")
+          capi.mousegrabber.stop()
           return true
         end,
         "arrow"
@@ -344,7 +349,7 @@ return function(s)
     )
   end
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "kblayout::toggle",
     function()
       toggle_kb_layout()
@@ -358,15 +363,15 @@ return function(s)
     autostart = false,
     stop_event = 'release',
     keypressed_callback = function(self, mod, key, command)
-      awesome.emit_signal("kblayout::hide:kbmenu")
-      mousegrabber.stop()
+      capi.awesome.emit_signal("kblayout::hide:kbmenu")
+      capi.mousegrabber.stop()
     end
   }
 
   kblayout_widget:connect_signal(
     "button::press",
     function()
-      mousegrabber.stop()
+      capi.mousegrabber.stop()
       if kb_menu_widget.visible then
         kb_menu_widget.visible = false
         kblayout_keygrabber:stop()
@@ -377,7 +382,7 @@ return function(s)
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "kblayout::hide:kbmenu",
     function()
       kb_menu_widget.visible = false

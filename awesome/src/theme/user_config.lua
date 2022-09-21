@@ -18,10 +18,7 @@ User_config = {
   ]] --
   autostart = {
     "picom --experimental-backends",
-    "xfce4-power-manager",
-    "light-locker --lock-on-suspend --lock-on-lid &",
-    "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
-    "setxkbmap -option caps:swapescape",
+    "xfce4-power-manager"
   },
 
   --[[
@@ -76,7 +73,7 @@ User_config = {
   --[[
     Your filemanager. Will be opened with <super> + <e>
   ]] --
-  file_manager = "thunar",
+  file_manager = "nautilus",
 
   --[[
     The font that will be used on all widgets/modules etc.
@@ -89,10 +86,11 @@ User_config = {
         extrabold = "JetBrainsMono Nerd Font, ExtraBold 14",
         specify = "JetBrainsMono Nerd Font"
       }
-  ]] font = {
-    regular = "JetBrainsMono Nerd Font, 14",
-    bold = "JetBrainsMono Nerd Font, bold 14",
-    extrabold = "JetBrainsMono Nerd Font, ExtraBold 14",
+  ]]
+  font = {
+    regular = "JetBrainsMono Nerd Font, " .. dpi(16),
+    bold = "JetBrainsMono Nerd Font, bold " .. dpi(16),
+    extrabold = "JetBrainsMono Nerd Font, ExtraBold " .. dpi(16),
     specify = "JetBrainsMono Nerd Font"
   },
 
@@ -191,7 +189,9 @@ User_config = {
     "microphone",
     "volume",
     "gpu_temp",
-    "gpu_usage"
+    "gpu_usage",
+    "battery",
+    "backlight"
   },
 
   --[[
@@ -210,7 +210,8 @@ User_config = {
         "Spotify"
       }
   ]] --
-  titlebar_exception = {},
+  titlebar_exception = {
+  },
 
   --[[
       The titlebar position can be "left" (default) or "top"
@@ -232,10 +233,11 @@ User_config = {
       weather_api_key = "your_api_key",
       weather_city_id = "your_city_id",
       unit = "metric" or "imperial"
-  ]] weather_secrets = {
-    key = "e71b00168ca7219563dde4514a425b14",
-    city_id = "2864118",
-    unit = "metric"
+  ]]
+  weather_secrets = {
+    key = "",
+    city_id = "",
+    unit = ""
   },
 
   --[[
@@ -274,10 +276,9 @@ User_config = {
         "Tasklist"
       },
       right_bar = {
-        "Gpu Usage",
-        "Gpu Temperature",
-        "Cpu Usage",
-        "Cpu Temperature",
+        "Battery",
+        "Network",
+        "Bluetooth",
         "Audio",
         "Keyboard Layout",
         "Date",

@@ -9,6 +9,10 @@ local gears = require("gears")
 local wibox = require("wibox")
 local naughty = require("naughty")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
@@ -226,7 +230,7 @@ function nl.create_notification(n)
         for i, b in pairs(nl.notification_list) do
           if b.pk == notification.pk then
             table.remove(nl.notification_list, math.tointeger(i))
-            awesome.emit_signal("notification_center:update::needed")
+            capi.awesome.emit_signal("notification_center:update::needed")
             break
           end
         end
@@ -257,7 +261,7 @@ naughty.connect_signal(
   "request::display",
   function(n)
     nl.create_notification(n)
-    awesome.emit_signal("notification_center:update::needed")
+    capi.awesome.emit_signal("notification_center:update::needed")
   end
 )
 

@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 -----------------------------------------------------------------------------------------
 --  █████╗ ██╗    ██╗███████╗███████╗ ██████╗ ███╗   ███╗███████╗██╗    ██╗███╗   ███╗ --
 -- ██╔══██╗██║    ██║██╔════╝██╔════╝██╔═══██╗████╗ ████║██╔════╝██║    ██║████╗ ████║ --
@@ -7,6 +8,15 @@
 -- ╚═╝  ╚═╝ ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝ ╚═╝     ╚═╝ --
 -----------------------------------------------------------------------------------------
 -- Initialising, order is important!
+awesome = awesome
+client = client
+mouse = mouse
+mousegrabber = mousegrabber
+root = root
+screen = screen
+tag = tag
+
+
 require("src.theme.user_config")
 require("src.theme.theme_config")
 require("src.tools.gio_icon_lookup")

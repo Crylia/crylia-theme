@@ -11,7 +11,9 @@ local naughty = require("naughty")
 local upower_glib = lgi.require("UPowerGlib")
 local wibox = require("wibox")
 
-require("src.core.signals")
+local capi = {
+  awesome = awesome,
+}
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/battery/"
@@ -195,7 +197,7 @@ return function(battery_kind)
 
     battery_widget:get_children_by_id("icon")[1].image = gears.surface.load_uncached(gears.color.recolor_image(icondir ..
       icon .. '.svg', Theme_config.battery.fg))
-    awesome.emit_signal("update::battery_widget", battery_percentage, icondir .. icon .. ".svg")
+    capi.awesome.emit_signal("update::battery_widget", battery_percentage, icondir .. icon .. ".svg")
 
   end
 

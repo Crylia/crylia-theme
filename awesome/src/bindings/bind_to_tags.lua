@@ -4,6 +4,11 @@ local gears = require("gears")
 local globalkeys = require("src.bindings.global_keys")
 local modkey = User_config.modkey
 
+local capi = {
+  client = client,
+  root = root
+}
+
 for i = 1, 9 do
   globalkeys = gears.table.join(globalkeys,
 
@@ -17,7 +22,7 @@ for i = 1, 9 do
         if tag then
           tag:view_only()
         end
-        client.emit_signal("tag::switched")
+        capi.client.emit_signal("tag::switched")
       end,
       { description = "View Tag " .. i, group = "Tag" }
     ),
@@ -40,10 +45,10 @@ for i = 1, 9 do
       "#" .. i + 9,
       function()
         local screen = awful.screen.focused()
-        if client.focus then
+        if capi.client.focus then
           local tag = screen.tags[i]
           if tag then
-            client.focus:move_to_tag(tag)
+            capi.client.focus:move_to_tag(tag)
           end
         end
       end,
@@ -64,4 +69,4 @@ for i = 1, 9 do
     )
   )
 end
-root.keys(globalkeys)
+capi.root.keys(globalkeys)

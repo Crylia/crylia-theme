@@ -7,6 +7,11 @@ local gshape = require("gears.shape")
 local gcolor = require("gears.color")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 local ical_parser = require("src.tools.ical_parser")()
 --local task_info = require("src.modules.calendar.task_info")
 
@@ -481,8 +486,8 @@ function calendar:create_calendar_widget()
             ontop = true,
             visible = true,
             bg = "#00000000",
-            x = mouse.coords().x,
-            y = mouse.coords().y,
+            x = capi.mouse.coords().x,
+            y = capi.mouse.coords().y,
             screen = self.screen
           }
 
@@ -901,8 +906,10 @@ function calendar.new(args)
     ontop = true,
     bg = "#00000000",
     visible = false,
-    x = 3750,
-    y = 60
+    placement = function(c) awful.placement.align(c,
+        { position = "top_right", margins = { right = dpi(10), top = dpi(65) } })
+    end
+
   }
 
   calendar_widget:get_children_by_id("add_ical")[1]:buttons(
@@ -991,8 +998,8 @@ function calendar.new(args)
     )
   )
 
-  awesome.connect_signal("calendar::toggle", function()
-    if mouse.screen == args.screen then
+  capi.awesome.connect_signal("calendar::toggle", function()
+    if capi.mouse.screen == args.screen then
       ret.widget.visible = not ret.widget.visible
     end
   end)

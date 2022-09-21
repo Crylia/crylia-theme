@@ -5,9 +5,15 @@
 -- Awesome Libs
 local awful = require("awful")
 local Gio = require("lgi").Gio
+local gfilesystem = require("gears").filesystem
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
+
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
 
 local json = require("src.lib.json-lua.json-lua")
 
@@ -15,14 +21,15 @@ local cm = require("src.modules.context_menu")
 
 local icondir = awful.util.getdir("config") .. "src/assets/icons/context_menu/"
 
-return function()
+return function(s)
 
   local application_grid = wibox.widget {
     homogenous = true,
     expand = false,
     spacing = dpi(10),
     id = "grid",
-    forced_num_cols = 8,
+    -- 200 is the application element width + 10 spacing
+    forced_num_cols = math.floor((capi.mouse.screen.geometry.width / 100 * 60) / (200)),
     forced_num_rows = 7,
     orientation = "vertical",
     layout = wibox.layout.grid
@@ -107,7 +114,7 @@ return function()
               name = "Execute as sudo",
               icon = gears.color.recolor_image(icondir .. "launch.svg", Theme_config.context_menu.icon_color),
               callback = function()
-                awesome.emit_signal("application_launcher::show")
+                capi.awesome.emit_signal("application_launcher::show")
                 awful.spawn("/home/crylia/.config/awesome/src/scripts/start_as_admin.sh " .. app_widget.exec)
               end
             },
@@ -115,6 +122,11 @@ return function()
               name = "Pin to dock",
               icon = gears.color.recolor_image(icondir .. "pin.svg", Theme_config.context_menu.icon_color),
               callback = function()
+                local dir = awful.util.getdir("config") .. "src/config"
+                gfilesystem.make_directories(dir)
+                if not gfilesystem.file_readable(dir) then
+                  os.execute("touch " .. dir .. "/dock.json")
+                end
                 local handler = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
                 if not handler then
                   return
@@ -141,14 +153,14 @@ return function()
                 end
                 handler:write(dock_encoded)
                 handler:close()
-                awesome.emit_signal("dock::changed")
+                capi.awesome.emit_signal("dock::changed")
               end
             },
             {
               name = "Add to desktop",
               icon = gears.color.recolor_image(icondir .. "desktop.svg", Theme_config.context_menu.icon_color),
               callback = function()
-                awesome.emit_signal("application_launcher::show")
+                capi.awesome.emit_signal("application_launcher::show")
                 --!TODO: Add to desktop
               end
             }
@@ -163,7 +175,7 @@ return function()
               button = 1,
               on_release = function()
                 Gio.AppInfo.launch_uris_async(app)
-                awesome.emit_signal("application_launcher::show")
+                capi.awesome.emit_signal("application_launcher::show")
               end
             }),
             awful.button({
@@ -174,8 +186,8 @@ return function()
                   return
                 end
                 -- add offset so mouse is above widget, this is so the mouse::leave event triggers always
-                context_menu.x = mouse.coords().x - 10
-                context_menu.y = mouse.coords().y - 10
+                context_menu.x = capi.mouse.coords().x - 10
+                context_menu.y = capi.mouse.coords().y - 10
                 context_menu.visible = not context_menu.visible
               end
             })
@@ -214,7 +226,7 @@ return function()
         local pos = application_grid:get_widget_position(application)
 
         -- Check if the curser is currently at the same position as the application
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "update::selected",
           function()
             if curser.y == pos.row and curser.x == pos.col then
@@ -224,7 +236,7 @@ return function()
             end
           end
         )
-        awesome.emit_signal("update::selected")
+        capi.awesome.emit_signal("update::selected")
       end
     end
 
@@ -233,18 +245,18 @@ return function()
 
   application_grid = get_applications(filter)
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "application::left",
     function()
       curser.x = curser.x - 1
       if curser.x < 1 then
         curser.x = 1
       end
-      awesome.emit_signal("update::selected")
+      capi.awesome.emit_signal("update::selected")
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "application::right",
     function()
       curser.x = curser.x + 1
@@ -252,22 +264,22 @@ return function()
       if curser.x > grid_cols then
         curser.x = grid_cols
       end
-      awesome.emit_signal("update::selected")
+      capi.awesome.emit_signal("update::selected")
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "application::up",
     function()
       curser.y = curser.y - 1
       if curser.y < 1 then
         curser.y = 1
       end
-      awesome.emit_signal("update::selected")
+      capi.awesome.emit_signal("update::selected")
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "application::down",
     function()
       curser.y = curser.y + 1
@@ -275,21 +287,21 @@ return function()
       if curser.y > grid_rows then
         curser.y = grid_rows
       end
-      awesome.emit_signal("update::selected")
+      capi.awesome.emit_signal("update::selected")
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::application_list",
     function(f)
       application_grid = get_applications(f)
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "application_launcher::execute",
     function()
-      awesome.emit_signal("searchbar::stop")
+      capi.awesome.emit_signal("searchbar::stop")
 
       local selected_widget = application_grid:get_widgets_at(curser.y, curser.x)[1]
       Gio.AppInfo.launch_uris_async(Gio.AppInfo.create_from_commandline(selected_widget.exec, nil, 0))

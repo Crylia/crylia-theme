@@ -1,5 +1,9 @@
 local awful = require("awful")
 
+local capi = {
+  awesome = awesome,
+}
+
 --[[ local lgi = require("lgi")
 local pulseaudio = require("lua_libpulse_glib")
 local ppretty = require("pl.ppretty")
@@ -24,13 +28,13 @@ awful.spawn.with_line_callback(
     stdout = function(line)
       -- Volume changed
       if line:match("on sink") or line:match("on source") then
-        awesome.emit_signal("audio::volume_changed")
-        awesome.emit_signal("microphone::volume_changed")
+        capi.awesome.emit_signal("audio::volume_changed")
+        capi.awesome.emit_signal("microphone::volume_changed")
       end
       -- Device added/removed
       if line:match("on server") then
-        awesome.emit_signal("audio::device_changed")
-        awesome.emit_signal("microphone::device_changed")
+        capi.awesome.emit_signal("audio::device_changed")
+        capi.awesome.emit_signal("microphone::device_changed")
       end
     end,
     output_done = function()
@@ -40,14 +44,14 @@ awful.spawn.with_line_callback(
   }
 )
 
-awesome.connect_signal(
+capi.awesome.connect_signal(
   "exit",
   function()
     awful.spawn.with_shell("pkill pactl && pkill grep")
   end
 )
 
-awesome.connect_signal(
+capi.awesome.connect_signal(
   "audio::volume_changed",
   function()
     awful.spawn.easy_async_with_shell(
@@ -66,7 +70,7 @@ awesome.connect_signal(
             if stdout == "" or stdout == nil then
               return
             end
-            awesome.emit_signal("audio::get", muted, stdout2:gsub("%%", ""):gsub("\n", "") or 0)
+            capi.awesome.emit_signal("audio::get", muted, stdout2:gsub("%%", ""):gsub("\n", "") or 0)
           end
         )
       end
@@ -74,7 +78,7 @@ awesome.connect_signal(
   end
 )
 
-awesome.connect_signal(
+capi.awesome.connect_signal(
   "microphone::volume_changed",
   function()
     awful.spawn.easy_async_with_shell(
@@ -90,7 +94,7 @@ awesome.connect_signal(
             if stdout2 == nil or stdout2 == "awful" then
               return
             end
-            awesome.emit_signal("microphone::get", muted, stdout2:gsub("%%", ""):gsub("\n", "") or 0)
+            capi.awesome.emit_signal("microphone::get", muted, stdout2:gsub("%%", ""):gsub("\n", "") or 0)
           end
         )
       end
@@ -98,7 +102,7 @@ awesome.connect_signal(
   end
 )
 
-awesome.emit_signal("audio::volume_changed")
-awesome.emit_signal("microphone::volume_changed")
-awesome.emit_signal("audio::device_changed")
-awesome.emit_signal("microphone::device_changed")
+capi.awesome.emit_signal("audio::volume_changed")
+capi.awesome.emit_signal("microphone::volume_changed")
+capi.awesome.emit_signal("audio::device_changed")
+capi.awesome.emit_signal("microphone::device_changed")

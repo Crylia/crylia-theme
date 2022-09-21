@@ -11,6 +11,11 @@ local wibox = require("wibox")
 
 local rubato = require("src.lib.rubato")
 
+local capi = {
+  client = client,
+  screen = screen,
+}
+
 local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
 naughty.config.defaults.ontop = true
@@ -389,7 +394,7 @@ naughty.connect_signal(
           end
           -- Raise the client on click
           if key == 1 then
-            for _, client in ipairs(client.get()) do
+            for _, client in ipairs(capi.client.get()) do
               if client.name:match(n.app_name) then
                 if not client:isvisible() and client.first_tag then
                   client.first_tag:view_only()
@@ -406,7 +411,7 @@ naughty.connect_signal(
         notification = n,
         timeout = 5,
         type = "notification",
-        screen = screen.primary,
+        screen = capi.screen.primary,
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, 10)
         end,

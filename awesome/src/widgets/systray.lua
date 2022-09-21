@@ -7,6 +7,10 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+}
+
 Theme.bg_systray = Theme_config.systray.bg
 Theme.systray_icon_spacing = dpi(10)
 
@@ -29,8 +33,8 @@ return function(s)
     bg = Theme_config.systray.bg
   }
 
-  awesome.connect_signal("systray::update", function()
-    local num_entries = awesome.systray()
+  capi.awesome.connect_signal("systray::update", function()
+    local num_entries = capi.awesome.systray()
 
     if num_entries == 0 then
       systray.container.st:set_margins(0)

@@ -9,7 +9,6 @@ local awful = require("awful")
 local gobject = require("gears.object")
 local gtable = require("gears.table")
 local gtimer = require("gears.timer")
-local helpers = require("helpers")
 local dbus_proxy = require("services.dbus_proxy")
 
 local network = {}

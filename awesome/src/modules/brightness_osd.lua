@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/brightness/"
 
@@ -69,9 +74,10 @@ return function(s)
     widget = wibox.container.background
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "brightness::get",
     function(brightness)
+      print(brightness)
       brightness_osd_widget:get_children_by_id("progressbar1")[1].value = brightness
 
       local icon = icondir .. "brightness"
@@ -112,10 +118,10 @@ return function(s)
     layout = wibox.layout.fixed.horizontal
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "brightness::rerun",
     function()
-      if mouse.screen == s then
+      if capi.mouse.screen == s then
         brightness_container.visible = true
         if hide_brightness_osd.started then
           hide_brightness_osd:again()

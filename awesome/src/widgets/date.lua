@@ -9,6 +9,10 @@ local gears = require("gears")
 local wibox = require("wibox")
 require("src.core.signals")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/date/"
 
@@ -65,7 +69,7 @@ return function()
   date_widget:buttons {
     gears.table.join(
       awful.button({}, 1, function()
-        awesome.emit_signal("calendar::toggle", date_widget)
+        capi.awesome.emit_signal("calendar::toggle", date_widget)
       end)
     )
   }

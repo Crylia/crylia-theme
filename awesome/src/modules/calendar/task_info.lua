@@ -7,6 +7,10 @@ local gshape = require("gears.shape")
 local gobject = require("gears.object")
 local wibox = require("wibox")
 
+local capi = {
+  mouse = mouse,
+}
+
 local icondir = awful.util.getdir("config") .. "src/assets/icons/calendar/"
 
 local task_info = { mt = {} }
@@ -111,8 +115,8 @@ function task_info.new(args)
     ontop = true,
     visible = true,
     bg = "#00000000",
-    x = mouse.coords().x,
-    y = mouse.coords().y,
+    x = capi.mouse.coords().x,
+    y = capi.mouse.coords().y,
     screen = args.screen
   }
 

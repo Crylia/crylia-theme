@@ -9,6 +9,10 @@ local gears = require("gears")
 local naughty = require("naughty")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/network/"
 
@@ -159,7 +163,7 @@ return function()
           local icon = "wifi-strength"
           if not stdout:match("Connected but no internet") then
             if startup or reconnect_startup then
-              awesome.emit_signal("system::network_connected")
+              capi.awesome.emit_signal("system::network_connected")
             end
             icon = icon .. '-' .. tostring(strength)
             update_wireless_data(true)
@@ -219,7 +223,7 @@ return function()
         else
           update_tooltip("You are connected to:\nEthernet Interface <b>" .. interfaces.lan_interface .. "</b>")
           if startup or reconnect_startup then
-            awesome.emit_signal("system::network_connected")
+            capi.awesome.emit_signal("system::network_connected")
             notify_connected()
             update_startup()
           end

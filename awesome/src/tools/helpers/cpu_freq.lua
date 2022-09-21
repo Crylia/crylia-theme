@@ -1,6 +1,10 @@
 local awful = require("awful")
 local watch = awful.widget.watch
 
+local capi = {
+  awesome = awesome,
+}
+
 watch(
   [[ bash -c "cat /proc/cpuinfo | grep "MHz" | awk '{print int($4)}'" ]],
   3,
@@ -18,9 +22,9 @@ watch(
         average = average + cpu_freq[i]
       end
       average = math.floor(average / #cpu_freq)
-      awesome.emit_signal("update::cpu_freq_average", average)
+      capi.awesome.emit_signal("update::cpu_freq_average", average)
     elseif User_config.clock_mode then
-      awesome.emit_signal("update::cpu_freq_core", cpu_freq[User_config.clock_mode])
+      capi.awesome.emit_signal("update::cpu_freq_core", cpu_freq[User_config.clock_mode])
     end
   end
 )

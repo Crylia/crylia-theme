@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 local window_elements = require("src.modules.window_switcher.window_elements")()
 
 return function(s)
@@ -38,10 +43,10 @@ return function(s)
     layout = wibox.layout.fixed.vertical
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "toggle_window_switcher",
     function()
-      if mouse.screen == s then
+      if capi.mouse.screen == s then
         window_switcher_container.visible = not window_switcher_container.visible
       end
     end

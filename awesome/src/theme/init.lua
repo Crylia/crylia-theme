@@ -10,6 +10,10 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local gears = require("gears")
 
+local capi = {
+  screen = screen,
+}
+
 require("src.theme.user_config")
 require("src.theme.theme_config")
 
@@ -54,7 +58,7 @@ Theme.awesome_subicon = Theme_path .. "../assets/icons/ArchLogo.png"
 
 -- Wallpaper
 beautiful.wallpaper = User_config.wallpaper
-screen.connect_signal(
+capi.screen.connect_signal(
   'request::wallpaper',
   function(s)
     if beautiful.wallpaper then

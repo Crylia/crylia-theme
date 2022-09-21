@@ -10,6 +10,10 @@ local wibox = require("wibox")
 
 local rubato = require("src.lib.rubato")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/"
 
@@ -91,14 +95,14 @@ return function()
         }
 
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
 
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "update::cpu_usage",
           function(cpu_usage)
             tooltip.text = "CPU Usage: " .. cpu_usage .. "%"
@@ -169,13 +173,13 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "update::cpu_temp",
           function(cpu_temp)
             local temp_icon
@@ -254,13 +258,13 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "update::ram_widget",
           function(MemTotal, _, MemAvailable)
             if not MemTotal or not MemAvailable then
@@ -333,13 +337,13 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "update::gpu_usage",
           function(gpu_usage)
             tooltip.text = "GPU Usage: " .. gpu_usage .. "%"
@@ -410,13 +414,13 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "update::gpu_temp",
           function(gpu_temp)
             local temp_icon
@@ -505,13 +509,13 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "audio::get",
           function(muted, volume)
             local icon = icondir .. "audio/volume"
@@ -602,13 +606,13 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "microphone::get",
           function(muted, volume)
             if not volume then
@@ -658,7 +662,7 @@ return function()
           {
             { --Icon
               id = "icon1",
-              image = gears.color.recolor_image(icondir .. "brightness/brightness-high.svg" .. ".svg",
+              image = gears.color.recolor_image(icondir .. "brightness/brightness-high.svg",
                 Theme_config.notification_center.status_bar.backlight_color),
               halign = "center",
               valign = "center",
@@ -692,19 +696,27 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
-          "update::backlight",
-          function(backlight, backlight_icon)
-            w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(backlight_icon,
-              Theme_config.notification_center.status_bar.backlight_color)
-            tooltip.text = "Backlight: " .. backlight .. "%"
-            rubato_timer.target = backlight
+        capi.awesome.connect_signal(
+          "brightness::get",
+          function(brightness)
+            local icon = icondir .. "brightness"
+            if brightness >= 0 and brightness < 34 then
+              icon = icon .. "-low"
+            elseif brightness >= 34 and brightness < 67 then
+              icon = icon .. "-medium"
+            elseif brightness >= 67 then
+              icon = icon .. "-high"
+            end
+            w:get_children_by_id("icon1")[1]:set_image(gears.color.recolor_image(icon .. ".svg",
+              Theme_config.notification_center.status_bar.backlight_color))
+            tooltip.text = "Backlight: " .. brightness .. "%"
+            rubato_timer.target = brightness
           end
         )
       elseif widget == "battery" then
@@ -771,13 +783,13 @@ return function()
           margins = dpi(10)
         }
         w:connect_signal("mouse::enter", function()
-          awesome.emit_signal("notification_center::block_mouse_events")
+          capi.awesome.emit_signal("notification_center::block_mouse_events")
         end)
 
         w:connect_signal("mouse::leave", function()
-          awesome.emit_signal("notification_center::unblock_mouse_events")
+          capi.awesome.emit_signal("notification_center::unblock_mouse_events")
         end)
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "update::battery_widget",
           function(battery, battery_icon)
             w:get_children_by_id("icon1")[1].image = gears.color.recolor_image(battery_icon,

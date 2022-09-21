@@ -8,6 +8,10 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/power/"
 
@@ -55,7 +59,7 @@ return function()
   power_widget:connect_signal(
     "button::release",
     function()
-      awesome.emit_signal("module::powermenu:show")
+      capi.awesome.emit_signal("module::powermenu:show")
     end
   )
 

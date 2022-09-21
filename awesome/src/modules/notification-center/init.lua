@@ -10,6 +10,10 @@ local wibox = require("wibox")
 
 local rubato = require("src.lib.rubato")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
@@ -36,7 +40,7 @@ return function(s)
     layout = wibox.layout.fixed.horizontal
   })
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "notification_center_activation::toggle",
     function(screen, hide)
       if screen == s then
@@ -121,7 +125,7 @@ return function(s)
         fit = function(_, width, height)
           return width, height
         end,
-        draw = toggle_animation(0, Theme_config.notification_center.dnd.disabled),
+        draw = toggle_animation(0),
       },
       id = "background",
     },
@@ -326,7 +330,7 @@ return function(s)
   )
 
   -- Update the notification center popup and check if there are no notifications
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "notification_center:update::needed",
     function()
       if #nl == 0 then
@@ -352,11 +356,11 @@ return function(s)
     notification_center.visible = false
   end
 
-  awesome.connect_signal("notification_center::block_mouse_events", function()
+  capi.awesome.connect_signal("notification_center::block_mouse_events", function()
     notification_center:disconnect_signal("mouse::leave", mouse_leave)
   end)
 
-  awesome.connect_signal("notification_center::unblock_mouse_events", function()
+  capi.awesome.connect_signal("notification_center::unblock_mouse_events", function()
     notification_center:connect_signal("mouse::leave", mouse_leave)
   end)
 
@@ -374,7 +378,7 @@ return function(s)
       for i = 0, size do
         nl[i] = nil
       end
-      awesome.emit_signal("notification_center:update::needed")
+      capi.awesome.emit_signal("notification_center:update::needed")
     end
   )
 

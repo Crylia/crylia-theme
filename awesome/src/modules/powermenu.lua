@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/powermenu/"
 
@@ -117,26 +122,26 @@ return function(s)
   -- Create the power menu actions
   local suspend_command = function()
     awful.spawn("systemctl suspend")
-    awesome.emit_signal("module::powermenu:hide")
+    capi.awesome.emit_signal("module::powermenu:hide")
   end
 
   local logout_command = function()
-    awesome.quit()
+    capi.awesome.quit()
   end
 
   local lock_command = function()
     awful.spawn("dm-tool lock")
-    awesome.emit_signal("module::powermenu:hide")
+    capi.awesome.emit_signal("module::powermenu:hide")
   end
 
   local shutdown_command = function()
     awful.spawn("shutdown now")
-    awesome.emit_signal("module::powermenu:hide")
+    capi.awesome.emit_signal("module::powermenu:hide")
   end
 
   local reboot_command = function()
     awful.spawn("reboot")
-    awesome.emit_signal("module::powermenu:hide")
+    capi.awesome.emit_signal("module::powermenu:hide")
   end
 
   -- Create the buttons with their command and name etc
@@ -206,7 +211,7 @@ return function(s)
         {},
         3,
         function()
-          awesome.emit_signal("module::powermenu:hide")
+          capi.awesome.emit_signal("module::powermenu:hide")
         end
       )
     )
@@ -218,23 +223,23 @@ return function(s)
     stop_event = 'release',
     keypressed_callback = function(self, mod, key, command)
       if key == 'Escape' then
-        awesome.emit_signal("module::powermenu:hide")
+        capi.awesome.emit_signal("module::powermenu:hide")
       end
     end
   }
 
   -- Signals
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "module::powermenu:show",
     function()
-      if s == mouse.screen then
+      if s == capi.mouse.screen then
         powermenu_container.visible = true
         powermenu_keygrabber:start()
       end
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "module::powermenu:hide",
     function()
       powermenu_keygrabber:stop()

@@ -8,6 +8,10 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/bluetooth/"
 
@@ -42,7 +46,7 @@ return function(s)
   -- Hover signal to change color when mouse is over
   Hover_signal(bluetooth_widget)
 
-  awesome.connect_signal("state", function(state)
+  capi.awesome.connect_signal("state", function(state)
     if state then
       bluetooth_widget:get_children_by_id("icon")[1]:set_image(gears.color.recolor_image(icondir .. "bluetooth-on.svg",
         Theme_config.bluetooth.fg))
@@ -56,9 +60,9 @@ return function(s)
     "button::press",
     function(_, _, _, key)
       if key == 1 then
-        awesome.emit_signal("bluetooth_controller::toggle", s)
+        capi.awesome.emit_signal("bluetooth_controller::toggle", s)
       else
-        awesome.emit_signal("toggle_bluetooth")
+        capi.awesome.emit_signal("toggle_bluetooth")
       end
     end
   )

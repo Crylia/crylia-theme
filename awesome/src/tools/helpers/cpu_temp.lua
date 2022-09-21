@@ -1,6 +1,10 @@
 local awful = require("awful")
 local watch = awful.widget.watch
 
+local capi = {
+  awesome = awesome,
+}
+
 watch(
   [[ bash -c "sensors | grep 'Package id 0:' | awk '{print $4}'" ]],
   3,
@@ -11,14 +15,14 @@ watch(
         "paste <(cat /sys/class/thermal/thermal_zone*/type) <(cat /sys/class/thermal/thermal_zone*/temp)",
         function(stdout2)
           temp = math.floor((tonumber(stdout2:match("x86_pkg_temp(.%d+)")) / 1000) + 0.5)
-          awesome.emit_signal(
+          capi.awesome.emit_signal(
             "update::cpu_temp",
             temp
           )
         end
       )
     else
-      awesome.emit_signal(
+      capi.awesome.emit_signal(
         "update::cpu_temp",
         temp
       )

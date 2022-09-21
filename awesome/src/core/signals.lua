@@ -6,24 +6,32 @@ local gears = require("gears")
 local color = require("src.lib.color")
 local rubato = require("src.lib.rubato")
 
-screen.connect_signal(
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+  screen = screen,
+  client = client,
+  tag = tag
+}
+
+capi.screen.connect_signal(
   "added",
   function()
-    awesome.restart()
+    capi.awesome.restart()
   end
 )
 
-screen.connect_signal(
+capi.screen.connect_signal(
   "removed",
   function()
-    awesome.restart()
+    capi.awesome.restart()
   end
 )
 
-client.connect_signal(
+capi.client.connect_signal(
   "manage",
   function(c)
-    if awesome.startup and not c.size_hints.user_porition and not c.size_hints.program_position then
+    if capi.awesome.startup and not c.size_hints.user_porition and not c.size_hints.program_position then
       awful.placement.no_offscreen(c)
     end
     c.shape = function(cr, width, height)
@@ -42,7 +50,7 @@ client.connect_signal(
   end
 )
 
-client.connect_signal(
+capi.client.connect_signal(
   'unmanage',
   function(c)
     if #awful.screen.focused().clients > 0 then
@@ -57,7 +65,7 @@ client.connect_signal(
   end
 )
 
-tag.connect_signal(
+capi.tag.connect_signal(
   'property::selected',
   function(c)
     if #awful.screen.focused().clients > 0 then
@@ -257,7 +265,7 @@ function Hover_signal(widget, bg_override, fg_override, border_override, icon_ov
     if icon and widget.icon and icon_override and icon_override_hover then
       widget.icon.image = gears.color.recolor_image(icon, icon_override_hover)
     end
-    local w = mouse.current_wibox
+    local w = capi.mouse.current_wibox
     if w then
       old_cursor, old_wibox = w.cursor, w
       w.cursor = "hand1"

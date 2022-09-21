@@ -7,6 +7,10 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/audio/"
 
@@ -55,7 +59,7 @@ return function(s)
     widget = wibox.container.background
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "audio::get",
     function(muted, volume)
       if muted then
@@ -95,8 +99,8 @@ return function(s)
   audio_widget:connect_signal(
     "button::press",
     function()
-      awesome.emit_signal("volume_controller::toggle", s)
-      awesome.emit_signal("volume_controller::toggle:keygrabber")
+      capi.awesome.emit_signal("volume_controller::toggle", s)
+      capi.awesome.emit_signal("volume_controller::toggle:keygrabber")
     end
   )
 

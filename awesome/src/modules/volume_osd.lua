@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/audio/"
 
@@ -70,7 +75,7 @@ return function(s)
     widget = wibox.container.background
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "audio::get",
     function(muted, volume)
       if muted then
@@ -126,10 +131,10 @@ return function(s)
     layout = wibox.layout.fixed.horizontal
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "widget::volume_osd:rerun",
     function()
-      if mouse.screen == s then
+      if capi.mouse.screen == s then
         volume_container.visible = true
         if hide_volume_osd.started then
           hide_volume_osd:again()

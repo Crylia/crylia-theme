@@ -11,6 +11,10 @@ local wibox = require("wibox")
 local color = require("src.lib.color")
 local rubato = require("src.lib.rubato")
 
+local capi = {
+  awesome = awesome,
+}
+
 local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
 
 --TODO: Add tooltip with more CPU and per core information
@@ -145,7 +149,7 @@ return function(widget, _)
     widget = wibox.container.background
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::cpu_usage",
     function(usage)
       cpu_usage_widget.container.cpu_layout.label.text = usage .. "%"
@@ -172,7 +176,7 @@ return function(widget, _)
     r_timed_cpu_bg.target, g_timed_cpu_bg.target, b_timed_cpu_bg.target = color.utils.hex_to_rgba(newbg)
   end
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::cpu_temp",
     function(temp)
       local temp_icon
@@ -191,18 +195,18 @@ return function(widget, _)
       cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
       set_bg(temp_color)
       cpu_temp.container.cpu_layout.label.text = math.floor(temp) .. "°C"
-      awesome.emit_signal("update::cpu_temp_widget", temp, temp_icon)
+      capi.awesome.emit_signal("update::cpu_temp_widget", temp, temp_icon)
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::cpu_freq_average",
     function(average)
       cpu_clock.container.cpu_layout.label.text = average .. "Mhz"
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::cpu_freq_core",
     function(freq)
       cpu_clock.container.cpu_layout.label.text = freq .. "Mhz"

@@ -2,7 +2,10 @@ local awful = require("awful")
 local gears = require("gears")
 local dbus_proxy = require("dbus_proxy")
 local lgi = require("lgi")
-local naughty = require("naughty")
+
+local capi = {
+  awesome = awesome,
+}
 
 return function()
 
@@ -28,12 +31,13 @@ return function()
         interface = "org.freedesktop.DBus.Properties",
         path = object_path
       }
-      awesome.emit_signal("bluetooth::scan")
-      if device.Name ~= nil or device.Alias ~= nil then
+
+      capi.awesome.emit_signal("bluetooth::scan")
+      if (device.Name ~= nil) or (device.Alias ~= nil) then
         device_properties:connect_signal(function()
-          awesome.emit_signal("bluetooth::device_changed", device, battery)
+          capi.awesome.emit_signal("bluetooth::device_changed", device, battery)
         end, "PropertiesChanged")
-        awesome.emit_signal("bluetooth::device_changed", device, battery)
+        capi.awesome.emit_signal("bluetooth::device_changed", device, battery)
       end
     end
   end
@@ -73,7 +77,7 @@ return function()
 
         ObjectManager:connect_signal(
           function(interface)
-            awesome.emit_signal("device_removed", interface)
+            capi.awesome.emit_signal("device_removed", interface)
           end,
           "InterfacesRemoved"
         )
@@ -81,13 +85,13 @@ return function()
         Adapter:connect_signal(
           function(data)
             if data.Powered ~= nil then
-              awesome.emit_signal("state", data.Powered)
+              capi.awesome.emit_signal("state", data.Powered)
             end
           end,
           "PropertiesChanged"
         )
 
-        awesome.connect_signal(
+        capi.awesome.connect_signal(
           "bluetooth::scan",
           function()
             Adapter:StartDiscovery()
@@ -105,7 +109,7 @@ return function()
           "PropertiesChanged"
         )
 
-        awesome.connect_signal("toggle_bluetooth",
+        capi.awesome.connect_signal("toggle_bluetooth",
           function()
             local is_powered = Adapter.Powered
             Adapter:Set(
@@ -114,7 +118,7 @@ return function()
               lgi.GLib.Variant("b", not is_powered)
             )
             Adapter.Powered = { signature = "b", value = not is_powered }
-            awesome.emit_signal("state", Adapter.Powered)
+            capi.awesome.emit_signal("state", Adapter.Powered)
           end)
 
         gears.timer.delayed_call(
@@ -125,7 +129,7 @@ return function()
               get_device_info(object_path)
             end
 
-            awesome.emit_signal("state", Adapter.Powered)
+            capi.awesome.emit_signal("state", Adapter.Powered)
           end
         )
       end

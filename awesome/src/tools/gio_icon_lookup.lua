@@ -15,8 +15,9 @@ Gtk.IconTheme.set_custom_theme(gtk_theme, User_config.icon_theme)
 
 ---Gets the icon path from an AppInfo gicon.
 ---@param app Gio.AppInfo
----@return string path
+---@return string|nil path
 function Get_gicon_path(app)
+  if not app then return end
   local icon_info = gtk_theme:lookup_by_gicon(app, 64, 0)
   if icon_info then
     local path = icon_info:get_filename()

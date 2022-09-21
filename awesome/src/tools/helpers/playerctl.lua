@@ -5,6 +5,10 @@ local gtable = require("gears.table")
 local gtimer = require("gears.timer")
 local gstring = require("gears.string")
 
+local capi = {
+  awesome = awesome
+}
+
 local playerctl = { mt = {} }
 playerctl._private = {}
 
@@ -76,7 +80,7 @@ local function emit_metadata_callback(self, title, artist, art_url, album, new, 
 
   if not art_url or art_url == "" then
   else
-    awesome.emit_signal("playerctl::title_artist_album", title, artist, "", player_name)
+    capi.awesome.emit_signal("playerctl::title_artist_album", title, artist, "", player_name)
     self:emit_signal("metadata", title, artist, "", album, new, player_name)
   end
 end
@@ -145,10 +149,10 @@ local function playback_status_callback(self, player, status)
 
     if status == "PLAYING" then
       self:emit_signal("playerctl::playback_status", true, player.player_name)
-      awesome.emit_signal("playerctl::playback_status", true, player.player_name)
+      capi.awesome.emit_signal("playerctl::playback_status", true, player.player_name)
     else
       self:emit_signal("playerctl::playback_status", false, player.player_name)
-      awesome.emit_signal("playerctl::playback_status", false, player.player_name)
+      capi.awesome.emit_signal("playerctl::playback_status", false, player.player_name)
     end
   end
 end
@@ -308,7 +312,7 @@ local function start_manager(self)
       _self._private.metadata_timer:stop()
       _self._private.pos_timer:stop()
       _self:emit_signal("playerctl::noplayers")
-      awesome.emit_signal("playerctl::noplayers")
+      capi.awesome.emit_signal("playerctl::noplayers")
     elseif player == _self._private.active_player then
       _self._private.active_player = self.players[1]
       get_current_player(_self, _self._private.active_player)

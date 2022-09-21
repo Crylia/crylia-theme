@@ -6,12 +6,14 @@
 local awful = require("awful")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
-local gfs = gears.filesystem
-local gtable = gears.table
-local gdebug = gears.debug
 local gstring = gears.string
 local keygrabber = require("awful.keygrabber")
 local wibox = require("wibox")
+
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
 
 local icondir = awful.util.getdir("config") .. "src/assets/icons/application_launcher/searchbar/"
 
@@ -71,7 +73,7 @@ return function()
 
   local old_wibox, old_cursor
   local mouse_enter = function()
-    local w = mouse.current_wibox
+    local w = capi.mouse.current_wibox
     if w then
       old_cursor, old_wibox = w.cursor, w
       w.cursor = "xterm"
@@ -135,16 +137,16 @@ return function()
     local function update()
       search_text:set_markup(promt_text_with_cursor(text_string, cur_pos))
       --Send the string over to the application to filter applications
-      awesome.emit_signal("update::application_list", text_string)
+      capi.awesome.emit_signal("update::application_list", text_string)
     end
 
     update()
 
     kgrabber = keygrabber.run(
       function(modifiers, key, event)
-        awesome.connect_signal("searchbar::stop", function()
+        capi.awesome.connect_signal("searchbar::stop", function()
           keygrabber.stop(kgrabber)
-          awesome.emit_signal("application_launcher::kgrabber_start")
+          capi.awesome.emit_signal("application_launcher::kgrabber_start")
         end)
 
         local mod = {}
@@ -162,7 +164,7 @@ return function()
           keygrabber.stop(kgrabber)
           search_text:set_markup(promt_text_with_cursor("", 1))
           text_string = ""
-          awesome.emit_signal("application_launcher::show")
+          capi.awesome.emit_signal("application_launcher::show")
         elseif (not mod.Control and key == "Return") or
             (not mod.Control and key == "KP_Enter") then
           keygrabber.stop(kgrabber)
@@ -170,8 +172,8 @@ return function()
           searchbar.s_background.fg = Theme_config.application_launcher.searchbar.fg_hint
           search_text:set_markup(promt_text_with_cursor("", 1))
           text_string = ""
-          awesome.emit_signal("application_launcher::execute")
-          awesome.emit_signal("application_launcher::show")
+          capi.awesome.emit_signal("application_launcher::execute")
+          capi.awesome.emit_signal("application_launcher::show")
         end
 
         if mod.Control then
@@ -195,15 +197,15 @@ return function()
             -- Move cursor to the left
           elseif key == "Left" then
             --cur_pos = cur_pos - 1
-            awesome.emit_signal("application::left")
+            capi.awesome.emit_signal("application::left")
             -- Move cursor to the right
           elseif key == "Right" then
             --cur_pos = cur_pos + 1
-            awesome.emit_signal("application::right")
+            capi.awesome.emit_signal("application::right")
           elseif key == "Up" then
-            awesome.emit_signal("application::up")
+            capi.awesome.emit_signal("application::up")
           elseif key == "Down" then
-            awesome.emit_signal("application::down")
+            capi.awesome.emit_signal("application::down")
           else
             --Add key at cursor position
             if key:wlen() == 1 then
@@ -234,7 +236,7 @@ return function()
     end)
   ))
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "searchbar::start",
     function()
       if not awful.keygrabber.is_running then

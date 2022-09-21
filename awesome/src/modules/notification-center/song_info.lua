@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
 
@@ -18,7 +23,7 @@ return function(s)
   local function button_hover_effect(widget, svg, color, color2)
     local mouse_enter = function()
       widget.image = gears.surface.load_uncached(gears.color.recolor_image(icondir .. svg, color2))
-      local w = mouse.current_wibox
+      local w = capi.mouse.current_wibox
       if w then
         w.cursor = "hand1"
       end
@@ -26,8 +31,8 @@ return function(s)
 
     local mouse_leave = function()
       widget.image = gears.surface.load_uncached(gears.color.recolor_image(icondir .. svg, color))
-      mouse.cursor = "left_ptr"
-      local w = mouse.current_wibox
+      capi.mouse.cursor = "left_ptr"
+      local w = capi.mouse.current_wibox
       if w then
         w.cursor = "left_ptr"
       end
@@ -488,7 +493,7 @@ return function(s)
   }
 
   -- get_spotify_metadata() on awesome reload
-  awesome.connect_signal("startup", function()
+  capi.awesome.connect_signal("startup", function()
     get_spotify_metadata(true)
   end)
 

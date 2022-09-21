@@ -1,6 +1,10 @@
 local awful = require("awful")
 local watch = awful.widget.watch
 
+local capi = {
+  awesome = awesome,
+}
+
 local total_prev = 0
 local idle_prev = 0
 
@@ -18,7 +22,7 @@ watch(
     local diff_total = total - total_prev
     local diff_usage = math.floor(((1000 * (diff_total - diff_idle) / diff_total + 5) / 10) + 0.5)
 
-    awesome.emit_signal("update::cpu_usage", diff_usage)
+    capi.awesome.emit_signal("update::cpu_usage", diff_usage)
 
     total_prev = total
     idle_prev = idle

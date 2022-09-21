@@ -9,6 +9,10 @@ local gears = require("gears")
 local watch = awful.widget.watch
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+}
+
 local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
 
 return function()
@@ -57,7 +61,7 @@ return function()
 
   Hover_signal(ram_widget)
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::ram_widget",
     function(MemTotal, MemFree, MemAvailable)
       local ram_string = tostring(string.format("%.1f", ((MemTotal - MemAvailable) / 1024 / 1024)) ..

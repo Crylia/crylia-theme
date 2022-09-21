@@ -8,8 +8,10 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
-local color = require("src.lib.color")
-local rubato = require("src.lib.rubato")
+local capi = {
+  awesome = awesome,
+  client = client
+}
 
 -- Icon directory path
 local icondir = awful.util.getdir("config") .. "src/assets/icons/titlebar/"
@@ -404,7 +406,7 @@ local create_titlebar_dialog_modal = function(c, size, position)
   )
 end
 
-client.connect_signal(
+capi.client.connect_signal(
   "request::titlebars",
   function(c)
     if c.type == "dialog" then
@@ -425,7 +427,7 @@ client.connect_signal(
   end
 )
 
-client.connect_signal(
+capi.client.connect_signal(
   "property::floating",
   function(c)
     if c.floating and not (c.maximized or c.fullscreen) then

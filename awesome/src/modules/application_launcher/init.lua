@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 local application_grid = require("src.modules.application_launcher.application")()
 local searchbar = require("src.modules.application_launcher.searchbar")()
 
@@ -32,7 +37,7 @@ return function(s)
       widget = wibox.container.margin
     },
     height = s.geometry.height / 100 * 60,
-    width = s.geometry.width / 100 * 60,
+    --width = s.geometry.width / 100 * 60,
     strategy = "exact",
     widget = wibox.container.constraint
   }
@@ -57,17 +62,17 @@ return function(s)
     layout = wibox.layout.fixed.vertical
   }
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "application_launcher::show",
     function()
-      if mouse.screen == s then
+      if capi.mouse.screen == s then
         application_container.visible = not application_container.visible
         if application_container.visible == false then
-          awesome.emit_signal("searchbar::stop")
+          capi.awesome.emit_signal("searchbar::stop")
         end
       end
       if application_container.visible then
-        awesome.emit_signal("searchbar::start")
+        capi.awesome.emit_signal("searchbar::start")
       end
     end
   )

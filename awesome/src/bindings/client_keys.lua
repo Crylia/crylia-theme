@@ -2,6 +2,10 @@
 local awful = require("awful")
 local gears = require("gears")
 
+local capi = {
+  client = client
+}
+
 local modkey = User_config.modkey
 
 return gears.table.join(
@@ -41,7 +45,7 @@ return gears.table.join(
     { modkey },
     "#57",
     function(c)
-      if c == client.focus then
+      if c == capi.client.focus then
         c.minimized = true
       else
         c.minimized = false

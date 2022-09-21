@@ -8,6 +8,11 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  mouse = mouse,
+}
+
 return function(args)
   if not args then
     return
@@ -65,7 +70,7 @@ return function(args)
             modifiers = {},
             button = 1,
             on_release = function()
-              awesome.emit_signal("context_menu::hide")
+              capi.awesome.emit_signal("context_menu::hide")
               entry.callback()
             end
           })
@@ -91,18 +96,18 @@ return function(args)
     border_width = Theme_config.context_menu.border_width,
     border_color = Theme_config.context_menu.border_color,
     shape = Theme_config.context_menu.shape,
-    x = mouse.coords().x,
-    y = mouse.coords().y,
+    x = capi.mouse.coords().x,
+    y = capi.mouse.coords().y,
     visible = false,
     ontop = true,
     placement = awful.placement.no_offscreen,
   }
 
   menu:connect_signal("mouse::leave", function()
-    awesome.emit_signal("context_menu::hide")
+    capi.awesome.emit_signal("context_menu::hide")
   end)
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "context_menu::hide",
     function()
       menu.visible = false

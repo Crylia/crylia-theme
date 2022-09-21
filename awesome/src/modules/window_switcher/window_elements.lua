@@ -11,6 +11,11 @@ local wibox = require("wibox")
 local color = require("src.lib.color")
 local rubato = require("src.lib.rubato")
 
+local capi = {
+  awesome = awesome,
+  client = client,
+}
+
 return function()
 
   local elements = wibox.widget {
@@ -26,11 +31,11 @@ return function()
 
     elements:reset()
 
-    local clients = client.get()
+    local clients = capi.client.get()
     local clients_sorted = {}
 
-    if client.focus then
-      clients_sorted[1] = client.focus
+    if capi.client.focus then
+      clients_sorted[1] = capi.client.focus
     end
 
     for _, client in ipairs(clients) do
@@ -213,35 +218,35 @@ return function()
 
   elements = create_elements()
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "window_switcher::select_next",
     function()
       elements = create_elements("next")
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "window_switcher::raise",
     function()
       elements = create_elements("raise")
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "manage",
     function()
       elements = create_elements()
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "unmanage",
     function()
       elements = create_elements()
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "window_switcher::update",
     function()
       elements = create_elements()

@@ -8,8 +8,9 @@ local wibox = require('wibox')
 local dpi = require('beautiful').xresources.apply_dpi
 local gears = require('gears')
 
-local color = require("src.lib.color")
-local rubato = require("src.lib.rubato")
+local capi = {
+	client = client,
+}
 
 local list_update = function(widget, buttons, label, _, objects)
 	widget:reset()
@@ -94,7 +95,7 @@ local list_update = function(widget, buttons, label, _, objects)
 
 		local text, _ = label(object, task_widget.container.layout_it.title)
 
-		if object == client.focus then
+		if object == capi.client.focus then
 			if text == nil or text == '' then
 				task_widget.container.layout_it.title:set_margins(0)
 			else
@@ -136,7 +137,7 @@ return function(s)
 				{},
 				1,
 				function(c)
-					if c == client.focus then
+					if c == capi.client.focus then
 						c.minimized = true
 					else
 						c.minimized = false

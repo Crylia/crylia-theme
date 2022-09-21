@@ -6,6 +6,12 @@ local ruled = require("ruled")
 
 local json = require("src.lib.json-lua.json-lua")
 
+local capi = {
+  awesome = awesome,
+  mousegrabber = mousegrabber,
+  mouse = mouse,
+}
+
 local modkey = User_config.modkey
 
 awful.keygrabber {
@@ -14,7 +20,7 @@ awful.keygrabber {
       modifiers = { "Mod1" },
       key = "Tab",
       on_press = function()
-        awesome.emit_signal("window_switcher::select_next")
+        capi.awesome.emit_signal("window_switcher::select_next")
       end
     }
   },
@@ -29,11 +35,11 @@ awful.keygrabber {
   stop_key           = "Mod1",
   stop_event         = "release",
   start_callback     = function()
-    awesome.emit_signal("toggle_window_switcher")
+    capi.awesome.emit_signal("toggle_window_switcher")
   end,
   stop_callback      = function()
-    awesome.emit_signal("window_switcher::raise")
-    awesome.emit_signal("toggle_window_switcher")
+    capi.awesome.emit_signal("window_switcher::raise")
+    capi.awesome.emit_signal("toggle_window_switcher")
   end,
   export_keybindings = true,
 }
@@ -129,7 +135,7 @@ return gears.table.join(
   awful.key(
     { modkey, "Control" },
     "#27",
-    awesome.restart,
+    capi.awesome.restart,
     { description = "Reload awesome", group = "Awesome" }
   ),
   awful.key(
@@ -184,7 +190,7 @@ return gears.table.join(
     { modkey },
     "#40",
     function()
-      awesome.emit_signal("application_launcher::show")
+      capi.awesome.emit_signal("application_launcher::show")
     end,
     { descripton = "Application launcher", group = "Application" }
   ),
@@ -200,7 +206,7 @@ return gears.table.join(
     { modkey, "Shift" },
     "#26",
     function()
-      awesome.emit_signal("module::powermenu:show")
+      capi.awesome.emit_signal("module::powermenu:show")
     end,
     { descripton = "Session options", group = "System" }
   ),
@@ -217,7 +223,7 @@ return gears.table.join(
     "XF86AudioLowerVolume",
     function(c)
       awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ -2%", function()
-        awesome.emit_signal("widget::volume_osd:rerun")
+        capi.awesome.emit_signal("widget::volume_osd:rerun")
       end)
     end,
     { description = "Lower volume", group = "System" }
@@ -227,7 +233,7 @@ return gears.table.join(
     "XF86AudioRaiseVolume",
     function(c)
       awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ +2%", function()
-        awesome.emit_signal("widget::volume_osd:rerun")
+        capi.awesome.emit_signal("widget::volume_osd:rerun")
       end)
     end,
     { description = "Increase volume", group = "System" }
@@ -237,7 +243,7 @@ return gears.table.join(
     "XF86AudioMute",
     function(c)
       awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
-      awesome.emit_signal("widget::volume_osd:rerun")
+      capi.awesome.emit_signal("widget::volume_osd:rerun")
     end,
     { description = "Mute volume", group = "System" }
   ),
@@ -248,9 +254,9 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn("pkexec xfpm-power-backlight-helper --set-brightness " ..
-            tostring(tonumber(stdout) + BACKLIGHT_SEPS))
-          awesome.emit_signal("brightness::update")
+          awful.spawn(awful.util.getdir("config") ..
+            "src/scripts/backlight.sh set " .. tostring(tonumber(stdout) + BACKLIGHT_SEPS))
+          capi.awesome.emit_signal("brightness::update")
         end
       )
     end,
@@ -263,10 +269,9 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn(
-            "pkexec xfpm-power-backlight-helper --set-brightness " ..
-            tostring(tonumber(stdout) - BACKLIGHT_SEPS))
-          awesome.emit_signal("brightness::update")
+          awful.spawn(awful.util.getdir("config") ..
+            "src/scripts/backlight.sh set " .. tostring(tonumber(stdout) - BACKLIGHT_SEPS))
+          capi.awesome.emit_signal("brightness::update")
         end
       )
     end,
@@ -300,7 +305,7 @@ return gears.table.join(
     { modkey },
     "#65",
     function()
-      awesome.emit_signal("kblayout::toggle")
+      capi.awesome.emit_signal("kblayout::toggle")
     end,
     { description = "Toggle keyboard layout", group = "System" }
   ),
@@ -308,7 +313,7 @@ return gears.table.join(
     { modkey },
     "#22",
     function()
-      mousegrabber.run(
+      capi.mousegrabber.run(
         function(m)
           if m.buttons[1] then
 
@@ -319,7 +324,7 @@ return gears.table.join(
 
             if type(data_table) ~= "table" then return end
 
-            local c = mouse.current_client
+            local c = capi.mouse.current_client
             if not c then return end
 
             local client_data = {
@@ -351,7 +356,7 @@ return gears.table.join(
             if not handler then return end
             handler:write(json:encode(data_table))
             handler:close()
-            mousegrabber.stop()
+            capi.mousegrabber.stop()
           end
           return true
         end,
@@ -363,7 +368,7 @@ return gears.table.join(
     { modkey, "Shift" },
     "#22",
     function()
-      mousegrabber.run(
+      capi.mousegrabber.run(
         function(m)
           if m.buttons[1] then
 
@@ -374,7 +379,7 @@ return gears.table.join(
 
             if type(data_table) ~= "table" then return end
 
-            local c = mouse.current_client
+            local c = capi.mouse.current_client
             if not c then return end
 
             local client_data = {
@@ -403,7 +408,7 @@ return gears.table.join(
             if not handler then return end
             handler:write(json:encode(data_table))
             handler:close()
-            mousegrabber.stop()
+            capi.mousegrabber.stop()
           end
           return true
         end,

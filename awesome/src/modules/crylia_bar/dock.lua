@@ -8,6 +8,12 @@ local Gio = require("lgi").Gio
 local gears = require("gears")
 local wibox = require("wibox")
 
+local capi = {
+  awesome = awesome,
+  client = client,
+  mouse = mouse,
+}
+
 local json = require("src.lib.json-lua.json-lua")
 
 local icondir = awful.util.getdir("config") .. "src/assets/icons/context_menu/"
@@ -65,7 +71,7 @@ return function(screen)
     Hover_signal(dock_element.background, Theme_config.dock.element_focused_bg .. "dd")
 
     local DAI = Gio.DesktopAppInfo.new_from_filename(program.desktop_file)
-
+    if not DAI then return end
     local action_entries = {}
     for _, action in ipairs(program.actions) do
       table.insert(action_entries, {
@@ -101,7 +107,7 @@ return function(screen)
         end
         data:write(json:encode(dock))
         data:close()
-        awesome.emit_signal("dock::changed")
+        capi.awesome.emit_signal("dock::changed")
       end
     })
 
@@ -125,19 +131,19 @@ return function(screen)
             return
           end
           -- add offset so mouse is above widget, this is so the mouse::leave event triggers always
-          context_menu.x = mouse.coords().x - 10
-          context_menu.y = mouse.coords().y + 10 - context_menu.height
+          context_menu.x = capi.mouse.coords().x - 10
+          context_menu.y = capi.mouse.coords().y + 10 - context_menu.height
           context_menu.visible = not context_menu.visible
           cm_open = context_menu.visible
         end
       })
     ))
 
-    awesome.connect_signal(
+    capi.awesome.connect_signal(
       "context_menu::hide",
       function()
         cm_open = false
-        awesome.emit_signal("dock::check_for_dock_hide")
+        capi.awesome.emit_signal("dock::check_for_dock_hide")
       end
     )
 
@@ -168,14 +174,14 @@ return function(screen)
     for _, pr in ipairs(prog) do
       local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
       local col = Theme_config.dock.indicator_bg
-      for _, c in ipairs(client.get()) do
+      for _, c in ipairs(capi.client.get()) do
         local icon_name = string.lower(pr.icon)
         if not c or not c.valid then return end
-        if not c.class then c.class = "" end
-        local class = string.lower(c.class)
+        local cls = c.class or ""
+        local class = string.lower(cls)
         icon_name = string.match(icon_name, ".*/(.*)%.[svg|png]")
         if class == icon_name or class:match(icon_name) or icon_name:match(class) then
-          if c == client.focus then
+          if c == capi.client.focus then
             col = Theme_config.dock.indicator_focused_bg
           elseif c.urgent then
             col = Theme_config.dock.indicator_urgent_bg
@@ -307,17 +313,17 @@ return function(screen)
         dock.visible = false
         if client.fullscreen then
           fakedock.visible = false
-          awesome.emit_signal("notification_center_activation::toggle", s, false)
+          capi.awesome.emit_signal("notification_center_activation::toggle", s, false)
         end
       elseif not client.fullscreen then
         fakedock.visible = true
-        awesome.emit_signal("notification_center_activation::toggle", s, true)
+        capi.awesome.emit_signal("notification_center_activation::toggle", s, true)
       end
     end
 
 
 
-    if s == mouse.screen then
+    if s == capi.mouse.screen then
       local minimized = false
       for _, c in ipairs(clients_on_tag) do
         if c.minimized then
@@ -370,7 +376,7 @@ return function(screen)
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "manage",
     function()
       check_for_dock_hide(screen)
@@ -387,7 +393,7 @@ return function(screen)
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "property::minimized",
     function()
       check_for_dock_hide(screen)
@@ -404,7 +410,7 @@ return function(screen)
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "unmanage",
     function()
       check_for_dock_hide(screen)
@@ -421,7 +427,7 @@ return function(screen)
     end
   )
 
-  client.connect_signal(
+  capi.client.connect_signal(
     "focus",
     function()
       check_for_dock_hide(screen)
@@ -438,7 +444,7 @@ return function(screen)
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "dock::changed",
     function()
       get_dock_elements()
@@ -455,7 +461,7 @@ return function(screen)
     end
   )
 
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "dock::check_for_dock_hide",
     function()
       dock_intelligent_hide:again()

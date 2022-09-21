@@ -11,6 +11,10 @@ local wibox = require("wibox")
 local color = require("src.lib.color")
 local rubato = require("src.lib.rubato")
 
+local capi = {
+  awesome = awesome,
+}
+
 local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
 
 return function(widget)
@@ -104,7 +108,7 @@ return function(widget)
   Hover_signal(gpu_usage_widget)
 
   -- GPU Utilization
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::gpu_usage",
     function(stdout)
       gpu_usage_widget.container.gpu_layout.label.text = stdout:gsub("\n", "") .. "%"
@@ -134,7 +138,7 @@ return function(widget)
   end
 
   -- GPU Temperature
-  awesome.connect_signal(
+  capi.awesome.connect_signal(
     "update::gpu_temp",
     function(stdout)
 
