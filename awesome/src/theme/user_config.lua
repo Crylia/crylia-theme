@@ -18,7 +18,11 @@ User_config = {
   ]] --
   autostart = {
     "picom --experimental-backends",
-    "xfce4-power-manager"
+    "xfce4-power-manager",
+    "light-locker --lock-on-suspend --lock-on-lid &",
+    "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
+    "setxkbmap -option caps:swapescape",
+    "/home/crylia/.screenlayout/single.sh"
   },
 
   --[[
@@ -237,7 +241,7 @@ User_config = {
   weather_secrets = {
     key = "",
     city_id = "",
-    unit = ""
+    unit = "metric"
   },
 
   --[[

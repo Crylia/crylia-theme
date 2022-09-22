@@ -14,7 +14,7 @@ local capi = {
 }
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/powermenu/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/powermenu/"
 
 return function(s)
 
@@ -63,7 +63,7 @@ return function(s)
       "./.config/awesome/src/scripts/pfp.sh 'userName' '" .. User_config.namestyle .. "'",
       function(stdout)
         if stdout:gsub("\n", "") == "Rick Astley" then
-          profile_picture:set_image(awful.util.getdir("config") .. "src/assets/userpfp/" .. "rickastley.jpg")
+          profile_picture:set_image(gears.filesystem.get_configuration_dir() .. "src/assets/userpfp/" .. "rickastley.jpg")
         end
         profile_name:set_text(stdout)
       end

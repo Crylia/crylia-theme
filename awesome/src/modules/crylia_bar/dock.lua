@@ -16,7 +16,7 @@ local capi = {
 
 local json = require("src.lib.json-lua.json-lua")
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/context_menu/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/context_menu/"
 
 local cm = require("src.modules.context_menu")
 

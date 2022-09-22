@@ -15,7 +15,7 @@ local capi = {
   awesome = awesome,
 }
 
-local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
+local icon_dir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/cpu/"
 
 --TODO: Add tooltip with more CPU and per core information
 return function(widget, _)

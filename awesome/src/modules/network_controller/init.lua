@@ -10,7 +10,7 @@ local wibox = require("wibox")
 
 local rubato = require("src.lib.rubato")
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/network/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/network/"
 
 return function(s)
 

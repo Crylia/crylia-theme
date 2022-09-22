@@ -19,7 +19,7 @@ local json = require("src.lib.json-lua.json-lua")
 
 local cm = require("src.modules.context_menu")
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/context_menu/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/context_menu/"
 
 return function(s)
 
@@ -122,7 +122,7 @@ return function(s)
               name = "Pin to dock",
               icon = gears.color.recolor_image(icondir .. "pin.svg", Theme_config.context_menu.icon_color),
               callback = function()
-                local dir = awful.util.getdir("config") .. "src/config"
+                local dir = gears.filesystem.get_configuration_dir() .. "src/config"
                 gfilesystem.make_directories(dir)
                 if not gfilesystem.file_readable(dir) then
                   os.execute("touch " .. dir .. "/dock.json")

@@ -5,6 +5,7 @@ local gtable = require("gears.table")
 local gobject = require("gears.object")
 local gshape = require("gears.shape")
 local gcolor = require("gears.color")
+local gfilesystem = require("gears").filesystem
 local wibox = require("wibox")
 
 local capi = {
@@ -15,7 +16,7 @@ local capi = {
 local ical_parser = require("src.tools.ical_parser")()
 --local task_info = require("src.modules.calendar.task_info")
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/calendar/"
+local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/calendar/"
 
 local calendar = { mt = {} }
 calendar.tasks = {}

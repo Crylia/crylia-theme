@@ -17,7 +17,7 @@ local capi = {
 require("src.theme.user_config")
 require("src.theme.theme_config")
 
-Theme_path = awful.util.getdir("config") .. "/src/theme/"
+Theme_path = gears.filesystem.get_configuration_dir() .. "/src/theme/"
 Theme = {}
 
 -- Default font, change it in user_config, not here.

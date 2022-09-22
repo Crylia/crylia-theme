@@ -12,7 +12,7 @@ local naughty = require("naughty")
 local json_lua = require("src.lib.json-lua.json-lua")
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/weather/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/weather/"
 
 return function()
 

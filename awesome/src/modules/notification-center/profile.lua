@@ -9,7 +9,7 @@ local gears = require("gears")
 local wibox = require("wibox")
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/profile/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/profile/"
 
 return function()
 
@@ -20,7 +20,8 @@ return function()
           {
             {
               {
-                image = gears.surface.load_uncached(awful.util.getdir("config") .. "src/assets/userpfp/crylia.png"),
+                image = gears.surface.load_uncached(gears.filesystem.get_configuration_dir() ..
+                  "src/assets/userpfp/crylia.png"),
                 id = "icon",
                 valign = "center",
                 halign = "center",

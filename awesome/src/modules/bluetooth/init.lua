@@ -9,13 +9,14 @@ local gobject = require("gears").object
 local gtable = require("gears").table
 local gcolor = require("gears").color
 local gshape = require("gears").shape
+local gfilesystem = require("gears").filesystem
 local wibox = require("wibox")
 
 local bt_device = require("src.modules.bluetooth.device")
 
 local rubato = require("src.lib.rubato")
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/bluetooth/"
+local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/bluetooth/"
 
 local capi = {
   awesome = awesome,

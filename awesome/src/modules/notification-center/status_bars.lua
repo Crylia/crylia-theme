@@ -15,7 +15,7 @@ local capi = {
 }
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/"
 
 --- Signal bars widget for the notification-center
 ---@diagnostic disable-next-line: undefined-doc-name

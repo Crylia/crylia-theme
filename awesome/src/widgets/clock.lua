@@ -9,7 +9,7 @@ local gears = require("gears")
 local wibox = require("wibox")
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/clock/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/clock/"
 
 -- Returns the clock widget
 return function()

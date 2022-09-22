@@ -14,7 +14,7 @@ local capi = {
 }
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/network/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/network/"
 
 -- Insert your interfaces here, get the from ip a
 local interfaces = {

@@ -16,7 +16,7 @@ local capi = {
 }
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/battery/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/battery/"
 
 ---Returns the battery widget
 ---@return wibox.widget

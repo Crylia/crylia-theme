@@ -14,7 +14,7 @@ local capi = {
   mouse = mouse,
 }
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/calendar/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/calendar/"
 
 --- Month name lookup table
 local months_table = {

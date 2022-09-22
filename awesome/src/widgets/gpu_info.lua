@@ -15,7 +15,7 @@ local capi = {
   awesome = awesome,
 }
 
-local icon_dir = awful.util.getdir("config") .. "src/assets/icons/cpu/"
+local icon_dir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/cpu/"
 
 return function(widget)
   local gpu_usage_widget = wibox.widget {

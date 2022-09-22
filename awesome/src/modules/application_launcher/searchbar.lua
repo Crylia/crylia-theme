@@ -15,7 +15,7 @@ local capi = {
   mouse = mouse,
 }
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/application_launcher/searchbar/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/application_launcher/searchbar/"
 
 local kgrabber
 

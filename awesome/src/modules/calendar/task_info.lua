@@ -5,13 +5,14 @@ local gcolor = require("gears.color")
 local gtable = require("gears.table")
 local gshape = require("gears.shape")
 local gobject = require("gears.object")
+local gfilesystem = require("gears").filesystem
 local wibox = require("wibox")
 
 local capi = {
   mouse = mouse,
 }
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/calendar/"
+local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/calendar/"
 
 local task_info = { mt = {} }
 task_info._private = {}

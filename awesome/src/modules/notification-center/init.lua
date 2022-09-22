@@ -15,7 +15,7 @@ local capi = {
 }
 
 -- Icon directory path
-local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/notifications/"
 
 return function(s)
 

@@ -16,7 +16,7 @@ local capi = {
   screen = screen,
 }
 
-local icondir = awful.util.getdir("config") .. "src/assets/icons/notifications/"
+local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/notifications/"
 
 naughty.config.defaults.ontop = true
 naughty.config.defaults.icon_size = dpi(80)

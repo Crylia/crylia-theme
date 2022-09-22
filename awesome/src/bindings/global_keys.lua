@@ -254,7 +254,7 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn(awful.util.getdir("config") ..
+          awful.spawn(gears.filesystem.get_configuration_dir() ..
             "src/scripts/backlight.sh set " .. tostring(tonumber(stdout) + BACKLIGHT_SEPS))
           capi.awesome.emit_signal("brightness::update")
         end
@@ -269,7 +269,7 @@ return gears.table.join(
       awful.spawn.easy_async_with_shell(
         "pkexec xfpm-power-backlight-helper --get-brightness",
         function(stdout)
-          awful.spawn(awful.util.getdir("config") ..
+          awful.spawn(gears.filesystem.get_configuration_dir() ..
             "src/scripts/backlight.sh set " .. tostring(tonumber(stdout) - BACKLIGHT_SEPS))
           capi.awesome.emit_signal("brightness::update")
         end
