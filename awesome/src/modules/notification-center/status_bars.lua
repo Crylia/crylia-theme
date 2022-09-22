@@ -346,6 +346,7 @@ return function()
         capi.awesome.connect_signal(
           "update::gpu_usage",
           function(gpu_usage)
+            if not gpu_usage then return end
             tooltip.text = "GPU Usage: " .. gpu_usage .. "%"
             rubato_timer.target = tonumber(gpu_usage)
           end
