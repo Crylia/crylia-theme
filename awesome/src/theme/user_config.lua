@@ -198,6 +198,13 @@ User_config = {
     "backlight"
   },
 
+
+  --[[
+    If true the taskbar will shot the client name instead of the class name.
+    Default: false
+  ]] --
+  taskbar_use_name = true,
+
   --[[
     This is the default terminal, Alacritty is the default.
   ]] --

@@ -93,28 +93,18 @@ local list_update = function(widget, buttons, label, _, objects)
 
 		task_widget:buttons(create_buttons(buttons, object))
 
-		local text, _ = label(object, task_widget.container.layout_it.title)
+		local client_string = User_config.taskbar_use_name and object.name or object.class
 
 		if object == capi.client.focus then
-			if text == nil or text == '' then
+			if client_string == nil or client_string == '' then
 				task_widget.container.layout_it.title:set_margins(0)
 			else
-				local text_full = text:match('>(.-)<')
-				if text_full then
-					if object.class == nil then
-						text = object.name
-					else
-						text = object.class:sub(1, 20)
-					end
-					task_tool_tip:set_text(text_full)
-					task_tool_tip:add_to_object(task_widget)
-				else
-					task_tool_tip:remove_from_object(task_widget)
-				end
+				task_tool_tip:set_text(client_string)
+				task_tool_tip:add_to_object(task_widget)
+				task_widget.container.layout_it.title:set_text(client_string:sub(1, 20))
 			end
 			task_widget:set_bg(Theme_config.tasklist.bg_focus)
 			task_widget:set_fg(Theme_config.tasklist.fg_focus)
-			task_widget.container.layout_it.title:set_text(text)
 		else
 			task_widget:set_bg(Theme_config.tasklist.bg)
 			task_widget.container.layout_it.title:set_text('')
