@@ -3,6 +3,8 @@ local gobject = require("gears.object")
 local gtable = require("gears.table")
 local naughty = require("naughty")
 
+local color = require("src.theme.colors")
+
 local json = require("src.lib.json-lua.json-lua")
 
 local ical = { mt = {} }
@@ -108,13 +110,11 @@ end
 function ical:add_calendar(file)
   local handler = io.open(file, "r")
   if not handler then return end
-
   -- Check if the line is a BEGIN:VCALENDAR
   local v, k = handler:read("l"):match("([A-Z]+):([A-Z]+)")
-
   local vcal = {}
   if v:match("BEGIN") and k:match("VCALENDAR") then
-    vcal = self._private.parser.VCALENDAR(handler)
+    vcal = self._private.parser:VCALENDAR(handler)
     table.insert(self.VCALENDAR, vcal)
     self._private.add_to_cache(file, vcal)
   end
@@ -122,11 +122,11 @@ end
 
 function ical.new(args)
   args = args or {}
-  local ret = gobject {}
+  local ret = gobject { enable_properties = true, enable_auto_signals = true }
   gtable.crush(ret, ical, true)
   local path = gfilesystem.get_configuration_dir() .. "src/config/calendar.json"
   local handler = io.open(path, "r")
-  if not handler then return end
+  if not handler then return ret end
   local json_data = json:decode(handler:read("a"))
   handler:close()
   if not (type(json_data) == "table") then return end
@@ -135,7 +135,32 @@ function ical.new(args)
     ret._private.cache[v.file] = v.VCALENDAR
     table.insert(ret.VCALENDAR, v.VCALENDAR)
   end
-  return ical
+
+  local function get_random_color()
+    local colors = {
+      color["Blue200"],
+      color["Red200"],
+      color["Green200"],
+      color["Yellow200"],
+      color["Purple200"],
+      color["Orange200"],
+      color["Pink200"],
+      color["Cyan200"],
+      color["Lime200"],
+      color["Teal200"],
+      color["Indigo200"],
+      color["LightBlue200"],
+      color["BlueGrey200"],
+      color["DeepOrange200"],
+      color["DeepPurple200"],
+    }
+
+    return colors[math.random(1, 15)]
+  end
+
+  ret.color = get_random_color()
+
+  return ret
 end
 
 function ical._private.parser:VEVENT(handler)
@@ -150,32 +175,34 @@ function ical._private.parser:VEVENT(handler)
 
     local v, k = line:match("(.*):(.*)")
     if v:match("CREATED") then
-      VEVENT.CREATED = self._private.parser.to_datetime(k)
+      VEVENT.CREATED = self.to_datetime(k)
     elseif v:match("LAST-MODIFIED") then
-      VEVENT.LAST_MODIFIED = self._private.parser.to_datetime(k)
+      VEVENT.LAST_MODIFIED = self.to_datetime(k)
     elseif v:match("DTSTAMP") then
-      VEVENT.DTSTAMP = self._private.parser.to_datetime(k)
+      VEVENT.DTSTAMP = self.to_datetime(k)
     elseif v:match("UID") then
       VEVENT.UID = k
     elseif v:match("SUMMARY") then
       VEVENT.SUMMARY = k
+    elseif v:match("STATUS") then
+      VEVENT.STATUS = k
     elseif v:match("RRULE") then
       VEVENT.RRULE = {
         FREQ = k:match("FREQ=([A-Z]+)"),
-        UNTIL = self._private.parser.to_datetime(k:match("UNTIL=([TZ0-9]+)")),
+        UNTIL = self.to_datetime(k:match("UNTIL=([TZ0-9]+)")),
         WKST = k:match("WKST=([A-Z]+)"),
         COUNT = k:match("COUNT=([0-9]+)"),
         INTERVAL = k:match("INTERVAL=([0-9]+)")
       }
     elseif v:match("DTSTART") then
       VEVENT.DTSTART = {
-        DTSTART = self._private.parser.to_datetime(k),
+        DTSTART = self.to_datetime(k),
         TZID = v:match("TZID=([a-zA-Z-\\/]+)"),
         VALUE = v:match("VALUE=([A-Z]+)")
       }
     elseif v:match("DTEND") then
       VEVENT.DTEND = {
-        DTEND = self._private.parser.to_datetime(k),
+        DTEND = self.to_datetime(k),
         TZID = v:match("TZID=([a-zA-Z-\\/]+)"),
         VALUE = v:match("VALUE=([A-Z]+)")
       }
@@ -183,6 +210,8 @@ function ical._private.parser:VEVENT(handler)
       VEVENT.TRANSP = k
     elseif v:match("LOCATION") then
       VEVENT.LOCATION = k
+    elseif v:match("SEQUENCE") then
+      VEVENT.SEQUENCE = k
     elseif v:match("DESCRIPTION") then
       VEVENT.DESCRIPTION = k
     elseif v:match("URL") then
@@ -192,7 +221,7 @@ function ical._private.parser:VEVENT(handler)
       }
     elseif v:match("BEGIN") then
       if k:match("VALARM") then
-        VEVENT.VALARM = self._private.parser:VALARM(handler)
+        VEVENT.VALARM = self:VALARM(handler)
       end
     elseif v:match("UID") then
       VEVENT.UID = k
@@ -258,9 +287,9 @@ function ical._private.parser:VCALENDAR(handler)
         VCALENDAR.VERSION = k
       elseif v:match("BEGIN") then
         if k:match("VTIMEZONE") then
-          VCALENDAR.VTIMEZONE = self._private.parser:VTIMEZONE(handler)
+          VCALENDAR.VTIMEZONE = self:VTIMEZONE(handler)
         elseif k:match("VEVENT") then
-          table.insert(VCALENDAR.VEVENT, self._private.parser:VEVENT(handler))
+          table.insert(VCALENDAR.VEVENT, self:VEVENT(handler))
         end
       end
     end
@@ -286,9 +315,9 @@ function ical._private.parser:VTIMEZONE(handler)
     end
     if v:match("BEGIN") then
       if k:match("DAYLIGHT") then
-        VTIMEZONE.DAYLIGHT = self._private.parser:DAYLIGHT(handler)
+        VTIMEZONE.DAYLIGHT = self:DAYLIGHT(handler)
       elseif k:match("STANDARD") then
-        VTIMEZONE.STANDARD = self._private.parser:STANDARD(handler)
+        VTIMEZONE.STANDARD = self:STANDARD(handler)
       end
     end
   end
@@ -308,13 +337,13 @@ function ical._private.parser:DAYLIGHT(handler)
 
     local v, k = line:match("(.*):(.*)")
     if v:match("TZOFFSETFROM") then
-      DAYLIGHT.TZOFFSETFROM = self._private.parser.offset(k)
+      DAYLIGHT.TZOFFSETFROM = self.offset(k)
     elseif v:match("TZOFFSETTO") then
-      DAYLIGHT.TZOFFSETTO = self._private.parser.offset(k)
+      DAYLIGHT.TZOFFSETTO = self.offset(k)
     elseif v:match("TZNAME") then
       DAYLIGHT.TZNAME = k
     elseif v:match("DTSTART") then
-      DAYLIGHT.DTSTART = self._private.parser.to_datetime(k)
+      DAYLIGHT.DTSTART = self.to_datetime(k)
     elseif v:match("RRULE") then
       DAYLIGHT.RRULE = {
         FREQ = k:match("FREQ=([A-Z]+)"),
@@ -344,13 +373,13 @@ function ical._private.parser:STANDARD(handler)
     -- Break down each line into the property:value
     local v, k = line:match("(.*):(.*)")
     if v:match("TZOFFSETFROM") then
-      STANDARD.TZOFFSETFROM = self._private.parser.offset(k)
+      STANDARD.TZOFFSETFROM = self.offset(k)
     elseif v:match("TZOFFSETTO") then
-      STANDARD.TZOFFSETTO = self._private.parser.offset(k)
+      STANDARD.TZOFFSETTO = self.offset(k)
     elseif v:match("TZNAME") then
       STANDARD.TZNAME = k
     elseif v:match("DTSTART") then
-      STANDARD.DTSTART = self._private.parser.to_datetime(k)
+      STANDARD.DTSTART = self.to_datetime(k)
     elseif v:match("RRULE") then
       STANDARD.RRULE = {
         FREQ = k:match("FREQ=([A-Z]+)"),

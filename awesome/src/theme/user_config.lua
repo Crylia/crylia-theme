@@ -45,7 +45,7 @@ User_config = {
       "MEDIA_PLAYER"
       More information at: https://lazka.github.io/pgi-docs/UPowerGlib-1.0/enums.html#UPowerGlib.DeviceKind.KEYBOARD
   ]] --
-  battery_kind = "LINE_POWER",
+  battery_kind = "BATTERY",
 
   --[[
     If your battery is not found you can specify its path here.
@@ -98,6 +98,8 @@ User_config = {
     specify = "JetBrainsMono Nerd Font"
   },
 
+  gtk_settings = "lxappearance",
+
   --[[
     The icon theme name must be exactly as the folder is called
     The folder can be in any $XDG_DATA_DIRS/icons/[icon_theme_name]
@@ -147,6 +149,8 @@ User_config = {
   ]] --
   modkey = "Mod4",
 
+  music_player = "flatpak run com.spotify.Client",
+
   --[[
     This is the naming sheme used for the powermenu and maybe some other places in the future.
     Example:
@@ -167,6 +171,8 @@ User_config = {
     wlan = "wlo1",
     ethernet = "eno1"
   },
+
+  screen_settings = "arandr",
 
   --[[
     This is the program that will be executed when hitting the print key.
@@ -198,7 +204,6 @@ User_config = {
     "backlight"
   },
 
-
   --[[
     If true the taskbar will shot the client name instead of the class name.
     Default: false
@@ -209,6 +214,8 @@ User_config = {
     This is the default terminal, Alacritty is the default.
   ]] --
   terminal = "alacritty",
+
+  text_editor = "code",
 
   --[[
     Add every client that should get no titlebar.
@@ -222,6 +229,7 @@ User_config = {
       }
   ]] --
   titlebar_exception = {
+    "protonvpn"
   },
 
   --[[
@@ -235,7 +243,7 @@ User_config = {
       This is the path to your wallpaper.
       home is $HOME, you can also use an absolute path.
   ]] --
-  wallpaper = home .. "/.config/awesome/src/assets/fuji.jpg",
+  wallpaper = home .. "/Bilder/Hintergründe/784194.jpg",
 
   --[[
     This is the weather widget.
@@ -246,10 +254,12 @@ User_config = {
       unit = "metric" or "imperial"
   ]]
   weather_secrets = {
-    key = "",
-    city_id = "",
+    key = "e71b00168ca7219563dde4514a425b14",
+    city_id = "2864118",
     unit = "metric"
   },
+
+  web_browser = "brave-browser",
 
   --[[
     You can configure your bar's here, if you leave it empty the bar will not be shown.
@@ -276,7 +286,7 @@ User_config = {
       "Tasklist"        <-- Shows all programs per tag
     !The order goes from left to right!
   ]]
-  widgets = {
+  crylia_bar = {
     [1] = {
       left_bar = {
         "Tiling Layout",
@@ -296,8 +306,11 @@ User_config = {
         "Clock",
         "Power Button"
       }
-    },
-    [2] = {
+    }
+  },
+
+  crylia_wibox = {
+    [1] = {
       left_bar = {
         "Tiling Layout",
         "Taglist"
@@ -306,13 +319,14 @@ User_config = {
         "Tasklist"
       },
       right_bar = {
-        "Ram Usage",
+        "Systray",
+        "Battery",
+        "Bluetooth",
         "Audio",
-        "Keyboard Layout",
         "Network",
+        "Keyboard Layout",
         "Date",
         "Clock",
-        "Power Button"
       }
     }
   }

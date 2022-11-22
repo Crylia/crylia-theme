@@ -47,6 +47,13 @@ capi.client.connect_signal(
     if c.transient_for then
       c.floating = true
     end
+    if c.fullscreen then
+      gears.timer.delayed_call(function()
+        if c.valid then
+          c:geometry(c.screen.geometry)
+        end
+      end)
+    end
   end
 )
 

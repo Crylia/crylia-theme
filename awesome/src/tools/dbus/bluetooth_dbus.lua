@@ -98,6 +98,13 @@ return function()
           end
         )
 
+        capi.awesome.connect_signal(
+          "bluetooth::stop",
+          function()
+            Adapter:StopDiscovery()
+          end
+        )
+
         AdapterProperties:connect_signal(
           function(data)
             if data.Powered ~= nil then

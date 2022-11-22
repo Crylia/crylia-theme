@@ -18,6 +18,7 @@ local capi = {
 local icon_dir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/cpu/"
 
 return function(widget)
+
   local gpu_usage_widget = wibox.widget {
     {
       {

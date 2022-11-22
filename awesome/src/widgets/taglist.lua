@@ -110,16 +110,6 @@ local list_update = function(widget, buttons, _, _, objects)
         strategy = "exact",
         layout = wibox.container.constraint,
       })
-
-      --[[ awful.spawn.easy_async_with_shell(
-        "ps -o cmd " .. client.pid .. " | tail -n 1",
-        function(stdout)
-          local cmd = stdout:gsub("\n", "")
-          local app_info = Gio.AppInfo.create_from_commandline(cmd, client.name, {})
-          local exec = Gio.AppInfo.get_executable(app_info)
-          icon:get_children_by_id("icon")[1].image = Get_icon(exec)
-        end
-      ) ]]
     end
 
     Hover_signal(tag_widget)

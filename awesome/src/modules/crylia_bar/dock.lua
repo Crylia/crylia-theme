@@ -18,7 +18,7 @@ local json = require("src.lib.json-lua.json-lua")
 
 local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/context_menu/"
 
-local cm = require("src.modules.context_menu")
+local cm = require("src.modules.context_menu.init")
 
 return function(screen)
 
@@ -76,7 +76,7 @@ return function(screen)
     for _, action in ipairs(program.actions) do
       table.insert(action_entries, {
         name = Gio.DesktopAppInfo.get_action_name(DAI, action) or "",
-        icon = action.icon or icondir .. "entry.svg",
+        icon = gears.color.recolor_image(action.icon or icondir .. "entry.svg", Theme_config.dock.cm_icon),
         callback = function()
           Gio.DesktopAppInfo.launch_action(DAI, action)
         end
@@ -85,7 +85,7 @@ return function(screen)
 
     table.insert(action_entries, {
       name = "Remove from Dock",
-      icon = icondir .. "entry.svg",
+      icon = gears.color.recolor_image(icondir .. "entry.svg", Theme_config.dock.cm_icon),
       callback = function()
         local data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
         if not data then
@@ -111,9 +111,41 @@ return function(screen)
       end
     })
 
-    local context_menu = cm({
-      entries = action_entries
-    })
+    local context_menu = cm {
+      widget_template = wibox.widget {
+        {
+          {
+            {
+              {
+                widget = wibox.widget.imagebox,
+                resize = true,
+                valign = "center",
+                halign = "center",
+                id = "icon_role",
+              },
+              widget = wibox.container.constraint,
+              stragety = "exact",
+              width = dpi(24),
+              height = dpi(24),
+              id = "const"
+            },
+            {
+              widget = wibox.widget.textbox,
+              valign = "center",
+              halign = "left",
+              id = "text_role"
+            },
+            spacing = dpi(10),
+            layout = wibox.layout.fixed.horizontal
+          },
+          margins = dpi(5),
+          widget = wibox.container.margin
+        },
+        widget = wibox.container.background,
+      },
+      entries = action_entries,
+      spacing = dpi(10),
+    }
 
     dock_element:buttons(gears.table.join(
       awful.button({
@@ -131,10 +163,7 @@ return function(screen)
             return
           end
           -- add offset so mouse is above widget, this is so the mouse::leave event triggers always
-          context_menu.x = capi.mouse.coords().x - 10
-          context_menu.y = capi.mouse.coords().y + 10 - context_menu.height
-          context_menu.visible = not context_menu.visible
-          cm_open = context_menu.visible
+          context_menu:toggle()
         end
       })
     ))

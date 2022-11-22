@@ -418,10 +418,6 @@ naughty.connect_signal(
         widget_template = w_template
       }
 
-      awful.spawn.easy_async_with_shell(
-        "paplay /usr/share/sounds/freedesktop/stereo/message.oga"
-      )
-
       box.buttons = {}
       n.buttons = {}
     end

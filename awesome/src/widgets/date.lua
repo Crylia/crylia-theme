@@ -7,17 +7,13 @@ local awful = require("awful")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-require("src.core.signals")
-
-local capi = {
-  awesome = awesome,
-}
 
 -- Icon directory path
 local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/date/"
 
 -- Returns the date widget
-return function()
+return function(s)
+  local cal = require("src.modules.calendar.init") { screen = s }
 
   local date_widget = wibox.widget {
     {
@@ -63,13 +59,24 @@ return function()
     widget = wibox.container.background
   }
 
+  local calendar_popup = awful.popup {
+    widget = cal:get_widget(),
+    screen = s,
+    ontop = true,
+    bg = "#00000000",
+    visible = false,
+  }
+
   -- Signals
   Hover_signal(date_widget)
 
   date_widget:buttons {
     gears.table.join(
       awful.button({}, 1, function()
-        capi.awesome.emit_signal("calendar::toggle", date_widget)
+        local geo = mouse.current_wibox:geometry()
+        calendar_popup.x = geo.x
+        calendar_popup.y = geo.y + Global_config.top_struts
+        calendar_popup.visible = not calendar_popup.visible
       end)
     )
   }

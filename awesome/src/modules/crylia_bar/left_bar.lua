@@ -9,25 +9,6 @@ local wibox = require("wibox")
 
 return function(s, w)
 
-  local top_left = awful.popup {
-    screen = s,
-    widget = {
-
-    },
-    ontop = false,
-    bg = Theme_config.left_bar.bg,
-    visible = true,
-    maximum_width = dpi(650),
-    placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(6))
-    end
-  }
-
-  top_left:struts {
-    top = dpi(55)
-  }
-
   local function prepare_widgets(widgets)
     local layout = {
       forced_height = dpi(50),
@@ -69,10 +50,22 @@ return function(s, w)
     return layout
   end
 
-  top_left:setup {
-    prepare_widgets(w),
-    nil,
-    nil,
-    layout = wibox.layout.fixed.horizontal
+  local top_left = awful.popup {
+    screen = s,
+    widget = prepare_widgets(w),
+    ontop = false,
+    bg = Theme_config.left_bar.bg,
+    visible = true,
+    maximum_width = dpi(650),
+    placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end,
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
+    end
   }
+
+  top_left:struts {
+    top = dpi(55)
+  }
+
+  Global_config.top_struts = dpi(55)
 end

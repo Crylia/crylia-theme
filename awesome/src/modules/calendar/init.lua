@@ -7,6 +7,7 @@ local gshape = require("gears.shape")
 local gcolor = require("gears.color")
 local gfilesystem = require("gears").filesystem
 local wibox = require("wibox")
+local base = require("wibox.widget.base")
 
 local capi = {
   awesome = awesome,
@@ -14,12 +15,13 @@ local capi = {
 }
 
 local ical_parser = require("src.tools.ical_parser")()
---local task_info = require("src.modules.calendar.task_info")
+local task_info = require("src.modules.calendar.task_info")
 
 local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/calendar/"
 
 local calendar = { mt = {} }
 calendar.tasks = {}
+calendar.calendars = {}
 
 calendar._private = {}
 
@@ -56,6 +58,29 @@ calendar.date = {
   month = tonumber(os.date("%m")) or 1,
   year = tonumber(os.date("%Y")) or 1970
 }
+
+--#region base widget functions
+function calendar:layout(_, width, height)
+  if self._private.widget then
+    return { base.place_widget_at(self._private.widget, 0, 0, width, height) }
+  end
+end
+
+function calendar:fit(context, width, height)
+  local w, h = 0, 0
+  if self._private.widget then
+    w, h = base.fit_widget(self, context, self._private.widget, width, height)
+  end
+  return w, h
+end
+
+calendar.set_widget = base.set_widget_common
+
+function calendar:get_widget()
+  return self._private.widget
+end
+
+--#endregion
 
 ---Checks how many days a month has and returns the ammount. Also takes leap years into account.
 ---@param month number|nil
@@ -147,6 +172,33 @@ end
 function calendar:get_tasks()
   if not ical_parser or not ical_parser.VCALENDAR then return end
   local tasks = {}
+
+  local function task_factory(start_date, end_date, sum, loc, des, uid, freq)
+    table.insert(tasks, {
+      date_start = {
+        year = start_date.y,
+        month = start_date.m,
+        day = start_date.d,
+        hour = start_date.hour or 0,
+        min = start_date.min or 0,
+        sec = start_date.sec or 0
+      },
+      date_end = {
+        year = end_date.y,
+        month = end_date.m,
+        day = end_date.d,
+        hour = end_date.hour or 0,
+        min = end_date.min or 0,
+        sec = end_date.sec or 0
+      },
+      summary = sum,
+      location = loc,
+      description = des,
+      uid = uid,
+      freq = freq,
+    })
+  end
+
   for _, cal in ipairs(ical_parser.VCALENDAR) do
     for _, event in ipairs(cal.VEVENT) do
       if not self:check_event_uid(event.UID) then
@@ -158,44 +210,60 @@ function calendar:get_tasks()
         if event.DTEND then
           end_time = event.DTEND.DTEND
         end
+
+        -- If there is no end time then we just set it to the start time
+        if not event.DTEND.DTEND then
+          end_time = {
+            year = start_time.year + 1000,
+            month = start_time.month,
+            day = start_time.day,
+            hour = start_time.hour,
+            min = start_time.min,
+            sec = start_time.sec
+          }
+        end
         -- Get repeat cases
         if event.RRULE then
           if event.RRULE.FREQ == "DAILY" then
+            local year_counter, month_counter, day_counter = start_time.year, start_time.month,
+                start_time.day
+            while (year_counter < event.RRULE.UNTIL.year) or (month_counter < event.RRULE.UNTIL.month) or
+                (day_counter <= event.RRULE.UNTIL.day) do
+              task_factory({
+                y = year_counter,
+                m = month_counter,
+                d = day_counter,
+                hour = start_time.hour,
+                min = start_time.min,
+                sec = start_time.sec
+              }, {
+                y = year_counter,
+                m = month_counter,
+                d = day_counter,
+                hour = end_time.hour,
+                min = end_time.min,
+                sec = end_time.sec
+              }, event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
+
+              day_counter = day_counter + 1
+              if day_counter > calendar:get_last_day_in_month(month_counter, year_counter) then
+                day_counter = 1
+                month_counter = month_counter + 1
+                if month_counter > 12 then
+                  month_counter = 1
+                  year_counter = year_counter + 1
+                end
+              end
+            end
           elseif event.RRULE.FREQ == "WEEKLY" then
             local year_counter, month_counter, day_counter = start_time.year, start_time.month,
                 start_time.day
-            end_time = event.RRULE.UNTIL
-            if not event.RRULE.UNTIL then
-              end_time = {
-                year = start_time.year + 1000,
-                month = start_time.month,
-                day = start_time.day
-              }
-            end
-
-            while (year_counter < end_time.year) or (month_counter < end_time.month) or (day_counter <= end_time.day) do
-              table.insert(tasks, {
-                date_start = {
-                  year = year_counter,
-                  month = month_counter,
-                  day = day_counter,
-                  hour = start_time.hour or 0,
-                  minute = start_time.min or 0,
-                  second = start_time.sec or 0
-                },
-                date_end = {
-                  year = year_counter,
-                  month = month_counter,
-                  day = day_counter,
-                  hour = end_time.hour or 0,
-                  minute = end_time.min or 0,
-                  second = end_time.sec or 0
-                },
-                summary = event.SUMMARY,
-                location = event.LOCATION,
-                description = event.DESCRIPTION,
-                uid = event.UID
-              })
+            while (year_counter < event.RRULE.UNTIL.year) or (month_counter < event.RRULE.UNTIL.month) or
+                (day_counter <= event.RRULE.UNTIL.day) do
+              task_factory({ y = year_counter, m = month_counter, d = day_counter, hour = start_time.hour,
+                min = start_time.min, sec = start_time.sec }, { y = year_counter, m = month_counter,
+                d = day_counter, hour = end_time.hour, min = end_time.min, sec = end_time.sec },
+                event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
               day_counter = day_counter + 7
               local month_length = calendar:get_last_day_in_month(month_counter, year_counter)
               if day_counter > month_length then
@@ -208,6 +276,20 @@ function calendar:get_tasks()
               end
             end
           elseif event.RRULE.FREQ == "MONTHLY" then
+            local year_counter, month_counter, day_counter = start_time.year, start_time.month,
+                start_time.day
+            while (year_counter < event.RRULE.UNTIL.year) or (month_counter < event.RRULE.UNTIL.month) or
+                (day_counter <= event.RRULE.UNTIL.day) do
+              task_factory({ y = year_counter, m = month_counter, d = day_counter, hour = start_time.hour,
+                min = start_time.min, sec = start_time.sec }, { y = year_counter, m = month_counter,
+                d = day_counter, hour = end_time.hour, min = end_time.min, sec = end_time.sec },
+                event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
+              month_counter = month_counter + 1
+              if month_counter > 12 then
+                month_counter = 1
+                year_counter = year_counter + 1
+              end
+            end
           elseif event.RRULE.FREQ == "YEARLY" then
             end_time = event.RRULE.UNTIL
             if not event.RRULE.UNTIL then
@@ -218,65 +300,32 @@ function calendar:get_tasks()
               }
             end
             for i = start_time.year, end_time.year, 1 do
-              table.insert(tasks, {
-                date_start = {
-                  year = i,
-                  month = start_time.month,
-                  day = start_time.day,
-                  hour = start_time.hour or 0,
-                  minute = start_time.min or 0,
-                  second = start_time.sec or 0
-                },
-                date_end = {
-                  year = i,
-                  month = end_time.month,
-                  day = end_time.day,
-                  hour = end_time.hour or 0,
-                  minute = end_time.min or 0,
-                  second = end_time.sec or 0
-                },
-                summary = event.SUMMARY,
-                location = event.LOCATION,
-                description = event.DESCRIPTION,
-                url = event.URL.URL,
-                uid = event.UID
-              })
+              task_factory({ y = i, m = start_time.month, d = start_time.day, hour = start_time.hour,
+                min = start_time.min, sec = start_time.sec }, { y = i, m = end_time.month, d = end_time.day,
+                hour = end_time.hour, min = end_time.min, sec = end_time.sec }, event.SUMMARY,
+                event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
             end
           end
           -- If RRULE is empty we just add a single day event
         else
-          table.insert(tasks, {
-            date_start = {
-              year = start_time.year,
-              month = start_time.month,
-              day = start_time.day,
-              hour = start_time.hour or 0,
-              minute = start_time.min or 0,
-              second = start_time.sec or 0
-            },
-            date_end = {
-              year = start_time.year,
-              month = start_time.month,
-              day = start_time.day,
-              hour = start_time.hour or 0,
-              minute = start_time.min or 0,
-              second = start_time.sec or 0
-            },
-            summary = event.SUMMARY,
-            description = event.DESCRIPTION,
-            location = event.LOCATION,
-            url = event.URL,
-            uid = event.UID,
-          })
+          task_factory({ y = start_time.year, m = start_time.month, d = start_time.day, hour = start_time.hour,
+            min = start_time.min, sec = start_time.sec }, { y = end_time.year, m = end_time.month,
+            d = end_time.day, hour = end_time.hour, min = end_time.min, sec = end_time.sec },
+            event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
         end
         if event.VALARM then
-          -- send a notification 15 minutes before an event starts
+          -- send a notification X minutes before an event starts
 
         end
       end
     end
+    --table.insert(calendars, tasks)
+    table.insert(self.tasks, tasks)
+    table.insert(self.calendars, {
+      tasks = self.tasks,
+      color = cal.color
+    })
   end
-  table.insert(self.tasks, tasks)
 end
 
 ---!Fix later, I have no idea how to calculate it and the internet has no clue either
@@ -360,149 +409,91 @@ function calendar:create_calendar_widget()
       step = dpi(50),
       spacing = dpi(2)
     }
-    for _, cal in ipairs(self.tasks) do
-      for _, task in ipairs(cal) do
-        if (task.date_start.year == year) and (task.date_start.month == month) and (task.date_start.day == day) then
-          local tw = wibox.widget {
-            {
-              {
-                text = task.summary,
-                align = "left",
-                halign = "center",
-                font = "JetBrainsMono Nerd Font, bold 10",
-                widget = wibox.widget.textbox
-              },
-              margins = dpi(2),
-              widget = wibox.container.margin
-            },
-            fg = Theme_config.calendar.task.fg,
-            bg = Theme_config.calendar.task.bg,
-            shape = Theme_config.calendar.task.shape,
-            forced_height = dpi(20),
-            widget = wibox.container.background
-          }
 
-          --[[ local ti = task_info {
-            summary = task.summary,
-            description = task.description,
-            location = task.location,
-            url = task.url,
-            uid = task.uid,
-            date_start = task.date_start,
-            date_end = task.date_end,
-          } ]]
+    local function task_factory(task, bg)
+      return wibox.widget {
+        {
+          {
+            text = task.summary,
+            align = "left",
+            halign = "center",
+            font = "JetBrainsMono Nerd Font, bold 10",
+            widget = wibox.widget.textbox
+          },
+          margins = dpi(2),
+          widget = wibox.container.margin
+        },
+        fg = Theme_config.calendar.task.fg,
+        bg = bg,
+        shape = Theme_config.calendar.task.shape,
+        forced_height = dpi(20),
+        widget = wibox.container.background
+      }
+    end
 
-          local task_info_widget = wibox.widget {
-            {
-              { -- Task detail
-                { -- Calendar color
-                  widget = wibox.container.background,
-                  shape = function(cr, _, height)
-                    gshape.rounded_rect(cr, dpi(10), height, dpi(8))
-                  end,
-                },
-                {
-                  { -- Summary
-                    widget = wibox.widget.textbox,
-                    text = task.summary,
-                    valign = "center",
-                    align = "left",
-                    id = "summary",
-                  },
-                  { -- Date long
-                    widget = wibox.widget.textbox,
-                    text = task.date_long,
-                    valign = "center",
-                    align = "right",
-                    id = "date_long",
-                  },
-                  { -- From - To
-                    widget = wibox.widget.textbox,
-                    text = task.from_to,
-                    valign = "center",
-                    align = "left",
-                    id = "from_to",
-                  },
-                  { -- Repeat information
-                    widget = wibox.widget.textbox,
-                    text = task.repeat_info,
-                    valign = "center",
-                    align = "right",
-                    id = "repeat_info",
-                  },
-                  layout = wibox.layout.fixed.vertical,
-                },
-                layout = wibox.layout.fixed.horizontal
-              },
-              { -- Location
-                {
-                  widget = wibox.widget.imagebox,
-                  image = gcolor.recolor_image(icondir .. "location.svg",
-                    Theme_config.calendar.border_color),
-                  resize = false,
-                  valign = "center",
-                  halign = "center",
-                },
-                {
-                  widget = wibox.widget.textbox,
-                  text = task.location,
-                  valign = "center",
-                  align = "left",
-                  id = "location",
-                },
-                id = "location_container",
-                layout = wibox.layout.fixed.horizontal
-              },
-              { -- Alarm
-                {
-                  widget = wibox.widget.imagebox,
-                  image = gcolor.recolor_image(icondir .. "alarm.svg", Theme_config.calendar.fg),
-                  resize = false,
-                  valign = "center",
-                  halign = "center",
-                },
-                {
-                  widget = wibox.widget.textbox,
-                  text = task.alarm,
-                  valign = "center",
-                  align = "left",
-                  id = "alarm",
-                },
-                id = "alarm_container",
-                layout = wibox.layout.fixed.horizontal
-              },
-              id = "task_detail",
-              layout = wibox.layout.fixed.vertical
-            },
-            bg = Theme_config.calendar.bg,
-            fg = Theme_config.calendar.fg,
-            shape = function(cr, _, height)
-              gshape.rounded_rect(cr, height, height, dpi(8))
-            end,
-            widget = wibox.container.background,
-          }
+    for _, cal in ipairs(self.calendars) do
+      for _, tasks in ipairs(cal.tasks) do
+        for _, task in ipairs(tasks) do
+          if (task.date_start.year == year) and (task.date_start.month == month) and (task.date_start.day == day) then
+            -- Check if task if before the current date
+            local tw
+            if task.date_start.year < self.date.year or
+                (task.date_start.year == self.date.year and task.date_start.month < self.date.month) or
+                (
+                task.date_start.year == self.date.year and task.date_start.month == self.date.month and
+                    task.date_start.day < self.date.day) then
+              tw = task_factory(task, cal.color .. "55")
+            else
+              tw = task_factory(task, cal.color)
+            end
 
-          local task_popup = awful.popup {
-            widget = task_info_widget,
-            ontop = true,
-            visible = true,
-            bg = "#00000000",
-            x = capi.mouse.coords().x,
-            y = capi.mouse.coords().y,
-            screen = self.screen
-          }
+            local ti = task_info {
+              summary = task.summary,
+              description = task.description,
+              location = task.location,
+              url = task.url,
+              uid = task.uid,
+              date_start = task.date_start,
+              start_time = task.start_time,
+              date_end = task.date_end,
+              end_time = task.end_time,
+              freq = task.freq,
+              task = task,
+              color = cal.color,
+            }
 
-          tw:connect_signal("button::down", function()
-            --ti:toggle()
-            task_popup.visible = not task_popup.visible
-          end)
+            local task_popup = awful.popup {
+              widget = ti,
+              ontop = true,
+              visible = false,
+              bg = "#00000000",
+              x = capi.mouse.coords().x,
+              y = capi.mouse.coords().y,
+              screen = self.screen
+            }
 
-          Hover_signal(tw)
+            tw:buttons(
+              gtable.join(
+                awful.button({}, 1, function()
+                  task_popup.x = capi.mouse.coords().x
+                  task_popup.y = capi.mouse.coords().y
+                  task_popup.visible = not task_popup.visible
+                end)
+              )
+            )
 
-          table.insert(tasks_layout, tw)
+            tw:connect_signal("mouse::leave", function()
+              task_popup.visible = false
+            end)
+
+            Hover_signal(tw)
+
+            table.insert(tasks_layout, tw)
+          end
         end
       end
     end
+
     return tasks_layout
   end
 
@@ -749,10 +740,11 @@ end
 
 function calendar.new(args)
   args = args or {}
-  local ret = gobject { enable_properties = true, enable_auto_signals = true }
+
+  local ret = base.make_widget(nil, nil, { enable_properties = true })
   gtable.crush(ret, calendar, true)
 
-  local calendar_widget = wibox.widget {
+  ret:set_widget(wibox.widget {
     {
       {
         {
@@ -892,7 +884,7 @@ function calendar.new(args)
     border_strategy = "inner",
     fg = Theme_config.calendar.fg,
     shape = Theme_config.calendar.shape,
-  }
+  })
 
   ret:get_tasks()
 
@@ -901,109 +893,81 @@ function calendar.new(args)
   ret:create_weekdays_widget()
   ret:create_calendar_weeks_widget()
 
-  ret.widget = awful.popup {
-    widget = calendar_widget,
-    screen = args.screen,
-    ontop = true,
-    bg = "#00000000",
-    visible = false,
-    placement = function(c) awful.placement.align(c,
-        { position = "top_right", margins = { right = dpi(10), top = dpi(65) } })
-    end
-
-  }
-
-  calendar_widget:get_children_by_id("add_ical")[1]:buttons(
-    gtable.join(
-      awful.button({}, 1, function()
-        awful.spawn.easy_async_with_shell(
-          "zenity --file-selection --title='Select an ICalendar file' --file-filter='iCalendar File | *.ics'",
-          function(path_to_file)
-            path_to_file = string.gsub(path_to_file, "\n", "")
-            if not path_to_file then return end
-            ical_parser:add_calendar(path_to_file)
-            ret:get_tasks()
-            ret:create_calendar_widget()
-          end
-        )
-      end)
-    )
-  )
-
-  calendar_widget:get_children_by_id("add_task")[1]:buttons(
-    gtable.join(
-      awful.button({}, 1, function()
-        awful.spawn.easy_async_with_shell(
-          "zenity --info --text='Soon TM'",
-          function()
-
-          end
-        )
-      end)
-    )
-  )
-
-  calendar_widget:get_children_by_id("prev_month")[1]:buttons(
-    gtable.join(
-      awful.button({}, 1, function()
-        ret.date.month = ret.date.month - 1
-        if ret.date.month == 0 then
-          ret.date.month = 12
-          ret.date.year = ret.date.year - 1
+  ret:get_widget():get_children_by_id("add_ical")[1]:buttons(gtable.join(
+    awful.button({}, 1, function()
+      awful.spawn.easy_async_with_shell(
+        "zenity --file-selection --title='Select an ICalendar file' --file-filter='iCalendar File | *.ics'",
+        function(path_to_file)
+          path_to_file = string.gsub(path_to_file, "\n", "")
+          if (not path_to_file) or (path_to_file == "") then return end
+          ical_parser:add_calendar(path_to_file)
+          ret:get_tasks()
+          ret:create_calendar_widget()
         end
-        calendar_widget:get_children_by_id("month")[1].text = ret._private.months[ret.date.month]
-        calendar_widget:get_children_by_id("year")[1].text = ret.date.year
-        ret:create_calendar_weeks_widget()
-        ret:create_calendar_widget()
-      end)
-    )
-  )
+      )
+    end)
+  ))
 
-  calendar_widget:get_children_by_id("next_month")[1]:buttons(
-    gtable.join(
-      awful.button({}, 1, function()
-        ret.date.month = ret.date.month + 1
-        if ret.date.month == 13 then
-          ret.date.month = 1
-          ret.date.year = ret.date.year + 1
+  ret:get_widget():get_children_by_id("add_task")[1]:buttons(gtable.join(
+    awful.button({}, 1, function()
+      awful.spawn.easy_async_with_shell(
+        "zenity --info --text='Soon TM'",
+        function()
+
         end
-        calendar_widget:get_children_by_id("month")[1].text = ret._private.months[ret.date.month]
-        calendar_widget:get_children_by_id("year")[1].text = ret.date.year
-        ret:create_calendar_weeks_widget()
-        ret:create_calendar_widget()
-      end)
-    )
-  )
+      )
+    end)
+  ))
+
+  ret:get_widget():get_children_by_id("prev_month")[1]:buttons(gtable.join(
+    awful.button({}, 1, function()
+      ret.date.month = ret.date.month - 1
+      if ret.date.month == 0 then
+        ret.date.month = 12
+        ret.date.year = ret.date.year - 1
+      end
+      ret:get_widget():get_children_by_id("month")[1].text = ret._private.months[ret.date.month]
+      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:create_calendar_weeks_widget()
+      ret:create_calendar_widget()
+    end)
+  ))
+
+  ret:get_widget():get_children_by_id("next_month")[1]:buttons(gtable.join(
+    awful.button({}, 1, function()
+      ret.date.month = ret.date.month + 1
+      if ret.date.month == 13 then
+        ret.date.month = 1
+        ret.date.year = ret.date.year + 1
+      end
+      ret:get_widget():get_children_by_id("month")[1].text = ret._private.months[ret.date.month]
+      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:create_calendar_weeks_widget()
+      ret:create_calendar_widget()
+    end)
+  ))
 
   --- Calendar switch year back
-  calendar_widget:get_children_by_id("prev_year")[1]:buttons(
-    gtable.join(
-      awful.button({}, 1, function()
-        ret.date.year = ret.date.year - 1
-        calendar_widget:get_children_by_id("year")[1].text = ret.date.year
-        ret:create_calendar_weeks_widget()
-        ret:create_calendar_widget()
-      end)
-    )
-  )
+  ret:get_widget():get_children_by_id("prev_year")[1]:buttons(gtable.join(
+    awful.button({}, 1, function()
+      ret.date.year = ret.date.year - 1
+      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:create_calendar_weeks_widget()
+      ret:create_calendar_widget()
+    end)
+  ))
 
   --- Calendar switch year forward
-  calendar_widget:get_children_by_id("next_year")[1]:buttons(
-    gtable.join(
-      awful.button({}, 1, function()
-        ret.date.year = ret.date.year + 1
-        calendar_widget:get_children_by_id("year")[1].text = ret.date.year
-        ret:create_calendar_weeks_widget()
-        ret:create_calendar_widget()
-      end)
-    )
-  )
+  ret:get_widget():get_children_by_id("next_year")[1]:buttons(gtable.join(
+    awful.button({}, 1, function()
+      ret.date.year = ret.date.year + 1
+      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:create_calendar_weeks_widget()
+      ret:create_calendar_widget()
+    end)
+  ))
 
-  capi.awesome.connect_signal("calendar::toggle", function()
-    if capi.mouse.screen == args.screen then
-      ret.widget.visible = not ret.widget.visible
-    end
-  end)
+  return ret
 end
 
 function calendar.mt:__call(...)

@@ -181,7 +181,7 @@ function device.new(args)
   return ret
 end
 
-function device.mt.__call(...)
+function device.mt:__call(...)
   return device.new(...)
 end
 

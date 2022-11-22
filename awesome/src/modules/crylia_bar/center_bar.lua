@@ -14,23 +14,6 @@ local capi = {
 
 return function(s, widgets)
 
-  local top_center = awful.popup {
-    screen = s,
-    widget = wibox.container.background,
-    ontop = false,
-    bg = Theme_config.center_bar.bg,
-    visible = true,
-    maximum_width = dpi(500),
-    placement = function(c) awful.placement.top(c, { margins = dpi(10) }) end,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(6))
-    end
-  }
-
-  top_center:struts {
-    top = dpi(55)
-  }
-
   local function prepare_widgets(w)
     local layout = {
       forced_height = dpi(50),
@@ -72,55 +55,53 @@ return function(s, widgets)
     return layout
   end
 
-  top_center:setup {
-    nil,
-    prepare_widgets(widgets),
-    nil,
-    layout = wibox.layout.fixed.horizontal
+  local top_center = awful.popup {
+    screen = s,
+    widget = prepare_widgets(widgets),
+    ontop = false,
+    bg = Theme_config.center_bar.bg,
+    visible = true,
+    maximum_width = dpi(500),
+    placement = function(c) awful.placement.top(c, { margins = dpi(10) }) end,
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
+    end
   }
 
-  capi.client.connect_signal(
-    "manage",
-    function(c)
-      if #s.selected_tag:clients() < 1 then
-        top_center.visible = false
-      else
-        top_center.visible = true
-      end
-    end
-  )
+  top_center:struts {
+    top = dpi(55)
+  }
 
-  capi.client.connect_signal(
-    "unmanage",
-    function(c)
-      if #s.selected_tag:clients() < 1 then
-        top_center.visible = false
-      else
-        top_center.visible = true
-      end
+  capi.client.connect_signal("manage", function(c)
+    if #s.selected_tag:clients() < 1 then
+      top_center.visible = false
+    else
+      top_center.visible = true
     end
-  )
+  end)
 
-  capi.client.connect_signal(
-    "property::selected",
-    function(c)
-      if #s.selected_tag:clients() < 1 then
-        top_center.visible = false
-      else
-        top_center.visible = true
-      end
+  capi.client.connect_signal("unmanage", function(c)
+    if #s.selected_tag:clients() < 1 then
+      top_center.visible = false
+    else
+      top_center.visible = true
     end
-  )
+  end)
 
-  capi.awesome.connect_signal(
-    "refresh",
-    function(c)
-      if #s.selected_tag:clients() < 1 then
-        top_center.visible = false
-      else
-        top_center.visible = true
-      end
+  capi.client.connect_signal("property::selected", function(c)
+    if #s.selected_tag:clients() < 1 then
+      top_center.visible = false
+    else
+      top_center.visible = true
     end
-  )
+  end)
+
+  capi.awesome.connect_signal("refresh", function(c)
+    if #s.selected_tag:clients() < 1 then
+      top_center.visible = false
+    else
+      top_center.visible = true
+    end
+  end)
 
 end

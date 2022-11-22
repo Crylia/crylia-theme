@@ -1,26 +1,41 @@
 local awful = require("awful")
+local pulse = require("pulseaudio_dbus")
 
 local capi = {
   awesome = awesome,
 }
 
---[[ local lgi = require("lgi")
+local lgi = require("lgi")
 local pulseaudio = require("lua_libpulse_glib")
-local ppretty = require("pl.ppretty")
 
 local pa = pulseaudio.new()
 
-local ctx = pa:context("My Test App")
+local ctx = pa:context("awesome")
 
-ctx:connect(nil, function(state)
+print(ctx)
+--[[ ctx:connect(nil, function(state)
   if state == 4 then
     print("Connection is ready")
 
     ctx:get_sinks(function(sinks)
-      ppretty.dump(sinks)
+      print(sinks[1])
     end)
   end
 end) ]]
+
+--local address = pulse.get_address()
+
+--[[ local connection = pulse.get_connection(address)
+
+local core = pulse.get_core(connection)
+
+local sink = pulse.get_device(connection, core:get_sinks()[1])
+
+sink:set_muted(false)
+
+--assert(not sink:is_muted())
+
+sink:set_volume_percent({ 75 }) ]]
 
 awful.spawn.with_line_callback(
   [[bash -c "LC_ALL=C pactl subscribe"]],

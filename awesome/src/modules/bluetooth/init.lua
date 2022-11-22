@@ -51,8 +51,12 @@ local function add_device(self, device, battery)
   end
 end
 
-function bluetooth.remove_device(self, device)
-
+local function remove_device(self, device)
+  for i, dev in pairs(self.devices) do
+    if dev.Address == device.Address then
+      table.remove(self.devices, i)
+    end
+  end
 end
 
 function bluetooth.new(args)
@@ -110,21 +114,15 @@ function bluetooth.new(args)
             id = "connected_list",
             {
               {
-                {
-                  step = dpi(50),
-                  spacing = dpi(10),
-                  layout = require("src.lib.overflow_widget.overflow").vertical,
-                  scrollbar_width = 0,
-                  id = "connected_device_list"
-                },
-                id = "margin",
-                margins = dpi(10),
-                widget = wibox.container.margin
+                step = dpi(50),
+                spacing = dpi(10),
+                layout = require("src.lib.overflow_widget.overflow").vertical,
+                scrollbar_width = 0,
+                id = "connected_device_list"
               },
-              id = "place",
-              height = dpi(200),
-              strategy = "max",
-              widget = wibox.container.constraint
+              id = "margin",
+              margins = dpi(10),
+              widget = wibox.container.margin
             },
             border_color = Theme_config.bluetooth_controller.con_device_border_color,
             border_width = Theme_config.bluetooth_controller.con_device_border_width,
@@ -180,21 +178,15 @@ function bluetooth.new(args)
             id = "discovered_list",
             {
               {
-                {
-                  id = "discovered_device_list",
-                  spacing = dpi(10),
-                  step = dpi(50),
-                  layout = require("src.lib.overflow_widget.overflow").vertical,
-                  scrollbar_width = 0,
-                },
-                id = "margin",
-                margins = dpi(10),
-                widget = wibox.container.margin
+                id = "discovered_device_list",
+                spacing = dpi(10),
+                step = dpi(50),
+                layout = require("src.lib.overflow_widget.overflow").vertical,
+                scrollbar_width = 0,
               },
-              id = "place",
-              height = dpi(200),
-              strategy = "max",
-              widget = wibox.container.constraint
+              id = "margin",
+              margins = dpi(10),
+              widget = wibox.container.margin
             },
             border_color = Theme_config.bluetooth_controller.con_device_border_color,
             border_width = Theme_config.bluetooth_controller.con_device_border_width,
@@ -203,6 +195,59 @@ function bluetooth.new(args)
             end,
             widget = wibox.container.background,
             forced_height = 0
+          },
+          {
+            { -- action buttons
+              { -- turn off
+                {
+                  {
+                    image = gcolor.recolor_image(icondir .. "power.svg",
+                      Theme_config.bluetooth_controller.power_icon_color),
+                    resize = false,
+                    valign = "center",
+                    halign = "center",
+                    widget = wibox.widget.imagebox,
+                    id = "icon"
+                  },
+                  widget = wibox.container.margin,
+                  margins = dpi(5),
+                  id = "center"
+                },
+                border_width = dpi(2),
+                border_color = Theme_config.bluetooth_controller.border_color,
+                shape = function(cr, width, height)
+                  gshape.rounded_rect(cr, width, height, dpi(4))
+                end,
+                bg = Theme_config.bluetooth_controller.power_bg,
+                widget = wibox.container.background,
+                id = "power",
+              },
+              nil,
+              { -- refresh
+                {
+                  {
+                    image = gcolor.recolor_image(icondir .. "refresh.svg",
+                      Theme_config.bluetooth_controller.refresh_icon_color),
+                    resize = false,
+                    valign = "center",
+                    halign = "center",
+                    widget = wibox.widget.imagebox,
+                  },
+                  widget = wibox.container.margin,
+                  margins = dpi(5),
+                },
+                border_width = dpi(2),
+                border_color = Theme_config.bluetooth_controller.border_color,
+                shape = function(cr, width, height)
+                  gshape.rounded_rect(cr, width, height, dpi(4))
+                end,
+                bg = Theme_config.bluetooth_controller.refresh_bg,
+                widget = wibox.container.background
+              },
+              layout = wibox.layout.align.horizontal
+            },
+            widget = wibox.container.margin,
+            top = dpi(10),
           },
           id = "layout1",
           layout = wibox.layout.fixed.vertical
@@ -229,15 +274,14 @@ function bluetooth.new(args)
     "bluetooth::device_changed",
     function(device, battery)
       add_device(ret, device, battery)
+      remove_device(ret, device)
       bluetooth_container:get_children_by_id("connected_device_list")[1].children = ret:get_devices().paired
       bluetooth_container:get_children_by_id("discovered_device_list")[1].children = ret:get_devices().discovered
     end
   )
 
-
   local connected_margin = bluetooth_container:get_children_by_id("connected_margin")[1]
   local connected_list = bluetooth_container:get_children_by_id("connected_list")[1]
-  local connected_bg = bluetooth_container:get_children_by_id("connected_bg")[1]
   local connected = bluetooth_container:get_children_by_id("connected")[1].center
 
   connected_margin:connect_signal(
@@ -264,7 +308,7 @@ function bluetooth.new(args)
           Theme_config.bluetooth_controller.connected_icon_color))
       else
         rubato_timer.target = 0
-        connected_bg.shape = function(cr, width, height)
+        connected_margin.connected_bg.shape = function(cr, width, height)
           gshape.rounded_rect(cr, width, height, 4)
         end
         connected.icon:set_image(gcolor.recolor_image(icondir .. "menu-down.svg",
@@ -294,9 +338,10 @@ function bluetooth.new(args)
 
       if discovered_list.forced_height == 0 then
         local size = (#ret:get_devices().discovered * 60) + 1
-        if size < 210 then
-          rubato_timer.target = dpi(size)
+        if size > 210 then
+          size = 210
         end
+        rubato_timer.target = dpi(size)
         discovered_margin.discovered_bg.shape = function(cr, width, height)
           gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
         end

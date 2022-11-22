@@ -334,11 +334,25 @@ return function()
   -- Signals
   Hover_signal(network_widget)
 
-  network_widget:connect_signal(
-    "button::press",
-    function()
-      awful.spawn("gnome-control-center wlan")
-    end
+  network_widget:buttons(
+    gears.table.join(
+      awful.button(
+        {},
+        1,
+        nil,
+        function()
+          capi.awesome.emit_signal("NM::toggle_container")
+        end
+      ),
+      awful.button(
+        {},
+        3,
+        nil,
+        function()
+          capi.awesome.emit_signal("NM::toggle_wifi")
+        end
+      )
+    )
   )
 
   return network_widget

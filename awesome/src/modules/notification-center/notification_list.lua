@@ -254,7 +254,7 @@ function nl.create_notification(n)
     end
   )
 
-  table.insert(nl.notification_list, notification)
+  table.insert(nl.notification_list, 1, notification)
 end
 
 naughty.connect_signal(

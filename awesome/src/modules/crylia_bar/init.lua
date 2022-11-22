@@ -25,7 +25,7 @@ return function(s)
         elseif widget == "Cpu Usage" then
           table.insert(widget_table, require("src.widgets.cpu_info")("usage"))
         elseif widget == "Date" then
-          table.insert(widget_table, require("src.widgets.date")())
+          table.insert(widget_table, require("src.widgets.date")(s))
         elseif widget == "Gpu Temperature" then
           table.insert(widget_table, require("src.widgets.gpu_info")("temp"))
         elseif widget == "Gpu Usage" then
@@ -52,8 +52,8 @@ return function(s)
     return widget_table
   end
 
-  if User_config.widgets then
-    for index, screen in ipairs(User_config.widgets) do
+  if User_config.crylia_bar then
+    for index, screen in ipairs(User_config.crylia_bar) do
       if index == s.index then
         if screen.left_bar then
           require("src.modules.crylia_bar.left_bar")(s, get_widgets(screen.left_bar))
