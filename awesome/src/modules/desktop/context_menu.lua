@@ -31,8 +31,6 @@ function context_menu.new(args)
   local ret = gobject {}
   gtable.crush(ret, context_menu, true)
 
-
-
   capi.awesome.connect_signal("context_menu:show", function()
     ret:toggle()
     mousegrabber.run(function()
@@ -44,7 +42,7 @@ function context_menu.new(args)
     end, nil)
   end)
 
-  return w
+  return ret
 end
 
 function context_menu.mt:__call(...)

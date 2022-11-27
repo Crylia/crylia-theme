@@ -10,6 +10,7 @@ local wibox = require("wibox")
 local gshape = require("gears.shape")
 local gtable = require("gears.table")
 local gobject = require("gears.object")
+local abutton = require("awful.button")
 
 local capi = {
   awesome = awesome,
@@ -18,39 +19,6 @@ local capi = {
 
 local application_launcher = { mt = {} }
 
-application_launcher.searchbar = awful.widget.inputbox {
-  widget_template = wibox.template {
-    widget = wibox.widget {
-      {
-        {
-          {
-            widget = wibox.widget.textbox,
-            halign = "left",
-            valign = "center",
-            id = "text_role",
-          },
-          widget = wibox.container.margin,
-          margins = 5,
-          id = "marg"
-        },
-        widget = wibox.container.constraint,
-        strategy = "exact",
-        width = 400,
-        height = 50,
-        id = "const"
-      },
-      widget = wibox.container.background,
-      bg = "#212121",
-      fg = "#F0F0F0",
-      border_color = "#414141",
-      border_width = 2,
-      shape = gshape.rounded_rect,
-    },
-    update_callback = function(template_widget, args)
-      template_widget.widget.const.marg.text_role.markup = args.text
-    end
-  }
-}
 
 application_launcher.application_grid = require("src.modules.application_launcher.application") {}
 
@@ -62,10 +30,58 @@ function application_launcher.new(args)
 
   gtable.crush(ret, application_launcher, true)
 
+  local searchbar = awful.widget.inputbox {
+    hint_text = "Search...",
+    valign = "center",
+    halign = "left",
+  }
+
+  searchbar:buttons(
+    gtable.join {
+      abutton({}, 1, function()
+        searchbar:focus()
+      end)
+    }
+  )
+
+  local old_cursor, old_wibox
+  searchbar:connect_signal("mouse::enter", function()
+    local wid = capi.mouse.current_wibox
+    if wid then
+      old_cursor, old_wibox = wid.cursor, wid
+      wid.cursor = "xterm"
+    end
+  end)
+  searchbar:connect_signal("mouse::leave", function()
+    old_wibox.cursor = old_cursor
+    old_wibox = nil
+  end)
+
   local applicaton_launcher = wibox.widget {
     {
       {
-        ret.searchbar,
+        {
+          {
+            {
+              searchbar,
+              widget = wibox.container.margin,
+              margins = 5,
+              id = "marg"
+            },
+            widget = wibox.container.constraint,
+            strategy = "exact",
+            width = 400,
+            height = 50,
+            id = "const"
+          },
+          widget = wibox.container.background,
+          bg = Theme_config.application_launcher.searchbar.bg,
+          fg = Theme_config.application_launcher.searchbar.fg,
+          border_color = Theme_config.application_launcher.searchbar.border_color,
+          border_width = Theme_config.application_launcher.searchbar.border_width,
+          shape = gshape.rounded_rect,
+          id = "searchbar_bg"
+        },
         {
           ret.application_grid,
           spacing = dpi(10),
@@ -101,52 +117,70 @@ function application_launcher.new(args)
     border_width = Theme_config.application_launcher.border_width
   }
 
+  local searchbar_bg = applicaton_launcher:get_children_by_id("searchbar_bg")[1]
+
   capi.awesome.connect_signal(
     "application_launcher::show",
     function()
+      capi.awesome.emit_signal("update::selected")
       if capi.mouse.screen == args.screen then
         ret.application_container.visible = not ret.application_container.visible
       end
       if ret.application_container.visible then
-        ret.searchbar:focus()
+        searchbar_bg.border_color = Theme_config.application_launcher.searchbar.border_active
+        searchbar:focus()
       else
+        searchbar:set_text("")
         awful.keygrabber.stop()
       end
     end
   )
 
-  ret.searchbar:connect_signal(
+  searchbar:connect_signal(
     "submit",
-    function(text)
+    function(_, text)
       ret.application_grid:execute()
       capi.awesome.emit_signal("application_launcher::show")
+      searchbar:set_text("")
+      ret.application_grid:set_applications(searchbar:get_text())
+      searchbar_bg.border_color = Theme_config.application_launcher.searchbar.border_color
     end
   )
 
-  ret.searchbar:connect_signal(
+  searchbar:connect_signal(
     "stopped",
-    function()
-      ret.searchbar:get_widget().widget.border_color = Theme_config.application_launcher.searchbar.border_color
+    function(_, stop_key)
+      if stop_key == "Escape" then
+        capi.awesome.emit_signal("application_launcher::show")
+      end
+      searchbar:set_text("")
+      ret.application_grid:set_applications(searchbar:get_text())
+      searchbar_bg.border_color = Theme_config.application_launcher.searchbar.border_color
     end
   )
 
-  ret.searchbar:connect_signal(
+  searchbar:connect_signal(
     "started",
     function()
-      ret.searchbar:get_widget().widget.border_color = Theme_config.application_launcher.searchbar.border_active
+      searchbar_bg.border_color = Theme_config.application_launcher.searchbar.border_active
     end
   )
 
-  awesome.connect_signal(
+  searchbar:connect_signal(
     "inputbox::key_pressed",
-    function(modkey, key)
+    function(_, modkey, key)
       if key == "Escape" then
-        ret.searchbar:stop()
+        searchbar:stop()
         capi.awesome.emit_signal("application_launcher::show")
         ret.application_grid:reset()
-        ret.searchbar:set_text("")
+        searchbar:set_text("")
       elseif key == "Down" or key == "Right" then
-        ret.searchbar:stop()
+        if key == "Down" then
+          ret.application_grid:move_down()
+        elseif key == "Right" then
+          ret.application_grid:move_right()
+        end
+        searchbar:stop()
         awful.keygrabber.run(function(mod, key2, event)
           if event == "press" then
             if key2 == "Down" then
@@ -155,7 +189,7 @@ function application_launcher.new(args)
               local old_y = ret.application_grid._private.curser.y
               ret.application_grid:move_up()
               if old_y - ret.application_grid._private.curser.y == 0 then
-                ret.searchbar:focus()
+                searchbar:focus()
               end
             elseif key2 == "Left" then
               ret.application_grid:move_left()
@@ -166,17 +200,20 @@ function application_launcher.new(args)
               ret.application_grid:execute()
               capi.awesome.emit_signal("application_launcher::show")
               ret.application_grid:reset()
-              ret.searchbar:set_text("")
+              searchbar:set_text("")
+              ret.application_grid:set_applications(searchbar:get_text())
             elseif key2 == "Escape" then
               capi.awesome.emit_signal("application_launcher::show")
               ret.application_grid:reset()
-              ret.searchbar:set_text("")
+              searchbar:set_text("")
+              ret.application_grid:set_applications(searchbar:get_text())
               awful.keygrabber.stop()
             end
           end
         end)
+        searchbar_bg.border_color = Theme_config.application_launcher.searchbar.border_color
       end
-      ret.application_grid:set_applications(ret.searchbar:get_text())
+      ret.application_grid:set_applications(searchbar:get_text())
     end
   )
 

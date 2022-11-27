@@ -62,10 +62,7 @@ return function(s, widgets)
     bg = Theme_config.center_bar.bg,
     visible = true,
     maximum_width = dpi(500),
-    placement = function(c) awful.placement.top(c, { margins = dpi(10) }) end,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(6))
-    end
+    placement = function(c) awful.placement.top(c, { margins = dpi(10) }) end
   }
 
   top_center:struts {

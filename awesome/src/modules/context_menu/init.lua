@@ -52,7 +52,7 @@ function context_menu:make_entries(wtemplate, entries, spacing)
     return
   end
 
-  for _, entry in ipairs(entries) do
+  for key, entry in pairs(entries) do
     -- TODO: Figure out how to make a new widget from etemplate
     local menu_entry = wibox.widget {
       {
@@ -124,7 +124,8 @@ function context_menu:make_entries(wtemplate, entries, spacing)
           if not entry.submenu then
             entry.callback()
           end
-          self.visible = false
+          capi.awesome.emit_signal("submenu::close")
+          capi.awesome.emit_signal("cm::hide")
         end
       })
     })
@@ -169,10 +170,8 @@ function context_menu:make_entries(wtemplate, entries, spacing)
         menu_entry.popup.visible = false
       end)
     end
-
-    table.insert(menu_entries, menu_entry)
+    menu_entries[key] = menu_entry
   end
-
   return menu_entries
 end
 
@@ -182,6 +181,8 @@ function context_menu:toggle()
   self.visible = not self.visible
 end
 
+-- This is terribly done but I don't know how to do it better since
+-- the awful.popup.widget needs to know itself which I don't think is possible
 function context_menu.new(args)
   args = args or {}
 
@@ -201,6 +202,11 @@ function context_menu.new(args)
     x = capi.mouse.coords().x + 10,
     y = capi.mouse.coords().y - 10
   }
+
+  -- I literally have no clue how to do it better, it doesn't really matter anyways
+  capi.awesome.connect_signal("cm::hide", function()
+    ret.visible = false
+  end)
 
   gtable.crush(ret, context_menu, true)
 

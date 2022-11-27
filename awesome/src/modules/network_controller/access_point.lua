@@ -10,6 +10,8 @@ local gfilesystem = require("gears").filesystem
 local gobject = require("gears").object
 local gcolor = require("gears").color
 local wibox = require("wibox")
+local base = require("wibox.widget.base")
+local NM = require("lgi").NM
 
 local ap_form = require("src.modules.network_controller.ap_form")
 
@@ -17,39 +19,28 @@ local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/network
 
 local access_point = { mt = {} }
 
-access_point.connected = false
-
 function access_point.new(args)
   args = args or {}
 
-  if not args.access_point then return end
-
-  local ret = gobject { enable_properties = true, enable_auto_signals = true }
-  gtable.crush(ret, access_point, true)
-
-  local strength = args.access_point.strength or 0
-
-  --normalize strength between 1 and 4
-  strength = math.floor(strength / 25) + 1
-
-  local icon = "wifi-strength-" .. strength .. ".svg"
+  if not args.NetworkManagerAccessPoint then return end
 
   local bg, fg, icon_color = Theme_config.network_manager.access_point.bg, Theme_config.network_manager.access_point.fg,
       Theme_config.network_manager.access_point.icon_color
 
-  if args.active == args.access_point.access_point_path then
+  --[[ if get_active_access_point() == args.NetworkManagerAccessPoint.access_point_path then
     bg, fg, icon_color = Theme_config.network_manager.access_point.fg, Theme_config.network_manager.access_point.bg,
         Theme_config.network_manager.access_point.icon_color2
-  end
+  end ]]
 
-  local ap_widget = wibox.widget {
+  local ret = base.make_widget_from_value(wibox.widget {
     {
       {
         {
           {
             {
               image = gcolor.recolor_image(
-                icondir .. icon, icon_color),
+                icondir .. "wifi-strength-" .. math.floor(args.NetworkManagerAccessPoint.Strength / 25) + 1 .. ".svg",
+                icon_color),
               id = "icon",
               resize = true,
               valign = "center",
@@ -67,7 +58,8 @@ function access_point.new(args)
           {
             {
               {
-                text = args.access_point.ssid or args.access_point.hw_address or "Unknown",
+                text = NM.utils_ssid_to_utf8(args.NetworkManagerAccessPoint.Ssid) or
+                    args.NetworkManagerAccessPoint.hw_address or "Unknown",
                 id = "alias",
                 widget = wibox.widget.textbox
               },
@@ -132,31 +124,32 @@ function access_point.new(args)
     border_width = Theme_config.network_manager.access_point.border_width,
     id = "background",
     shape = Theme_config.network_manager.access_point.device_shape,
-    device = ret.access_point,
     widget = wibox.container.background
-  }
+  })
 
-  ap_form { screen = args.screen, SSID = args.access_point.ssid }
+  gtable.crush(ret, access_point, true)
 
-  ap_widget:buttons(
+  ret.NetworkManagerAccessPoint = args.NetworkManagerAccessPoint
+
+  ret.ap_form = ap_form { screen = args.screen, ssid = NM.utils_ssid_to_utf8(ret.NetworkManagerAccessPoint.Ssid) }
+
+  ret:buttons(
     gtable.join(
       awful.button(
         {},
         1,
         nil,
         function()
-          ap_form:popup_toggle()
+          ret.ap_form:popup_toggle()
         end
       )
     )
   )
 
-  ap_widget:get_children_by_id("con")[1].image = gcolor.recolor_image(
+  ret:get_children_by_id("con")[1].image = gcolor.recolor_image(
     icondir .. "link.svg", icon_color)
 
-  Hover_signal(ap_widget)
-
-  ret.widget = ap_widget
+  Hover_signal(ret)
 
   return ret
 end

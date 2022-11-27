@@ -34,13 +34,6 @@ capi.client.connect_signal(
     if capi.awesome.startup and not c.size_hints.user_porition and not c.size_hints.program_position then
       awful.placement.no_offscreen(c)
     end
-    c.shape = function(cr, width, height)
-      if c.fullscreen or c.maximized then
-        gears.shape.rectangle(cr, width, height)
-      else
-        gears.shape.rounded_rect(cr, width, height, 10)
-      end
-    end
     if c.class == "Brave-browser" then
       c.floating = false
     end

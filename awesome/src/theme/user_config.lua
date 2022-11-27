@@ -17,7 +17,7 @@ User_config = {
       Flatpak application: flatpak run com.example.App
   ]] --
   autostart = {
-    "picom --experimental-backends",
+    "picom",
     "xfce4-power-manager",
     "light-locker --lock-on-suspend --lock-on-lid &",
     "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",

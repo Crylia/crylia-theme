@@ -257,10 +257,7 @@ return function(screen)
     screen = screen,
     type = "dock",
     height = dpi(User_config.dock_icon_size + 10),
-    placement = function(c) awful.placement.bottom(c, { margins = dpi(10) }) end,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(16))
-    end
+    placement = function(c) awful.placement.bottom(c, { margins = dpi(10) }) end
   }
 
   --- A fakedock to send a signal when the mouse is over it

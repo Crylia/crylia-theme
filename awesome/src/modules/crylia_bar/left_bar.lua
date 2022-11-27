@@ -57,10 +57,7 @@ return function(s, w)
     bg = Theme_config.left_bar.bg,
     visible = true,
     maximum_width = dpi(650),
-    placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(6))
-    end
+    placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end
   }
 
   top_left:struts {

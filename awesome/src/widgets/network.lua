@@ -24,8 +24,10 @@ local interfaces = {
 
 local network_mode = nil
 
+local nm_widget = require("src.modules.network_controller.init")
+
 -- Returns the network widget
-return function()
+return function(s)
   local startup = true
   local reconnect_startup = true
   local wifi_strength
@@ -331,6 +333,21 @@ return function()
     end
   }
 
+  local network_container = awful.popup {
+    widget = nm_widget {},
+    bg = Theme_config.network_manager.bg,
+    screen = s,
+    stretch = false,
+    visible = false,
+    ontop = true,
+    placement = function(c) awful.placement.align(c,
+        { position = "top_right", margins = { right = dpi(350), top = dpi(60) } })
+    end,
+    shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(12))
+    end
+  }
+
   -- Signals
   Hover_signal(network_widget)
 
@@ -341,7 +358,7 @@ return function()
         1,
         nil,
         function()
-          capi.awesome.emit_signal("NM::toggle_container")
+          network_container.visible = not network_container.visible
         end
       ),
       awful.button(

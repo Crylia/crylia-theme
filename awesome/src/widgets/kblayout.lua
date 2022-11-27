@@ -17,6 +17,7 @@ local capi = {
 local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/kblayout/"
 
 return function(s)
+
   local kblayout_widget = wibox.widget {
     {
       {

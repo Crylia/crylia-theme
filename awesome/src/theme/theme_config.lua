@@ -59,6 +59,12 @@ Theme_config.date = {
   fg = color["Grey900"]
 }
 
+Theme_config.dnd = {
+  bg = color["Grey900"],
+  disabled = color["Grey800"],
+  border_disabled = color["Grey800"],
+}
+
 Theme_config.gpu_usage = {
   bg = color["Green200"],
   fg = color["Grey900"]
@@ -250,6 +256,19 @@ Theme_config.network_manager = {
     icon_fg = color["Grey900"],
     border_color = color["Grey800"],
     border_width = dpi(2),
+    button_bg = color["Blue200"],
+    button_fg = color["Grey900"],
+    checkbox_fg = color["Grey900"],
+    checkbox_bg = color["DeepOrange200"],
+    checkbox_shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(6))
+    end,
+    button_shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(8))
+    end,
+    close_icon_shape = function(cr, width, height)
+      gears.shape.rounded_rect(cr, width, height, dpi(8))
+    end,
     shape = function(cr, width, height)
       gears.shape.rounded_rect(cr, width, height, dpi(8))
     end
@@ -294,21 +313,13 @@ Theme_config.notification_center = {
   border_color = color["Grey800"],
   border_width = dpi(4),
   spacing_color = color["Grey800"],
+  dnd_color = color["Purple200"],
+  dnd_fg = color["Pink200"],
 
   -- Clear all button
   clear_all_button = {
     bg = color["Blue200"],
     fg = color["Grey900"]
-  },
-
-  -- DnD button
-  dnd = {
-    bg = color["Grey900"],
-    fg = color["Pink200"],
-    disabled = color["Grey700"],
-    enabled = color["Purple200"],
-    border_disabled = color["Grey800"],
-    border_enabled = color["Purple200"]
   },
 
   -- Notification_list
@@ -431,7 +442,7 @@ Theme_config.bluetooth_controller = {
   refresh_icon_color = color["Grey900"],
   refresh_bg = color["LightBlue200"],
   power_icon_color = color["Grey900"],
-  power_bg = color["Blue200"]
+  power_bg = color["Blue200"],
 }
 
 Theme_config.brightness_osd = {

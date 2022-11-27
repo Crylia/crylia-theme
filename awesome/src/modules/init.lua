@@ -17,13 +17,11 @@ awful.screen.connect_for_each_screen(
       User_config.layouts[1]
     )
 
-    require("src.modules.desktop.context_menu") { screen = s }
     require("src.modules.desktop.desktop") { screen = s }
     require("src.modules.powermenu.powermenu")(s)
     require("src.modules.audio.volume_osd") { screen = s }
     --require("src.modules.audio.volume_controller") { screen = s }
     require("src.modules.brightness.brightness_osd")(s)
-    require("src.modules.bluetooth.init") { screen = s }
     require("src.modules.titlebar.titlebar")
     require("src.modules.crylia_bar.init")(s)
     --require("src.modules.crylia_wibox.init")(s)

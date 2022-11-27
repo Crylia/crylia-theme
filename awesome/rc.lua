@@ -17,9 +17,8 @@ screen = screen
 selection = selection
 tag = tag
 
--- Do not touch as this is used to share some variables between files
+-- Do not touch as this is used to share some variable settings files
 Global_config = {}
-
 
 require("src.theme.user_config")
 require("src.theme.theme_config")
@@ -33,6 +32,4 @@ require("src.core.rules")
 require("src.bindings.global_buttons")
 require("src.bindings.bind_to_tags")
 require("src.modules.init")
-require("src.tools.helpers.init")
 --require("src.tools.auto_starter")(User_config.autostart)
---require("src.tools.dbus.bluetooth_dbus")()

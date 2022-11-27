@@ -7,8 +7,7 @@ local awful = require("awful")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
-
-local rubato = require("src.lib.rubato")
+local dnd_widget = require("awful.widget.toggle_widget")
 
 local capi = {
   awesome = awesome,
@@ -18,6 +17,17 @@ local capi = {
 local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/notifications/"
 
 return function(s)
+
+  local dnd = dnd_widget({
+    text = "Do not disturb",
+    color = Theme_config.notification_center.dnd_color,
+    fg = Theme_config.notification_center.dnd_fg,
+    size = dpi(40)
+  })
+
+  dnd:get_widget():connect_signal("dnd::toggle", function(enabled)
+    User_config.dnd = enabled
+  end)
 
   --#region Activation area
 
@@ -85,121 +95,6 @@ return function(s)
       margins = dpi(10),
       widget = wibox.container.margin
     },
-    widget = wibox.container.place,
-    valign = "bottom",
-    halign = "right",
-  }
-
-  local color = Theme_config.notification_center.dnd.disabled
-
-  local function toggle_animation(pos)
-    if pos > 43 then return end
-    return function(_, _, cr, width, height)
-      cr:set_source(gears.color(Theme_config.notification_center.dnd.bg));
-      cr:paint();
-      cr:set_source(gears.color(color))
-      cr:move_to(pos, 0)
-      local x = pos
-      local y = 5
-      local newwidth = width / 2 - 10
-      local newheight = height - 10
-
-      local radius = height / 6.0
-      local degrees = math.pi / 180.0;
-
-      cr:new_sub_path()
-      cr:arc(x + newwidth - radius, y + radius, radius, -90 * degrees, 0 * degrees)
-      cr:arc(x + newwidth - radius, y + newheight - radius, radius, 0 * degrees, 90 * degrees)
-      cr:arc(x + radius, y + newheight - radius, radius, 90 * degrees, 180 * degrees)
-      cr:arc(x + radius, y + radius, radius, 180 * degrees, 270 * degrees)
-      cr:close_path()
-      cr:fill()
-    end
-  end
-
-  local rubato_timed
-
-  local toggle_button = wibox.widget {
-    {
-      widget = wibox.widget {
-        fit = function(_, width, height)
-          return width, height
-        end,
-        draw = toggle_animation(0),
-      },
-      id = "background",
-    },
-    active = false,
-    widget = wibox.container.background,
-    bg = Theme_config.notification_center.dnd.bg,
-    border_color = Theme_config.notification_center.dnd.border_disabled,
-    border_width = dpi(2),
-    forced_height = dpi(40),
-    forced_width = dpi(80),
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(10))
-    end,
-  }
-
-  toggle_button:buttons(
-    gears.table.join(
-      awful.button({}, 1, function()
-        if toggle_button.active then
-          toggle_button.active = not toggle_button.active
-          toggle_button.border_color = Theme_config.notification_center.dnd.border_disabled
-          color = Theme_config.notification_center.dnd.disabled
-          User_config.dnd = false
-          rubato_timed.target = 5
-        else
-          toggle_button.active = not toggle_button.active
-          toggle_button.border_color = Theme_config.notification_center.dnd.border_enabled
-          color = Theme_config.notification_center.dnd.enabled
-          User_config.dnd = true
-          rubato_timed.target = 43
-        end
-      end
-      )
-    )
-  )
-
-  rubato_timed = rubato.timed {
-    duration = 0.5,
-    pos = 5,
-    subscribed = function(pos)
-      toggle_button:get_children_by_id("background")[1].draw = toggle_animation(pos)
-      toggle_button:emit_signal("widget::redraw_needed")
-    end
-  }
-
-  local dnd = wibox.widget {
-    {
-      {
-        {
-          {
-            text = "Do Not Disturb",
-            valign = "center",
-            align = "center",
-            widget = wibox.widget.textbox,
-            id = "clearall"
-          },
-          toggle_button,
-          spacing = dpi(10),
-          layout = wibox.layout.fixed.horizontal,
-          id = "layout12"
-        },
-        id = "background4",
-        fg = Theme_config.notification_center.dnd.fg,
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(12))
-        end,
-        forced_height = dpi(40),
-        widget = wibox.container.background
-      },
-      id = "margin3",
-      margins = dpi(10),
-      widget = wibox.container.margin
-    },
-    id = "place",
     widget = wibox.container.place,
     valign = "bottom",
     halign = "right",
@@ -288,7 +183,12 @@ return function(s)
             widget = wibox.container.constraint
           },
           {
-            dnd,
+            {
+              dnd,
+              widget = wibox.container.place,
+              valign = "center",
+              halign = "center"
+            },
             nil,
             clear_all_widget,
             layout = wibox.layout.align.horizontal

@@ -44,6 +44,47 @@ function application_grid:get_widget()
   return self._private.widget
 end
 
+local function levenshtein_distance(str1, str2)
+  local len1 = string.len(str1)
+  local len2 = string.len(str2)
+  local matrix = {}
+  local cost = 0
+
+  if (len1 == 0) then
+    return len2
+  elseif (len2 == 0) then
+    return len1
+  elseif (str1 == str2) then
+    return 0
+  end
+
+  for i = 0, len1, 1 do
+    matrix[i] = {}
+    matrix[i][0] = i
+  end
+  for j = 0, len2, 1 do
+    matrix[0][j] = j
+  end
+
+  for i = 1, len1, 1 do
+    for j = 1, len2, 1 do
+      if str1:byte(i) == str2:byte(j) then
+        cost = 0
+      else
+        cost = 1
+      end
+
+      matrix[i][j] = math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      )
+    end
+  end
+
+  return matrix[len1][len2]
+end
+
 function application_grid:get_applications_from_file()
   local list = {}
   local app_info = Gio.AppInfo
@@ -101,6 +142,7 @@ function application_grid:get_applications_from_file()
         border_width = Theme_config.application_launcher.application.border_width,
         bg = Theme_config.application_launcher.application.bg,
         fg = Theme_config.application_launcher.application.fg,
+        desktop_file = Gio.DesktopAppInfo.get_filename(desktop_app_info) or "",
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, dpi(8))
         end,
@@ -256,29 +298,64 @@ function application_grid:set_applications(search_filter)
     layout = wibox.layout.grid
   }
 
+  local dir = gfilesystem.get_configuration_dir() .. "src/config/applications.json"
+  if not gfilesystem.file_readable(dir) then return end
+
+  local handler = io.open(dir, "r")
+  if not handler then return end
+  local dock_encoded = handler:read("a") or "{}"
+  local dock = json:decode(dock_encoded)
+  if type(dock) ~= "table" then return end
+  local mylist = {}
   for _, application in ipairs(self.app_list) do
     -- Match the filter
     if string.match(string.lower(application.name or ""), string.lower(filter)) or
         string.match(string.lower(application.categories or ""), string.lower(filter)) or
         string.match(string.lower(application.keywords or ""), string.lower(filter)) then
-      grid:add(application)
 
-      -- Get the current position in the grid of the application as a table
-      local pos = grid:get_widget_position(application)
-
-      -- Check if the curser is currently at the same position as the application
-      capi.awesome.connect_signal(
-        "update::selected",
-        function()
-          if self._private.curser.y == pos.row and self._private.curser.x == pos.col then
-            application.border_color = Theme_config.application_launcher.application.border_color_active
-          else
-            application.border_color = Theme_config.application_launcher.application.border_color
-          end
+      if #dock == 0 then
+        application.counter = 0
+      end
+      for _, app in ipairs(dock) do
+        if app.desktop_file == application.desktop_file then
+          application.counter = app.counter or 0
+          break;
+        else
+          application.counter = 0
         end
-      )
+      end
+
+      table.insert(mylist, application)
     end
   end
+
+  table.sort(mylist, function(a, b)
+    return levenshtein_distance(filter, a.name) < levenshtein_distance(filter, b.name)
+  end)
+  --sort mytable by counter
+  table.sort(mylist, function(a, b)
+    return a.counter > b.counter
+  end)
+
+  for _, app in ipairs(mylist) do
+    grid:add(app)
+
+    -- Get the current position in the grid of the app as a table
+    local pos = grid:get_widget_position(app)
+
+    -- Check if the curser is currently at the same position as the app
+    capi.awesome.connect_signal(
+      "update::selected",
+      function()
+        if self._private.curser.y == pos.row and self._private.curser.x == pos.col then
+          app.border_color = Theme_config.application_launcher.application.border_color_active
+        else
+          app.border_color = Theme_config.application_launcher.application.border_color
+        end
+      end
+    )
+  end
+
   capi.awesome.emit_signal("update::selected")
   self:set_widget(grid)
 end
@@ -292,7 +369,6 @@ function application_grid:move_up()
 end
 
 function application_grid:move_down()
-  print(self._private.curser.y)
   self._private.curser.y = self._private.curser.y + 1
   local grid_rows, _ = self:get_widget():get_dimension()
   if self._private.curser.y > grid_rows then
@@ -322,6 +398,35 @@ function application_grid:execute()
   local selected_widget = self:get_widget():get_widgets_at(self._private.curser.y,
     self._private.curser.x)[1]
   Gio.AppInfo.launch_uris_async(Gio.AppInfo.create_from_commandline(selected_widget.exec, nil, 0))
+
+  local dir = gfilesystem.get_configuration_dir() .. "src/config/applications.json"
+  if not gfilesystem.file_readable(dir) then return end
+
+  local handler = io.open(dir, "r")
+  if not handler then return end
+  local dock_encoded = handler:read("a") or "{}"
+  local dock = json:decode(dock_encoded)
+  if type(dock) ~= "table" then return end
+  for _, prog in ipairs(dock) do
+    if prog.desktop_file:match(selected_widget.desktop_file) then
+      prog.counter = prog.counter + 1
+      goto continue
+    end
+  end
+  do
+    local prog = {
+      name = selected_widget.name,
+      desktop_file = selected_widget.desktop_file,
+      counter = 1
+    }
+    table.insert(dock, prog)
+  end
+  ::continue::
+  handler:close()
+  handler = io.open(dir, "w")
+  if not handler then return end
+  handler:write(json:encode_pretty(dock))
+  handler:close()
 end
 
 function application_grid:reset()
@@ -344,10 +449,17 @@ function application_grid.new(args)
     y = 1
   }
 
+  -- Create folder and file if it doesn't exist
+  local dir = gfilesystem.get_configuration_dir() .. "src/config"
+  gfilesystem.make_directories(dir)
+  dir = dir .. "/applications.json"
+  if not gfilesystem.file_readable(dir) then
+    os.execute("touch " .. dir)
+  end
+
   w:get_applications_from_file()
 
   w:set_applications()
-
   return w
 end
 

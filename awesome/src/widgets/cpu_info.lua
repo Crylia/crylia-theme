@@ -11,6 +11,10 @@ local wibox = require("wibox")
 local color = require("src.lib.color")
 local rubato = require("src.lib.rubato")
 
+require("src.tools.helpers.cpu_freq")
+require("src.tools.helpers.cpu_temp")
+--!Has to be disabled until rewritten to perform better require("src.tools.helpers.cpu_usage")
+
 local capi = {
   awesome = awesome,
 }

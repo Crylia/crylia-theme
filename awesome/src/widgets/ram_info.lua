@@ -9,6 +9,8 @@ local gears = require("gears")
 local watch = awful.widget.watch
 local wibox = require("wibox")
 
+require("src.tools.helpers.ram")
+
 local capi = {
   awesome = awesome,
 }

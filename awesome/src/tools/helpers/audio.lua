@@ -1,18 +1,13 @@
 local awful = require("awful")
-local pulse = require("pulseaudio_dbus")
 
 local capi = {
   awesome = awesome,
 }
 
 local lgi = require("lgi")
-local pulseaudio = require("lua_libpulse_glib")
 
-local pa = pulseaudio.new()
 
-local ctx = pa:context("awesome")
 
-print(ctx)
 --[[ ctx:connect(nil, function(state)
   if state == 4 then
     print("Connection is ready")

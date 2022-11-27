@@ -75,7 +75,7 @@ return function(s)
       awful.button({}, 1, function()
         local geo = mouse.current_wibox:geometry()
         calendar_popup.x = geo.x
-        calendar_popup.y = geo.y + Global_config.top_struts
+        calendar_popup.y = geo.y + dpi(55)
         calendar_popup.visible = not calendar_popup.visible
       end)
     )

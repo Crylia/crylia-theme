@@ -14,22 +14,22 @@ local gcolor = require("gears").color
 local gears = require("gears")
 local lgi = require("lgi")
 local wibox = require("wibox")
-
 local NM = require("lgi").NM
+local base = require("wibox.widget.base")
 
 local rubato = require("src.lib.rubato")
 
 local access_point = require("src.modules.network_controller.access_point")
+local dnd_widget = require("awful.widget.toggle_widget")
 
 local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/network/"
+
 
 local capi = {
   awesome = awesome,
 }
 
 local network = { mt = {} }
-
-network.access_points = { layout = wibox.layout.fixed.vertical }
 
 network.NMState = {
   UNKNOWN = 0,
@@ -81,37 +81,45 @@ local function flags_to_security(flags, wpa_flags, rsn_flags)
   return (str:gsub("^%s", ""))
 end
 
-local function get_wifi_proxy(self)
-  local devices = self._private.client_proxy:GetDevices()
-  for _, device in ipairs(devices) do
-    local device_proxy = dbus_proxy.Proxy:new {
+local function generate_uuid()
+  return string.gsub('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx', '[xy]', function(c)
+    local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+    return string.format('%x', v)
+  end)
+end
+
+function network:get_wifi_proxy()
+  local devices = self._private.NetworkManager:GetDevices()
+  for _, path in ipairs(devices) do
+    local NetworkManagerDevice = dbus_proxy.Proxy:new {
       bus = dbus_proxy.Bus.SYSTEM,
       name = "org.freedesktop.NetworkManager",
       interface = "org.freedesktop.NetworkManager.Device",
-      path = device
+      path = path
     }
 
-    if device_proxy.DeviceType == network.DeviceType.WIFI then
-      self._private.device_proxy = device_proxy
-      self._private.wifi_proxy = dbus_proxy.Proxy:new {
+    if NetworkManagerDevice.DeviceType == network.DeviceType.WIFI then
+      self._private.NetworkManagerDevice = NetworkManagerDevice
+      self._private.NetworkManagerDeviceWireless = dbus_proxy.Proxy:new {
         bus = dbus_proxy.Bus.SYSTEM,
         name = "org.freedesktop.NetworkManager",
         interface = "org.freedesktop.NetworkManager.Device.Wireless",
-        path = device
+        path = path
       }
 
-      self._private.device_proxy:connect_signal(function(proxy, new_state, old_state, reason)
-        local active_access_point_proxy = dbus_proxy.Proxy:new {
+      self._private.NetworkManagerDevice:connect_signal(function(proxy, new_state, old_state, reason)
+        local NetworkManagerAccessPoint = dbus_proxy.Proxy:new {
           bus = dbus_proxy.Bus.SYSTEM,
           name = "org.freedesktop.NetworkManager",
           interface = "org.freedesktop.NetworkManager.AccessPoint",
           path = self._private.wifi_proxy.ActiveAccessPoint
         }
 
-        self:emit_signal(tostring(active_access_point_proxy.HwAddress) .. "::state", new_state, old_state)
+        self:emit_signal(tostring(NetworkManagerAccessPoint.HwAddress) .. "::state", new_state, old_state)
         if new_state == network.DeviceState.ACTIVATED then
-          local ssid = NM.utils_ssid_to_utf8(active_access_point_proxy.Ssid)
-          self:emit_signal("NM::AccessPointConnected", ssid, active_access_point_proxy.Strength)
+          local ssid = NM.utils_ssid_to_utf8(NetworkManagerAccessPoint.Ssid)
+          self:emit_signal("NM::AccessPointConnected", ssid, NetworkManagerAccessPoint.Strength)
+          print("AP Connected: ", ssid, NetworkManagerAccessPoint.Strength)
         end
       end, "StateChanged")
     end
@@ -119,8 +127,7 @@ local function get_wifi_proxy(self)
 end
 
 function network.device_state_to_string(state)
-  local device_state_to_string =
-  {
+  local device_state_to_string = {
     [0] = "Unknown",
     [10] = "Unmanaged",
     [20] = "Unavailable",
@@ -139,63 +146,30 @@ function network.device_state_to_string(state)
   return device_state_to_string[state]
 end
 
-local function get_access_point_connections(self, ssid)
-  local connection_proxies = {}
+function network:get_access_point_connections(ssid)
+  local cn = {}
 
-  local connections = self._private.settings_proxy:ListConnections()
+  local connections = self._private.NetworkManagerSettings:ListConnections()
   for _, connection_path in ipairs(connections) do
-    local connection_proxy = dbus_proxy.Proxy:new {
+    local NetworkManagerSettingsConnection = dbus_proxy.Proxy:new {
       bus = dbus_proxy.Bus.SYSTEM,
       name = "org.freedesktop.NetworkManager",
       interface = "org.freedesktop.NetworkManager.Settings.Connection",
       path = connection_path
     }
 
-    if connection_proxy.Filename:find(ssid) then
-      table.insert(connection_proxies, connection_proxy)
+    if NetworkManagerSettingsConnection.Filename:find(ssid) then
+      table.insert(cn, NetworkManagerSettingsConnection)
     end
   end
 
-  return connection_proxies
+  return cn
 end
 
-local function generate_uuid()
-  local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-  local uuid = string.gsub(template, '[xy]', function(c)
-    local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
-    return string.format('%x', v)
-  end)
-  return uuid
-end
-
-local function create_profile(ap, password, auto_connect)
-  local s_con =
-  {
-    -- ["interface-name"] = lgi.GLib.Variant("s", ap.device_interface),
-    ["uuid"] = lgi.GLib.Variant("s", generate_uuid()),
-    ["id"] = lgi.GLib.Variant("s", ap.ssid),
-    ["type"] = lgi.GLib.Variant("s", "802-11-wireless"),
-    ["autoconnect"] = lgi.GLib.Variant("b", auto_connect),
-  }
-
-  local s_ip4 =
-  {
-    ["method"] = lgi.GLib.Variant("s", "auto")
-  }
-
-  local s_ip6 =
-  {
-    ["method"] = lgi.GLib.Variant("s", "auto"),
-  }
-
-  local s_wifi =
-  {
-    ["mode"] = lgi.GLib.Variant("s", "infrastructure"),
-  }
-
+function network:create_profile(ap, password, auto_connect)
   local s_wsec = {}
   if ap.security ~= "" then
-    if ap.security:match("WPA") ~= nil then
+    if ap.security:match("WPA") then
       s_wsec["key-mgmt"] = lgi.GLib.Variant("s", "wpa-psk")
       s_wsec["auth-alg"] = lgi.GLib.Variant("s", "open")
       --s_wsec["psk"] = lgi.GLib.Variant("s", helpers.string.trim(password))
@@ -207,108 +181,85 @@ local function create_profile(ap, password, auto_connect)
   end
 
   return {
-    ["connection"] = s_con,
-    ["ipv4"] = s_ip4,
-    ["ipv6"] = s_ip6,
-    ["802-11-wireless"] = s_wifi,
+    ["connection"] = {
+      -- ["interface-name"] = lgi.GLib.Variant("s", ap.device_interface),
+      ["uuid"] = lgi.GLib.Variant("s", generate_uuid()),
+      ["id"] = lgi.GLib.Variant("s", ap.ssid),
+      ["type"] = lgi.GLib.Variant("s", "802-11-wireless"),
+      ["autoconnect"] = lgi.GLib.Variant("b", auto_connect),
+    },
+    ["ipv4"] = {
+      ["method"] = lgi.GLib.Variant("s", "auto")
+    },
+    ["ipv6"] = {
+      ["method"] = lgi.GLib.Variant("s", "auto"),
+    },
+    ["802-11-wireless"] = {
+      ["mode"] = lgi.GLib.Variant("s", "infrastructure"),
+    },
     ["802-11-wireless-security"] = s_wsec
   }
 end
 
+---Scan for access points and create a widget for each one.
 function network:scan_access_points()
-  self._private.access_points = {}
+  local ap_list = self:get_children_by_id("wifi_ap_list")[1]
 
-  self._private.wifi_proxy:RequestScanAsync(function(proxy, context, success, failure)
-    if failure ~= nil then
-      self.access_points = { layout = wibox.layout.fixed.vertical }
-      self:emit_signal("NM::AccessPointsFound", self.access_points[1].ssid)
-      self:emit_signal("NM::ScanFailed", tostring(failure))
+  self._private.NetworkManagerDeviceWireless:RequestScanAsync(function(proxy, context, success, failure)
+    if failure then
+      -- Send an error notification
+      print("AP Scan failed: ", failure)
       return
     end
 
-    local access_points = self._private.wifi_proxy:GetAllAccessPoints()
+    -- Get every access point even those who hide their ssid
+    print(#self._private.NetworkManagerDeviceWireless:GetAllAccessPoints())
+    for _, ap in ipairs(self._private.NetworkManagerDeviceWireless:GetAllAccessPoints()) do
 
-    self._private.access_points = {}
-    if (not access_point) or (#access_points == 0) then
-      self.access_points = { layout = wibox.layout.fixed.vertical }
-      self:emit_signal("NM::AccessPointsFound", self.access_points[1].ssid)
-    end
-
-    for _, ap in ipairs(access_points) do
-      local access_point_proxy = dbus_proxy.Proxy:new {
+      -- Create a new proxy for every ap
+      local NetworkManagerAccessPoint = dbus_proxy.Proxy:new {
         bus = dbus_proxy.Bus.SYSTEM,
         name = "org.freedesktop.NetworkManager",
         interface = "org.freedesktop.NetworkManager.AccessPoint",
         path = ap
       }
-
-      if access_point_proxy.Ssid then
-        local appSsid = access_point_proxy.Ssid or ""
-        local ssid = NM.utils_ssid_to_utf8(appSsid) or ""
-        local security = flags_to_security(access_point_proxy.Flags, access_point_proxy.WpaFlags)
-        local password = ""
-        local connections = get_access_point_connections(self, ssid)
-
-        for _, connection in ipairs(connections) do
-          if connection.Filename:find(ssid) then
-            local secrets = connection:GetSecrets("802-11-wireless-security")
-            if secrets then
-              password = secrets["802-11-wireless-security"].psk
-            end
-          end
+      --[[ for _, ap2 in ipairs(ap_list.children) do
+        if ap2.NetworkManagerAccessPoint.HwAddress:match(ap.HwAddress or "") then
+          goto continue
         end
+      end ]]
 
-        table.insert(self._private.access_points, {
-          ssid = ssid,
-          security = security,
-          password = password,
-          strength = access_point_proxy.Strength,
-          hw_address = access_point_proxy.HwAddress,
-          device_interface = self._private.device_proxy.Interface,
-          device_path = self._private.device_proxy.object_path,
-          access_point_path = ap
-        })
+      print("AP Found: ", NetworkManagerAccessPoint.HwAddress, NM.utils_ssid_to_utf8(NetworkManagerAccessPoint.Ssid),
+        NetworkManagerAccessPoint.Strength)
+
+
+      -- We are only interested in those with a ssid
+      if NetworkManagerAccessPoint.Ssid then
+        ap_list:add(access_point { NetworkManagerAccessPoint = NetworkManagerAccessPoint })
       end
     end
 
-    self.access_points = { layout = wibox.layout.fixed.vertical }
-
-    local seen = {}
-    for _, ap2 in ipairs(self._private.access_points) do
-      if not seen[ap2.ssid] then
-        seen[ap2.ssid] = true
-        table.insert(self.access_points,
-          access_point.new { access_point = ap2, active = self._private.wifi_proxy.ActiveAccessPoint }.widget)
-      end
-    end
-
-    table.sort(self._private.access_points, function(a, b)
-      return a.strength > b.strength
+    table.sort(ap_list, function(a, b)
+      return a.NetworkManagerAccessPoint.Strength > b.NetworkManagerAccessPoint.Strength
     end)
-
-    self:emit_signal("NM::AccessPointsFound", self.access_points[1].ssid)
+    print("AP_Anzahl: ", #ap_list.children)
   end, { call_id = "my-id" }, {})
 end
 
-function network:toggle()
-  self.container.visible = not self.container.visible
-end
-
 function network:is_ap_active(ap)
-  print(self._private.wifi_proxy.ActiveAccessPoint)
   return ap.path == self._private.wifi_proxy.ActiveAccessPoint
 end
 
 function network:disconnect_ap()
-  self._private.client_proxy:DeactivateConnection(self._private.device_proxy.ActiveConnection)
+  self._private.NetworkManager:DeactivateConnection(self._private.NetworkManagerDevice.ActiveConnection)
 end
 
 function network:connect_ap(ap, pw, auto_connect)
-  local connections = get_access_point_connections(self, ap.ssid)
-  local profile = create_profile(ap, pw, auto_connect)
+  local connections = self:get_access_point_connections(ap.ssid)
+  local profile = self:create_profile(ap, pw, auto_connect)
 
   if #connections == 0 then
-    self._private.client_proxy:AddAndActivateConnectionAsync(function(proxy, context, success, failure)
+    self._private.NetworkManager:AddAndActivateConnectionAsync(function(proxy, context, success, failure)
       if failure then
         self:emit_signal("NM::AccessPointFailed", tostring(failure))
         return
@@ -318,7 +269,7 @@ function network:connect_ap(ap, pw, auto_connect)
     end, { call_id = "my-id", profile, ap.device_proxy_path, ap.path })
   else
     connections[1]:Update(profile)
-    self._private.client_proxy:ActivateConnectionAsync(function(proxy, context, success, failure)
+    self._private.NetworkManager:ActivateConnectionAsync(function(proxy, context, success, failure)
       if failure then
         self:emit_signal("NM::AccessPointFailed", tostring(failure))
         return
@@ -337,89 +288,21 @@ function network:toggle_access_point(ap, password, auto_connect)
   end
 end
 
-function network:toggle_wireless()
-  local enable = not self._private.client_proxy.WirelessEnabled
+---Toggles networking on or off
+function network:toggle_wifi()
+  local enable = not self._private.NetworkManager.WirelessEnabled
   if enable then
-    self._private.client_proxy:Enable(true)
+    self._private.NetworkManager.Enable(true)
   end
 
-  self._private.client_proxy:Set("org.freedesktop.NetworkManager", "WirelessEnabled", lgi.GLib.Variant("b", enable))
-
-  return enable
+  self._private.NetworkManager:Set("org.freedesktop.NetworkManager", "WirelessEnabled", lgi.GLib.Variant("b", enable))
+  self._private.NetworkManager.WirelessEnabled = { signature = "b", value = enable }
 end
 
 function network.new(args)
   args = args or {}
 
-  local ret = gobject {}
-
-  gtable.crush(ret, network, true)
-
-  ret._private = {}
-
-  ret._private.client_proxy = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = "org.freedesktop.NetworkManager",
-    interface = "org.freedesktop.NetworkManager",
-    path = "/org/freedesktop/NetworkManager",
-  }
-
-  ret._private.settings_proxy = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = "org.freedesktop.NetworkManager",
-    interface = "org.freedesktop.NetworkManager.Settings",
-    path = "/org/freedesktop/NetworkManager/Settings",
-  }
-
-  local property_proxy = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = "org.freedesktop.NetworkManager",
-    interface = "org.freedesktop.DBus.Properties",
-    path = "/org/freedesktop/NetworkManager",
-  }
-
-  -- dbus proxy signals are in reversed order (function, signal)
-  property_proxy:connect_signal(function(_, properties, data)
-    if data.WirelessEnables ~= nil and ret._private.WirelessEnabled ~= data.WirelessEnabled then
-      ret._private.WirelessEnabled = data.WirelessEnabled
-      ret:emit_signal("NM::WirelessStateChanged", ret._private.WirelessEnabled)
-
-      if data.WirelessEnabled then
-        gtimer {
-          timeout = 5,
-          autostart = true,
-          call_now = false,
-          single_shot = true,
-          callback = function()
-            ret:get_access_points()
-          end
-        }
-      end
-    end
-  end, "PropertiesChanged")
-
-  get_wifi_proxy(ret)
-
-  ret:scan_access_points()
-
-  gtimer.delayed_call(function()
-    ret:emit_signal("NM::WirelessStateChanged", ret._private.client_proxy.WirelessEnabled)
-
-    local active_access_point = ret._private.wifi_proxy.ActiveAccessPoint
-    if ret._private.device_proxy.State == network.DeviceState.ACTIVATED and active_access_point ~= "/" then
-      local active_access_point_proxy = dbus_proxy.Proxy:new {
-        bus = dbus_proxy.Bus.SYSTEM,
-        name = "org.freedesktop.NetworkManager",
-        interface = "org.freedesktop.NetworkManager.AccessPoint",
-        path = active_access_point,
-      }
-
-      local ssid = NM.utils_ssid_to_utf8(active_access_point_proxy.Ssid)
-      ret:emit_signal("NM:AccessPointConnected", ssid, active_access_point_proxy.Strength)
-    end
-  end)
-
-  local network_widget = wibox.widget {
+  local ret = base.make_widget_from_value(wibox.widget {
     {
       {
         {
@@ -488,6 +371,17 @@ function network.new(args)
           },
           {
             { -- action buttons
+              {
+                dnd_widget {
+                  color = Theme_config.network_manager.power_icon_color,
+                  size = dpi(40)
+                },
+                id = "dnd",
+                widget = wibox.container.place,
+                valign = "center",
+                halign = "center"
+              },
+              nil,
               { -- refresh
                 {
                   {
@@ -511,31 +405,6 @@ function network.new(args)
                 bg = Theme_config.network_manager.refresh_bg,
                 widget = wibox.container.background,
                 id = "refresh"
-              },
-              nil,
-              { -- airplane mode
-                {
-                  {
-                    image = gcolor.recolor_image(icondir .. "airplane-off.svg",
-                      Theme_config.network_manager.airplane_icon_color),
-                    resize = false,
-                    valign = "center",
-                    halign = "center",
-                    widget = wibox.widget.imagebox,
-                    id = "icon"
-                  },
-                  widget = wibox.container.margin,
-                  margins = dpi(5),
-                  id = "center",
-                },
-                border_width = dpi(2),
-                border_color = Theme_config.network_manager.border_color,
-                shape = function(cr, width, height)
-                  gshape.rounded_rect(cr, width, height, dpi(4))
-                end,
-                bg = Theme_config.network_manager.refresh_bg,
-                widget = wibox.container.background,
-                id = "airplane"
               },
               layout = wibox.layout.align.horizontal
             },
@@ -562,54 +431,82 @@ function network.new(args)
     width = dpi(400),
     strategy = "exact",
     widget = wibox.container.constraint
+  })
+
+  local dnd = ret:get_children_by_id("dnd")[1]:get_widget()
+
+  dnd:connect_signal("dnd::toggle", function(enable)
+    ret:toggle_wifi()
+  end)
+
+  gtable.crush(ret, network, true)
+
+  --#region Wifi Proxies
+
+  ret._private.NetworkManager = dbus_proxy.Proxy:new {
+    bus = dbus_proxy.Bus.SYSTEM,
+    name = "org.freedesktop.NetworkManager",
+    interface = "org.freedesktop.NetworkManager",
+    path = "/org/freedesktop/NetworkManager",
   }
 
-  local refresh_button = network_widget:get_children_by_id("refresh")[1]
+  ret._private.NetworkManagerSettings = dbus_proxy.Proxy:new {
+    bus = dbus_proxy.Bus.SYSTEM,
+    name = "org.freedesktop.NetworkManager",
+    interface = "org.freedesktop.NetworkManager.Settings",
+    path = "/org/freedesktop/NetworkManager/Settings",
+  }
 
-  refresh_button:buttons(
-    gtable.join(
-      awful.button(
-        {},
-        1,
-        nil,
-        function()
-          ret:scan_access_points()
-        end
-      )
-    )
-  )
+  ret._private.NetworkManagerProperties = dbus_proxy.Proxy:new {
+    bus = dbus_proxy.Bus.SYSTEM,
+    name = "org.freedesktop.NetworkManager",
+    interface = "org.freedesktop.DBus.Properties",
+    path = "/org/freedesktop/NetworkManager",
+  }
 
-  Hover_signal(refresh_button)
+  ret._private.NetworkManagerProperties:connect_signal(function(_, properties, data)
+    if data.WirelessEnables ~= nil and ret._private.WirelessEnabled ~= data.WirelessEnabled then
+      ret._private.WirelessEnabled = data.WirelessEnabled
 
-  local airplane_button = network_widget:get_children_by_id("airplane")[1]
+      ret:emit_signal("NetworkManager::status", ret._private.WirelessEnabled)
+      print(ret._private.WirelessEnabled)
 
-  airplane_button:buttons(
-    gtable.join(
-      awful.button(
-        {},
-        1,
-        nil,
-        function()
-          if ret:toggle_wireless() then
-            airplane_button.center.icon.image = gcolor.recolor_image(icondir
-              .. "airplane-off.svg",
-              Theme_config.network_manager.airplane_icon_color)
-          else
-            airplane_button.center.icon.image = gcolor.recolor_image(icondir
-              .. "airplane-on.svg",
-              Theme_config.network_manager.airplane_icon_color)
+      if data.WirelessEnabled then
+        gtimer {
+          timeout = 5,
+          autostart = true,
+          call_now = false,
+          single_shot = true,
+          callback = function()
+            ret:scan_access_points()
           end
-          ret:scan_access_points()
-        end
-      )
-    )
-  )
+        }
+      end
+    end
+  end, "PropertiesChanged")
 
-  Hover_signal(airplane_button)
+  ret:get_wifi_proxy()
 
-  local wifi_margin = network_widget:get_children_by_id("wifi_margin")[1]
-  local wifi_list = network_widget:get_children_by_id("wifi_list")[1]
-  local wifi = network_widget:get_children_by_id("wifi")[1].center
+  ret:scan_access_points()
+
+  gtimer.delayed_call(function()
+    local active_access_point = ret._private.NetworkManagerDeviceWireless.ActiveAccessPoint
+    if ret._private.NetworkManager.State == network.DeviceState.ACTIVATED and active_access_point ~= "/" then
+      local active_access_point_proxy = dbus_proxy.Proxy:new {
+        bus = dbus_proxy.Bus.SYSTEM,
+        name = "org.freedesktop.NetworkManager",
+        interface = "org.freedesktop.NetworkManager.AccessPoint",
+        path = active_access_point,
+      }
+    end
+  end)
+
+  --#endregion
+
+  --#region Dropdown logic
+  local wifi_margin = ret:get_children_by_id("wifi_margin")[1]
+  local wifi_list = ret:get_children_by_id("wifi_list")[1]
+  local wifi = ret:get_children_by_id("wifi")[1].center
 
   local rubato_timer = rubato.timed {
     duration = 0.2,
@@ -620,64 +517,47 @@ function network.new(args)
     end
   }
 
-  wifi_margin:buttons(
-    gtable.join(
-      awful.button(
-        {},
-        1,
-        nil,
-        function()
-          if wifi_list.forced_height == 0 then
-            local size = (#ret.access_points * 49) + 1
-
-            size = size > 210 and 210 or size
-
-            rubato_timer.target = dpi(size)
-            wifi_margin.wifi_bg.shape = function(cr, width, height)
-              gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
-            end
-            wifi.icon:set_image(gcolor.recolor_image(icondir .. "menu-up.svg",
-              Theme_config.network_manager.wifi_icon_color))
-          else
-            rubato_timer.target = 0
-            wifi_margin.wifi_bg.shape = function(cr, width, height)
-              gshape.partially_rounded_rect(cr, width, height, true, true, true, true, dpi(4))
-            end
-            wifi.icon:set_image(gcolor.recolor_image(icondir .. "menu-down.svg",
-              Theme_config.network_manager.wifi_icon_color))
+  wifi_margin:buttons(gtable.join(
+    awful.button({}, 1, nil,
+      function()
+        if wifi_list.forced_height == 0 then
+          if not ret:get_children_by_id("wifi_ap_list")[1].children then
+            return
           end
+          local size = (5 * 49) + 1
+
+          size = size > 210 and 210 or size
+
+          rubato_timer.target = dpi(size)
+          wifi_margin.wifi_bg.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+          end
+          wifi.icon:set_image(gcolor.recolor_image(icondir .. "menu-up.svg",
+            Theme_config.network_manager.wifi_icon_color))
+        else
+          rubato_timer.target = 0
+          wifi_margin.wifi_bg.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, true, true, dpi(4))
+          end
+          wifi.icon:set_image(gcolor.recolor_image(icondir .. "menu-down.svg",
+            Theme_config.network_manager.wifi_icon_color))
         end
-      )
+      end
     )
-  )
+  ))
+  --#endregion
 
-  ret.widget = awful.popup {
-    widget = network_widget,
-    bg = Theme_config.network_manager.bg,
-    screen = args.screen,
-    stretch = false,
-    visible = false,
-    ontop = true,
-    placement = function(c) awful.placement.align(c,
-        { position = "top_right", margins = { right = dpi(350), top = dpi(60) } })
-    end,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(12))
-    end
-  }
+  local refresh_button = ret:get_children_by_id("refresh")[1]
+  refresh_button:buttons(gtable.join(
+    awful.button({}, 1, nil,
+      function()
+        ret:scan_access_points()
+      end
+    )
+  ))
+  Hover_signal(refresh_button)
 
-  capi.awesome.connect_signal("NM::toggle_container", function()
-    ret.widget.visible = not ret.widget.visible
-    ret:scan_access_points()
-  end)
-
-  capi.awesome.connect_signal("NM::toggle_wifi", function()
-    ret:toggle_wireless()
-  end)
-
-  ret:connect_signal("NM::AccessPointsFound", function(tab)
-    network_widget:get_children_by_id("wifi_ap_list")[1].children = ret.access_points
-  end)
+  return ret
 end
 
 function network.mt:__call(...)

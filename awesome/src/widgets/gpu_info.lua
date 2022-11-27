@@ -11,6 +11,9 @@ local wibox = require("wibox")
 local color = require("src.lib.color")
 local rubato = require("src.lib.rubato")
 
+require("src.tools.helpers.gpu_temp")
+require("src.tools.helpers.gpu_usage")
+
 local capi = {
   awesome = awesome,
 }

@@ -5,52 +5,106 @@
 -- Awesome Libs
 local awful = require("awful")
 local dpi = require("beautiful").xresources.apply_dpi
-local gobject = require("gears").object
 local gtable = require("gears").table
 local gcolor = require("gears").color
 local gshape = require("gears").shape
 local gfilesystem = require("gears").filesystem
 local wibox = require("wibox")
+local base = require("wibox.widget.base")
+local lgi = require("lgi")
+local dbus_proxy = require("dbus_proxy")
 
-local capi = {
-  awesome = awesome,
-}
+local context_menu = require("src.modules.context_menu")
 
 local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/bluetooth/"
 
+local capi = {
+  awesome = awesome
+}
+
 local device = { mt = {} }
 
-function device:connect()
-  self.device:Connect()
-  self.widget:get_children_by_id("con")[1].image = gcolor.recolor_image(icondir .. "link.svg",
-    Theme_config.bluetooth_controller.icon_color_dark)
-  capi.awesome.emit_signal("bluetooth::disconnect", device)
+function device:layout(_, width, height)
+  if self._private.widget then
+    return { base.place_widget_at(self._private.widget, 0, 0, width, height) }
+  end
 end
 
-function device:disconnect()
-  self.device:Disconnect()
-  self.widget:get_children_by_id("con")[1].image = gcolor.recolor_image(icondir .. "link-off.svg",
-    Theme_config.bluetooth_controller.icon_color_dark)
-  capi.awesome.emit_signal("bluetooth::connect", device)
+function device:fit(context, width, height)
+  local w, h = 0, 0
+  if self._private.widget then
+    w, h = base.fit_widget(self, context, self._private.widget, width, height)
+  end
+  return w, h
+end
+
+device.set_widget = base.set_widget_common
+
+function device:get_widget()
+  return self._private.widget
+end
+
+function device:toggle_connect()
+  if not self.device.Connected then
+
+    --TODO: Implement device passcode support, I have no idea how to get the
+    --TODO: Methods from Agent1 implemented
+    --[[ self._private.AgentManager1 = dbus_proxy.Proxy:new {
+      bus = dbus_proxy.Bus.SYSTEM,
+      name = "org.bluez",
+      path = "/org/bluez",
+      interface = "org.bluez.AgentManager1"
+    }
+
+    self._private.Agent1 = dbus_proxy.Proxy:new {
+      bus = dbus_proxy.Bus.SYSTEM,
+      name = "org.bluez",
+      path = "/org/bluez",
+      interface = "org.bluez.Agent1",
+    }
+
+    self._private.AgentManager1:RegisterAgent(self._private.Agent1.object_path, "")
+    self._private.AgentManager1:RequestDefaultAgent(self._private.Agent1.object_path) ]]
+
+    self.device:ConnectAsync()
+  else
+    self.device:DisconnectAsync()
+  end
+end
+
+function device:toggle_pair()
+  if self.device.Paired then
+    self.device:PairAsync()
+  else
+    self.device:CancelPairingAsync()
+  end
+end
+
+function device:toggle_trusted()
+  self.device:Set("org.bluez.Device1", "Trusted", lgi.GLib.Variant("b", not self.device.Trusted))
+  self.device.Trusted = { signature = "b", value = not self.device.Trusted }
+
+end
+
+function device:rename(newname)
+  self.device:Set("org.bluez.Device1", "Alias", lgi.GLib.Variant("s", newname))
+  self.device.Alias = { signature = "s", value = newname }
+  return self.device:Get("org.bluez.Device1", "Alias")
 end
 
 function device.new(args)
   args = args or {}
   args.device = args.device or {}
-  args.battery = args.battery or {}
-
-  local ret = gobject { enable_properties = true, enable_auto_signals = true }
-  gtable.crush(ret, device, true)
-
-  if args.device then
-    ret.device = args.device
-  end
-  if args.battery then
-    ret.battery = args.battery
-  end
 
   local icon = device.Icon or "bluetooth-on"
-  local device_widget = wibox.widget {
+
+  local inputbox = awful.widget.inputbox {
+    text = args.device.Alias or args.device.Name,
+    halign = "left",
+    valign = "center",
+  }
+
+  local ret = base.make_widget_from_value(wibox.widget {
     {
       {
         {
@@ -75,9 +129,11 @@ function device.new(args)
           {
             {
               {
-                text = ret.device.Alias or ret.device.Name,
-                id = "alias",
-                widget = wibox.widget.textbox
+                inputbox,
+                widget = wibox.container.constraint,
+                strategy = "min",
+                width = dpi(400),
+                id = "const"
               },
               {
                 text = "Connecting...",
@@ -150,33 +206,133 @@ function device.new(args)
     shape = function(cr, width, height)
       gshape.rounded_rect(cr, width, height, dpi(4))
     end,
-    device = ret.device,
     widget = wibox.container.background
-  }
+  })
 
-  if ret.device.Connected then
-    device_widget:get_children_by_id("con")[1].image = gcolor.recolor_image(icondir .. "link.svg",
-      Theme_config.bluetooth_controller.icon_color_dark)
-  else
-    device_widget:get_children_by_id("con")[1].image = gcolor.recolor_image(icondir .. "link-off.svg",
-      Theme_config.bluetooth_controller.icon_color_dark)
+  gtable.crush(ret, device, true)
+
+  if args.device then
+    ret.device = args.device
   end
 
-  device_widget:buttons(
+  ret:get_children_by_id("con")[1].image = gcolor.recolor_image(ret.device.Connected and icondir .. "link.svg" or
+    icondir .. "link-off.svg",
+    Theme_config.bluetooth_controller.icon_color_dark)
+
+  local cm = context_menu {
+    widget_template = wibox.widget {
+      {
+        {
+          {
+            {
+              widget = wibox.widget.imagebox,
+              resize = true,
+              valign = "center",
+              halign = "center",
+              id = "icon_role",
+            },
+            widget = wibox.container.constraint,
+            stragety = "exact",
+            width = dpi(24),
+            height = dpi(24),
+            id = "const"
+          },
+          {
+            widget = wibox.widget.textbox,
+            valign = "center",
+            halign = "left",
+            id = "text_role"
+          },
+          layout = wibox.layout.fixed.horizontal
+        },
+        widget = wibox.container.margin
+      },
+      widget = wibox.container.background,
+    }, spacing = dpi(10),
+    entries = {
+      {
+        name = ret.device.Connected and "Disconnect" or "Connect",
+        icon = gcolor.recolor_image(ret.device.Connected and icondir .. "bluetooth-off.svg" or
+          icondir .. "bluetooth-on.svg",
+          Theme_config.bluetooth_controller.icon_color),
+        callback = function()
+          ret:toggle_connect()
+        end,
+        id = "connected"
+      },
+      {
+        name = "Pair",
+        icon = gcolor.recolor_image(ret.device.Paired and icondir .. "link-off.svg" or
+          icondir .. "link.svg",
+          Theme_config.bluetooth_controller.icon_color),
+        callback = function()
+          ret:toggle_pair()
+        end
+      },
+      {
+        name = ret.device.Trusted and "Untrust" or "Trust",
+        icon = gcolor.recolor_image(ret.device.Trusted and icondir .. "untrusted.svg" or icondir .. "trusted.svg",
+          Theme_config.bluetooth_controller.icon_color),
+        callback = function()
+          ret:toggle_trusted()
+        end,
+        id = "trusted"
+      },
+      {
+        name = "Rename",
+        icon = gcolor.recolor_image(icondir .. "edit.svg", Theme_config.bluetooth_controller.icon_color),
+        callback = function()
+          inputbox:focus()
+          inputbox:connect_signal("submit", function(text)
+            text = text:get_text()
+            inputbox.markup = ret:rename(text)
+          end)
+        end
+      },
+      {
+        name = "Remove",
+        icon = gcolor.recolor_image(icondir .. "delete.svg", Theme_config.bluetooth_controller.icon_color),
+        callback = function()
+          args.remove_callback(ret.device)
+        end
+      }
+    }
+  }
+
+  ret:buttons(
     gtable.join(
       awful.button({}, 1, function()
-        if ret.device.Connected then
-          ret:disconnect()
-        else
-          ret:connect()
+        ret:toggle_connect()
+      end),
+      awful.button({}, 3, function()
+        for _, value in ipairs(cm.widget.children) do
+          value.id = value.id or ""
+          if value.id:match("connected") then
+            value:get_children_by_id("text_role")[1].text = ret.device.Connected and "Disconnect" or "Connect"
+            value:get_children_by_id("icon_role")[1].image = gcolor.recolor_image(ret.device.Connected and
+              icondir .. "bluetooth-off.svg" or icondir .. "bluetooth-on.svg",
+              Theme_config.bluetooth_controller.icon_color)
+          elseif value.id:match("trusted") then
+            value:get_children_by_id("text_role")[1].text = ret.device.Trusted and "Untrust" or "Trust"
+            value:get_children_by_id("icon_role")[1].image = gcolor.recolor_image(ret.device.Trusted and
+              icondir .. "untrusted.svg" or icondir .. "trusted.svg", Theme_config.bluetooth_controller.icon_color)
+          elseif value.id:match("paired") then
+            value:get_children_by_id("icon_role")[1].image = gcolor.recolor_image(ret.device.Paired and
+              icondir .. "link-off.svg" or icondir .. "link.svg", Theme_config.bluetooth_controller.icon_color)
+          end
         end
+        cm:toggle()
       end)
     )
   )
 
-  Hover_signal(device_widget)
+  capi.awesome.connect_signal(ret.device.object_path .. "_updated", function(d)
+    ret:get_children_by_id("con")[1].image = gcolor.recolor_image(d.Connected and icondir .. "link.svg" or
+      icondir .. "link-off.svg",
+      Theme_config.bluetooth_controller.icon_color_dark)
+  end)
 
-  ret.widget = device_widget
+  Hover_signal(ret)
 
   return ret
 end

@@ -7,6 +7,8 @@ local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
 
+require("src.tools.helpers.audio")
+
 local capi = {
   awesome = awesome,
 }
