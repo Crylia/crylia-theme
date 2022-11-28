@@ -257,7 +257,7 @@ local function get_applications_from_file()
           },
           {
             name = "Add to desktop",
-            icon = grecolor_image(icondir .. "desktop.svg",
+            icon = gcolor.recolor_image(icondir .. "desktop.svg",
               Theme_config.application_launcher.application.cm_icon_color),
             callback = function()
               capi.awesome.emit_signal("application_launcher::show")
