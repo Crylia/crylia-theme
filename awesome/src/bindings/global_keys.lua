@@ -1,10 +1,14 @@
--- Awesome Libs
+-- Awesome libs
 local gears = require("gears")
 local awful = require("awful")
 local hotkeys_popup = require("awful.hotkeys_popup")
 local ruled = require("ruled")
 
+-- Third party libs
 local json = require("src.lib.json-lua.json-lua")
+
+-- Own libs
+local backlight_helper = require("src.tools.helpers.backlight")
 
 local capi = {
   awesome = awesome,
@@ -251,14 +255,7 @@ return gears.table.join(
     {},
     "XF86MonBrightnessUp",
     function(c)
-      awful.spawn.easy_async_with_shell(
-        "pkexec xfpm-power-backlight-helper --get-brightness",
-        function(stdout)
-          awful.spawn(gears.filesystem.get_configuration_dir() ..
-            "src/scripts/backlight.sh set " .. tostring(tonumber(stdout) + BACKLIGHT_SEPS))
-          capi.awesome.emit_signal("brightness::update")
-        end
-      )
+      backlight_helper.brightness_increase()
     end,
     { description = "Raise backlight brightness", group = "System" }
   ),
@@ -266,14 +263,7 @@ return gears.table.join(
     {},
     "XF86MonBrightnessDown",
     function(c)
-      awful.spawn.easy_async_with_shell(
-        "pkexec xfpm-power-backlight-helper --get-brightness",
-        function(stdout)
-          awful.spawn(gears.filesystem.get_configuration_dir() ..
-            "src/scripts/backlight.sh set " .. tostring(tonumber(stdout) - BACKLIGHT_SEPS))
-          capi.awesome.emit_signal("brightness::update")
-        end
-      )
+      backlight_helper.brightness_decrease()
     end,
     { description = "Lower backlight brightness", group = "System" }
   ),
