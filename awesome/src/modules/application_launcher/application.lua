@@ -2,16 +2,18 @@
 -- This is the application launcher --
 --------------------------------------
 
--- Awesome Libs
-local awful = require("awful")
-local Gio = require("lgi").Gio
-local gfilesystem = require("gears").filesystem
-local dpi = require("beautiful").xresources.apply_dpi
-local gears = require("gears")
-local wibox = require("wibox")
+-- Awesome libs
+local abutton = require("awful.button")
+local aspawn = require("awful.spawn")
 local base = require("wibox.widget.base")
+local dpi = require("beautiful").xresources.apply_dpi
+local gcolor = require("gears.color")
+local gfilesystem = require("gears").filesystem
+local Gio = require("lgi").Gio
 local gtable = require("gears.table")
+local wibox = require("wibox")
 
+-- Third party libs
 local json = require("src.lib.json-lua.json-lua")
 local cm = require("src.modules.context_menu.init")
 
@@ -20,10 +22,24 @@ local capi = {
   mouse = mouse,
 }
 
-local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/context_menu/"
+local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/context_menu/"
 
 local application_grid = { mt = {} }
 
+--[[
+  Make sure that the config folder exists and the applications.json
+  This is done here once because it would be unnecessary to do it for every instance
+]]
+do
+  local dir = gfilesystem.get_configuration_dir() .. "src/config"
+  gfilesystem.make_directories(dir)
+  dir = dir .. "/applications.json"
+  if not gfilesystem.file_readable(dir) then
+    aspawn("touch " .. dir)
+  end
+end
+
+--#region wibox.widget.base boilerplate
 function application_grid:layout(_, width, height)
   if self._private.widget then
     return { base.place_widget_at(self._private.widget, 0, 0, width, height) }
@@ -44,6 +60,12 @@ function application_grid:get_widget()
   return self._private.widget
 end
 
+--#endregion
+
+--[[
+  Calculate the levenshtein distance between two strings to determine how similar they are
+  I stole this from a random github gist
+]]
 local function levenshtein_distance(str1, str2)
   local len1 = string.len(str1)
   local len2 = string.len(str2)
@@ -85,12 +107,17 @@ local function levenshtein_distance(str1, str2)
   return matrix[len1][len2]
 end
 
-function application_grid:get_applications_from_file()
+---Gets all .desktop files found and filters them based on their visibility
+---It used Gio.AppInfo and Gio.DesktopAppInfo to get the information
+---@return table
+local function get_applications_from_file()
   local list = {}
   local app_info = Gio.AppInfo
+  --Get all .desktop files
   local apps = app_info.get_all()
   for _, app in ipairs(apps) do
     if app.should_show(app) then -- check no display
+      --Create a new .desktop object
       local desktop_app_info = Gio.DesktopAppInfo.new(app_info.get_id(app))
       local app_widget = wibox.widget {
         {
@@ -100,7 +127,9 @@ function application_grid:get_applications_from_file()
                 { -- Icon
                   valign = "center",
                   halign = "center",
-                  image = Get_gicon_path(app_info.get_icon(app)),
+                  image = Get_gicon_path(app_info.get_icon(app)) or
+                      Get_gicon_path(app_info.get_icon(app),
+                        Gio.DesktopAppInfo.get_string(desktop_app_info, "X-AppImage-Old-Icon")) or "",
                   resize = true,
                   widget = wibox.widget.imagebox
                 },
@@ -138,17 +167,14 @@ function application_grid:get_applications_from_file()
         categories = Gio.DesktopAppInfo.get_categories(desktop_app_info) or "",
         terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, "Terminal") == "true",
         actions = Gio.DesktopAppInfo.list_actions(desktop_app_info),
+        desktop_file = Gio.DesktopAppInfo.get_filename(desktop_app_info) or "",
         border_color = Theme_config.application_launcher.application.border_color,
         border_width = Theme_config.application_launcher.application.border_width,
         bg = Theme_config.application_launcher.application.bg,
         fg = Theme_config.application_launcher.application.fg,
-        desktop_file = Gio.DesktopAppInfo.get_filename(desktop_app_info) or "",
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(8))
-        end,
+        shape = Theme_config.application_launcher.application.shape,
         widget = wibox.container.background
       }
-
       local context_menu = cm {
         widget_template = wibox.widget {
           {
@@ -183,34 +209,33 @@ function application_grid:get_applications_from_file()
         entries = {
           {
             name = "Execute as sudo",
-            icon = gears.color.recolor_image(icondir .. "launch.svg",
+            icon = gcolor.recolor_image(icondir .. "launch.svg",
               Theme_config.application_launcher.application.cm_icon_color),
             callback = function()
               capi.awesome.emit_signal("application_launcher::show")
-              awful.spawn("/home/crylia/.config/awesome/src/scripts/start_as_admin.sh " .. app_widget.exec)
+              aspawn("/home/crylia/.config/awesome/src/scripts/start_as_admin.sh " .. app_widget.exec)
             end
           },
           {
             name = "Pin to dock",
-            icon = gears.color.recolor_image(icondir .. "pin.svg",
+            icon = gcolor.recolor_image(icondir .. "pin.svg",
               Theme_config.application_launcher.application.cm_icon_color),
             callback = function()
-              local dir = gears.filesystem.get_configuration_dir() .. "src/config"
-              gfilesystem.make_directories(dir)
-              if not gfilesystem.file_readable(dir) then
-                os.execute("touch " .. dir .. "/dock.json")
-              end
-              local handler = io.open(dir .. "/dock.json", "r")
-              if not handler then
-                return
-              end
-              local dock_table = json:decode(handler:read("a")) or {}
-              handler:close()
+              -- Open dock.js and read all its content into a table, add the new app into the table and write it back
+              local file_path = gfilesystem.get_configuration_dir() .. "src/config/dock.json"
+              local handler = io.open(file_path, "r")
+              if not handler then return end
 
-              ---@diagnostic disable-next-line: param-type-mismatch
+              local dock_table = json:decode(handler:read("a")) or {}
+
+              handler:close()
+              assert(type(dock_table) == "table", "dock_table is not a table")
+
               table.insert(dock_table, {
                 name = app_widget.name or "",
-                icon = Get_gicon_path(app_info.get_icon(app)) or "",
+                icon = Get_gicon_path(app_info.get_icon(app)) or
+                    Get_gicon_path(app_info.get_icon(app),
+                      Gio.DesktopAppInfo.get_string(desktop_app_info, "X-AppImage-Old-Icon")) or "",
                 comment = app_widget.comment or "",
                 exec = app_widget.exec or "",
                 keywords = app_widget.keywords or "",
@@ -219,11 +244,12 @@ function application_grid:get_applications_from_file()
                 actions = app_widget.actions or "",
                 desktop_file = Gio.DesktopAppInfo.get_filename(desktop_app_info) or ""
               })
+
               local dock_encoded = json:encode(dock_table)
-              handler = io.open("/home/crylia/.config/awesome/src/config/dock.json", "w")
-              if not handler then
-                return
-              end
+              handler = io.open(file_path, "w")
+
+              if not handler then return end
+
               handler:write(dock_encoded)
               handler:close()
               capi.awesome.emit_signal("dock::changed")
@@ -231,7 +257,7 @@ function application_grid:get_applications_from_file()
           },
           {
             name = "Add to desktop",
-            icon = gears.color.recolor_image(icondir .. "desktop.svg",
+            icon = grecolor_image(icondir .. "desktop.svg",
               Theme_config.application_launcher.application.cm_icon_color),
             callback = function()
               capi.awesome.emit_signal("application_launcher::show")
@@ -246,23 +272,23 @@ function application_grid:get_applications_from_file()
         }
       }
 
+      -- Hide context menu when the mouse leaves it
       context_menu:connect_signal("mouse::leave", function()
         context_menu.visible = false
       end)
 
-      -- Execute command on left click and hide launcher
+      -- Execute command on left click and hide launcher, right click to show context menu
       app_widget:buttons(
-        gears.table.join(
-          awful.button({
+        gtable.join(
+          abutton({
             modifiers = {},
             button = 1,
             on_release = function()
               Gio.AppInfo.launch_uris_async(app)
-              --!Change!
               capi.awesome.emit_signal("application_launcher::show")
             end
           }),
-          awful.button({
+          abutton({
             modifiers = {},
             button = 3,
             on_release = function()
@@ -271,13 +297,16 @@ function application_grid:get_applications_from_file()
           })
         )
       )
+
       Hover_signal(app_widget)
       table.insert(list, app_widget)
     end
   end
-  self.app_list = list
+  return list
 end
 
+---Takes the search filter and returns a list of applications in the correct order
+---@param search_filter any
 function application_grid:set_applications(search_filter)
   local filter = search_filter or self.filter or ""
   -- Reset to first position
@@ -292,30 +321,34 @@ function application_grid:set_applications(search_filter)
     spacing = dpi(10),
     id = "grid",
     -- 200 is the application element width + 10 spacing
-    forced_num_cols = math.floor((capi.mouse.screen.geometry.width / 100 * 60) / (200)),
+    forced_num_cols = math.floor((capi.mouse.screen.geometry.width / 100 * 60) / 200),
     forced_num_rows = 7,
     orientation = "vertical",
     layout = wibox.layout.grid
   }
 
-  local dir = gfilesystem.get_configuration_dir() .. "src/config/applications.json"
-  if not gfilesystem.file_readable(dir) then return end
-
-  local handler = io.open(dir, "r")
+  -- Read the dock.json file and get all apps, these are needed to read/write the launch count
+  local handler = io.open(gfilesystem.get_configuration_dir() .. "src/config/applications.json", "r")
   if not handler then return end
+
   local dock_encoded = handler:read("a") or "{}"
   local dock = json:decode(dock_encoded)
-  if type(dock) ~= "table" then return end
+
+  assert(type(dock) == "table", "dock is not a table")
+
   local mylist = {}
+
   for _, application in ipairs(self.app_list) do
-    -- Match the filter
+    -- Match the filter for the name, categories and keywords
     if string.match(string.lower(application.name or ""), string.lower(filter)) or
         string.match(string.lower(application.categories or ""), string.lower(filter)) or
         string.match(string.lower(application.keywords or ""), string.lower(filter)) then
 
+      -- If there are no elements in the table, set everything to 0
       if #dock == 0 then
         application.counter = 0
       end
+      -- Read the counter for the matching app
       for _, app in ipairs(dock) do
         if app.desktop_file == application.desktop_file then
           application.counter = app.counter or 0
@@ -329,14 +362,16 @@ function application_grid:set_applications(search_filter)
     end
   end
 
+  -- Sort the applications using the levenshtein algorithm
   table.sort(mylist, function(a, b)
     return levenshtein_distance(filter, a.name) < levenshtein_distance(filter, b.name)
   end)
-  --sort mytable by counter
+  --Sort the applications using the counter
   table.sort(mylist, function(a, b)
     return a.counter > b.counter
   end)
 
+  -- Add the apps one by one into the grid and read its position
   for _, app in ipairs(mylist) do
     grid:add(app)
 
@@ -360,6 +395,7 @@ function application_grid:set_applications(search_filter)
   self:set_widget(grid)
 end
 
+-- Move the curser up by one, making sure it doesn't go out of bounds
 function application_grid:move_up()
   self._private.curser.y = self._private.curser.y - 1
   if self._private.curser.y < 1 then
@@ -368,6 +404,7 @@ function application_grid:move_up()
   capi.awesome.emit_signal("update::selected")
 end
 
+-- Move the curser down by one, making sure it doesn't go out of bounds
 function application_grid:move_down()
   self._private.curser.y = self._private.curser.y + 1
   local grid_rows, _ = self:get_widget():get_dimension()
@@ -377,6 +414,7 @@ function application_grid:move_down()
   capi.awesome.emit_signal("update::selected")
 end
 
+-- Move the curser left by one, making sure it doesn't go out of bounds
 function application_grid:move_left()
   self._private.curser.x = self._private.curser.x - 1
   if self._private.curser.x < 1 then
@@ -385,6 +423,7 @@ function application_grid:move_left()
   capi.awesome.emit_signal("update::selected")
 end
 
+-- Move the curser right by one, making sure it doesn't go out of bounds
 function application_grid:move_right()
   self._private.curser.x = self._private.curser.x + 1
   local _, grid_cols = self:get_widget():get_dimension()
@@ -394,22 +433,28 @@ function application_grid:move_right()
   capi.awesome.emit_signal("update::selected")
 end
 
+--- Execute the currently selected app and add to the launch count
 function application_grid:execute()
+  -- Get the app at the current x,y
   local selected_widget = self:get_widget():get_widgets_at(self._private.curser.y,
     self._private.curser.x)[1]
+  -- Launch the application async
   Gio.AppInfo.launch_uris_async(Gio.AppInfo.create_from_commandline(selected_widget.exec, nil, 0))
 
-  local dir = gfilesystem.get_configuration_dir() .. "src/config/applications.json"
-  if not gfilesystem.file_readable(dir) then return end
-
-  local handler = io.open(dir, "r")
+  local file_path = gfilesystem.get_configuration_dir() .. "src/config/applications.json"
+  local handler = io.open(file_path, "r")
   if not handler then return end
+
   local dock_encoded = handler:read("a") or "{}"
   local dock = json:decode(dock_encoded)
-  if type(dock) ~= "table" then return end
+
+  assert(type(dock) == "table", "dock is not a table")
+
+  -- Increase the counter by one then rewrite to the file, its a bit hacky but it works
   for _, prog in ipairs(dock) do
     if prog.desktop_file:match(selected_widget.desktop_file) then
       prog.counter = prog.counter + 1
+      -- I don't like goto's, but its the easiest way here(PR is welcome).
       goto continue
     end
   end
@@ -423,12 +468,13 @@ function application_grid:execute()
   end
   ::continue::
   handler:close()
-  handler = io.open(dir, "w")
+  handler = io.open(file_path, "w")
   if not handler then return end
   handler:write(json:encode_pretty(dock))
   handler:close()
 end
 
+-- Reset the grid cursor
 function application_grid:reset()
   self._private.curser = {
     x = 1,
@@ -444,20 +490,7 @@ function application_grid.new(args)
 
   gtable.crush(w, application_grid, true)
 
-  w._private.curser = {
-    x = 1,
-    y = 1
-  }
-
-  -- Create folder and file if it doesn't exist
-  local dir = gfilesystem.get_configuration_dir() .. "src/config"
-  gfilesystem.make_directories(dir)
-  dir = dir .. "/applications.json"
-  if not gfilesystem.file_readable(dir) then
-    os.execute("touch " .. dir)
-  end
-
-  w:get_applications_from_file()
+  w.app_list = get_applications_from_file()
 
   w:set_applications()
   return w
