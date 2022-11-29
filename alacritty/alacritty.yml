@@ -10,6 +10,9 @@
 # Set the window Width and Height in console columns.
 # The window size will change if the font size changes.
 window:
+  padding:
+    x: 24
+    y: 24
   dimensions:
     columns: 110
     lines: 30
@@ -24,63 +27,61 @@ scrolling:
 # Font family and style
 font:
   normal:
-    family: "MesloLGS NF"
+    family: "JetBrains Mono Nerd Font"
     style: Regular
   bold:
-    family: "MesloLGS NF"
+    family: "JetBrains Mono Nerd Font"
     style: Bold
   italic:
-    family: "MesloLGS NF"
+    family: "JetBrains Mono Nerd Font"
     style: italic
   bold_italic:
-    family: "MesloLGS NF"
+    family: "JetBrains Mono Nerd Font"
     style: Bold Italic
-  size: 12.0
+  size: 14.0
   offset:
-    x: 0
     y: 0
-  draw_bold_text_with_bright_colors: false
+  glyph_offset:
+    y: 0
 # Background opacity from 0.0 transparent, 1.0 Opaque
 window:
   opacity: 0.4
 # Terminal colors
 colors:
   primary:
-    background: '#000000'
-    foreground: '#FFFFFF'
+    background: '0x131621'
+    foreground: '0xa6accd'
   cursor:
-    cursor: '#00b8ff'
+    text: CellBackground
+    cursor: CellForeground
   search:
     matches:
-      foreground: '#000000'
-      background: '#EA80FC'
+      foreground: '0x1b1e28'
+      background: '0xadd7ff'
     focus_match:
-      foreground: '#000000'
-      background: '#E040FB'
-    bar:
-      foreground: '#B388FF'
-      background: '#121212'
+      foreground: '0x1b1e28'
+      background: '0xadd7ff'
   selection:
-    text: '#EA80FC'
-    background: '#121212'
+    text: CellForeground
+    background: '0x303340'
   normal:
-    black: '#121212'
-    red: '#ff5252'
-    green: '#8BC34A'
-    yellow: '#FFFF00'
-    blue: '#82B1FF'
-    magenta: '#EA80FC'
-    cyan: '#84FFFF'
-    white: '#FFFFFF'
+    black: '0x1b1e28'
+    red: '0xd0679d'
+    green: '0x5de4c7'
+    yellow: '0xfffac2'
+    blue: '#435c89'
+    magenta: '0xfcc5e9'
+    cyan: '0xadd7ff'
+    white: '0xffffff'
   bright:
-    black: '#363636'
-    red: '#ef9a9a'
-    green: '#A5D6A7'
-    yellow: '#FFF59D'
-    blue: '#90CAF9'
-    magenta: '#CE93D8'
-    cyan: '#80DEEA'
-    white: '#FFFFFF'
+    black: '0xa6accd'
+    red: '0xd0679d'
+    green: '0x5de4c7'
+    yellow: '0xfffac2'
+    blue: '0xadd7ff'
+    magenta: '0xfae4fc'
+    cyan: '0x89ddff'
+    white: '0xffffff'
 # Cursor styling
 cursor:
   style: Beam

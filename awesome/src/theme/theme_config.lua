@@ -1,7 +1,7 @@
 -- Awesome Libs
 local color = require("src.theme.colors")
 local dpi = require("beautiful.xresources").apply_dpi
-local gears = require("gears")
+local gshape = require("gears.shape")
 
 Theme_config = {}
 
@@ -156,7 +156,7 @@ Theme_config.calendar = {
   border_color = color["Grey800"],
   border_width = dpi(2),
   shape = function(cr, w, h)
-    gears.shape.rounded_rect(cr, w, h, dpi(8))
+    gshape.rounded_rect(cr, w, h, dpi(8))
   end,
   day = {
     today_border_color = color["Blue200"],
@@ -169,7 +169,7 @@ Theme_config.calendar = {
     border_color = color["Grey800"],
     border_width = dpi(2),
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(8))
+      gshape.rounded_rect(cr, width, height, dpi(8))
     end
   },
   task = {
@@ -177,7 +177,7 @@ Theme_config.calendar = {
     bg_past = color["Grey600"],
     fg = color["Grey900"],
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(4))
+      gshape.rounded_rect(cr, width, height, dpi(4))
     end
   },
   weekdays = {
@@ -188,14 +188,14 @@ Theme_config.calendar = {
     bg = color["Red200"],
     fg = color["Grey900"],
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(4))
+      gshape.rounded_rect(cr, width, height, dpi(4))
     end
   },
   add_task = {
     bg = color["LightBlue200"],
     fg = color["Grey900"],
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(4))
+      gshape.rounded_rect(cr, width, height, dpi(4))
     end
   },
   task_info = {
@@ -203,7 +203,7 @@ Theme_config.calendar = {
     bg = color["Grey900"],
     fg = color["White"],
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(12))
+      gshape.rounded_rect(cr, width, height, dpi(12))
     end
   }
 }
@@ -218,7 +218,7 @@ Theme_config.desktop = {
     border_color = color["Grey800"],
     border_width = dpi(2),
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(12))
+      gshape.rounded_rect(cr, width, height, dpi(12))
     end
   }
 }
@@ -246,7 +246,7 @@ Theme_config.network_manager = {
     border_color = color["Grey800"],
     border_width = dpi(2),
     device_shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(4))
+      gshape.rounded_rect(cr, width, height, dpi(4))
     end
   },
   form = {
@@ -261,16 +261,16 @@ Theme_config.network_manager = {
     checkbox_fg = color["Grey900"],
     checkbox_bg = color["DeepOrange200"],
     checkbox_shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(6))
+      gshape.rounded_rect(cr, width, height, dpi(6))
     end,
     button_shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(8))
+      gshape.rounded_rect(cr, width, height, dpi(8))
     end,
     close_icon_shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(8))
+      gshape.rounded_rect(cr, width, height, dpi(8))
     end,
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(8))
+      gshape.rounded_rect(cr, width, height, dpi(8))
     end
   }
 }
@@ -281,10 +281,10 @@ Theme_config.notification = {
   bg = color["Grey900"],
   spacing = dpi(10),
   shape = function(cr, width, height)
-    gears.shape.rounded_rect(cr, width, height, dpi(10))
+    gshape.rounded_rect(cr, width, height, dpi(10))
   end,
   shape_inside = function(cr, width, height)
-    gears.shape.rounded_rect(cr, width, height, dpi(4))
+    gshape.rounded_rect(cr, width, height, dpi(4))
   end,
   position = "bottom_right",
   timeout = 3,
@@ -335,7 +335,7 @@ Theme_config.notification_center = {
     notification_bg = color["Grey900"],
     notification_border_width = dpi(4),
     notification_shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, 8)
+      gshape.rounded_rect(cr, width, height, 8)
     end
   },
 
@@ -349,7 +349,7 @@ Theme_config.notification_center = {
     border_color = color["Grey800"],
     border_width = dpi(4),
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(8))
+      gshape.rounded_rect(cr, width, height, dpi(8))
     end
   },
 
@@ -374,7 +374,7 @@ Theme_config.notification_center = {
     border_color = color["Grey800"],
     border_width = dpi(4),
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(8))
+      gshape.rounded_rect(cr, width, height, dpi(8))
     end
   },
   -- Spacing line widget
@@ -387,7 +387,7 @@ Theme_config.notification_center = {
     border_color = color["Grey800"],
     border_width = dpi(4),
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(10))
+      gshape.rounded_rect(cr, width, height, dpi(10))
     end,
     bar_bg_color = color["Grey800"],
     cpu_usage_color = color["Cyan200"],
@@ -413,14 +413,20 @@ Theme_config.notification_center = {
     border_color = color["Grey800"],
     border_width = dpi(4),
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(12))
+      gshape.rounded_rect(cr, width, height, dpi(12))
     end
   }
 }
 
 Theme_config.bluetooth_controller = {
+  shape = function(cr, width, height)
+    gshape.rounded_rect(cr, width, height, dpi(8))
+  end,
   icon_color = color["Purple200"],
   icon_color_dark = color["Grey900"],
+  icon_shape = function(cr, width, height)
+    gshape.rounded_rect(cr, width, height, dpi(4))
+  end,
   con_button_color = color["Blue200"],
   device_bg = color["Grey900"],
   device_bg_hover = "#313131",
@@ -428,19 +434,34 @@ Theme_config.bluetooth_controller = {
   device_fg = color["LightBlue200"],
   device_border_color = color["Grey800"],
   device_border_width = dpi(2),
+  device_shape = function(cr, width, height)
+    gshape.rounded_rect(cr, width, height, dpi(4))
+  end,
   con_device_border_color = color["Grey800"],
   con_device_border_width = dpi(2),
+  con_device_shape = function(cr, width, height)
+    gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+  end,
   connected_bg = color["Grey800"],
   connected_fg = color["Purple200"],
   connected_icon_color = color["Purple200"],
+  connected_shape = function(cr, width, height)
+    gshape.rounded_rect(cr, width, height, dpi(4))
+  end,
   discovered_icon_color = color["LightBlue200"],
   discovered_bg = color["Grey800"],
   discovered_fg = color["LightBlue200"],
+  discovered_shape = function(cr, width, height)
+    gshape.rounded_rect(cr, width, height, dpi(4))
+  end,
   container_border_color = color["Grey800"],
   container_border_width = dpi(4),
   container_bg = color["Grey900"],
   refresh_icon_color = color["Grey900"],
   refresh_bg = color["LightBlue200"],
+  refresh_shape = function(cr, width, height)
+    gshape.rounded_rect(cr, width, height, dpi(4))
+  end,
   power_icon_color = color["Grey900"],
   power_bg = color["Blue200"],
 }
@@ -525,13 +546,13 @@ Theme_config.volume_controller = {
   border_color = color["Grey800"],
   border_width = dpi(4),
   shape = function(cr, width, height)
-    gears.shape.rounded_rect(cr, width, height, dpi(12))
+    gshape.rounded_rect(cr, width, height, dpi(12))
   end,
   device_bg = color["Grey900"],
   device_border_color = color["Grey800"],
   device_border_width = dpi(2),
   device_shape = function(cr, width, height)
-    gears.shape.rounded_rect(cr, width, height, dpi(4))
+    gshape.rounded_rect(cr, width, height, dpi(4))
   end,
   device_headphones_fg = color["Purple200"],
   device_microphone_fg = color["Blue200"],
@@ -547,13 +568,13 @@ Theme_config.volume_controller = {
   list_border_color = color["Grey800"],
   list_border_width = dpi(2),
   list_shape = function(cr, width, height)
-    gears.shape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+    gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
   end,
   list_bg = color["Grey800"],
   list_headphones_fg = color["Purple200"],
   list_microphone_fg = color["Blue200"],
   selector_shape = function(cr, width, height)
-    gears.shape.rounded_rect(cr, width, height, dpi(4))
+    gshape.rounded_rect(cr, width, height, dpi(4))
   end,
   volume_fg = color["Purple200"],
   microphone_fg = color["Blue200"]
@@ -591,7 +612,10 @@ Theme_config.application_launcher = {
     bg = "#313131",
     fg = color["Grey100"],
     hover_bg = color["Grey700"],
-    cm_icon_color = color["Pink200"]
+    cm_icon_color = color["Pink200"],
+    shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(4))
+    end
   },
   searchbar = {
     bg = color["Grey900"],
@@ -608,7 +632,7 @@ Theme_config.application_launcher = {
     hover_border = color["Grey700"],
     border_active = color["LightBlue200"],
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(4))
+      gshape.rounded_rect(cr, width, height, dpi(4))
     end
   }
 }
@@ -618,7 +642,7 @@ Theme_config.context_menu = {
   border_color = color["Grey800"],
   border_width = dpi(4),
   shape = function(cr, width, height)
-    gears.shape.rounded_rect(cr, width, height, dpi(8))
+    gshape.rounded_rect(cr, width, height, dpi(8))
   end,
   fg = color["Grey100"],
   entry = {
@@ -629,7 +653,7 @@ Theme_config.context_menu = {
     hover_fg = color["Teal200"],
     hover_border = color["Teal200"],
     shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(4))
+      gshape.rounded_rect(cr, width, height, dpi(4))
     end,
     icon_color = color["Grey100"],
     icon_color_hover = color["Teal200"]
@@ -662,7 +686,7 @@ Theme_config.tooltip = {
   border_width = dpi(4),
   gaps = dpi(15),
   shape = function(cr, width, heigth)
-    gears.shape.rounded_rect(cr, width, heigth, dpi(4))
+    gshape.rounded_rect(cr, width, heigth, dpi(4))
   end
 }
 
@@ -672,7 +696,7 @@ Theme_config.hotkeys = {
   border_color = color["Grey800"],
   border_width = dpi(4),
   shape = function(cr, width, heigth)
-    gears.shape.rounded_rect(cr, width, heigth, dpi(12))
+    gshape.rounded_rect(cr, width, heigth, dpi(12))
   end,
   modifiers_fg = color["Cyan200"],
   description_font = User_config.font.bold,
