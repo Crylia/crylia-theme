@@ -15,7 +15,7 @@ return function(s)
         elseif widget == "Battery" then
           table.insert(widget_table, require("src.widgets.battery")(User_config.battery_kind))
         elseif widget == "Bluetooth" then
-          table.insert(widget_table, require("src.widgets.bluetooth")())
+          table.insert(widget_table, require("src.widgets.bluetooth")(s))
         elseif widget == "Clock" then
           table.insert(widget_table, require("src.widgets.clock")())
         elseif widget == "Cpu Frequency" then

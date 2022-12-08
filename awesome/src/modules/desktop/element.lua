@@ -39,10 +39,10 @@ function element:on_hover()
     self.border_color = "#0ffff099"
   end)
 
-  self:connect_signal("mouse::leave", function()
+  --[[ self:connect_signal("mouse::leave", function()
     self.bg = gcolor.transparent
     self.border_color = gcolor.transparent
-  end)
+  end) ]]
 
   self:connect_signal("button::press", function()
     self.bg = "#0ffff088"

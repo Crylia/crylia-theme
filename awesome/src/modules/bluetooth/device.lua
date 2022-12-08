@@ -134,7 +134,7 @@ function device.new(args)
             inputbox,
             widget = wibox.container.constraint,
             strategy = "exact",
-            width = dpi(400),
+            width = dpi(300),
             id = "const"
           },
           spacing = dpi(10),

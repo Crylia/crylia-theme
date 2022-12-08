@@ -515,8 +515,13 @@ Theme_config.right_bar = {
 
 Theme_config.titlebar = {
   bg = "#121212AA",
+  size = dpi(38),
   close_button = {
     border_color = "#00000000",
+    border_width = dpi(2),
+    shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(6))
+    end,
     bg = "#00000000",
     fg = color["Grey100"],
     hover_border = color["Red800"],
@@ -525,6 +530,10 @@ Theme_config.titlebar = {
   },
   minimize_button = {
     border_color = "#00000000",
+    border_width = dpi(2),
+    shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(6))
+    end,
     fg = color["Grey100"],
     bg = "#00000000",
     hover_border = color["Orange800"],
@@ -533,6 +542,10 @@ Theme_config.titlebar = {
   },
   maximize_button = {
     border_color = "#00000000",
+    border_width = dpi(2),
+    shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(6))
+    end,
     fg = color["Grey100"],
     bg = "#00000000",
     hover_border = color["Green800"],

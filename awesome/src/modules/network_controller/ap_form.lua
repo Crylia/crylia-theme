@@ -1,16 +1,20 @@
-local awful = require("awful")
+local abutton = require("awful.button")
+local aplacement = require("awful.placement")
+local apopup = require("awful.popup")
+local awidget = require("awful.widget")
 local dpi = require("beautiful").xresources.apply_dpi
 local gtable = require("gears.table")
-local gobject = require("gears.object")
 local gcolor = require("gears.color")
 local gshape = require("gears.shape")
 local gfilesystem = require("gears.filesystem")
+local NM = require("lgi").NM
 local wibox = require("wibox")
 
 local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/network/"
 
 local capi = {
   awesome = awesome,
+  mouse = mouse,
   mousegrabber = mousegrabber
 }
 
@@ -22,47 +26,11 @@ end
 
 function ap_form.new(args)
   args = args or {}
-  args.screen = args.screen or awful.screen.preferred()
+  args.screen = args.screen
 
-  local settigns_form = {
-    password = awful.widget.inputbox {
-      widget_template = wibox.template {
-        widget = wibox.widget {
-          {
-            {
-              {
-                widget = wibox.widget.textbox,
-                halign = "left",
-                valign = "center",
-                id = "text_role",
-              },
-              widget = wibox.container.margin,
-              margins = 5,
-              id = "marg"
-            },
-            widget = wibox.container.constraint,
-            strategy = "exact",
-            width = 400,
-            height = 50,
-            id = "const"
-          },
-          widget = wibox.container.background,
-          bg = "#212121",
-          fg = "#F0F0F0",
-          border_color = "#414141",
-          border_width = 2,
-          shape = gshape.rounded_rect,
-          forced_width = 300,
-          forced_height = 50,
-        },
-        update_callback = function(template_widget, args)
-          template_widget.widget.const.marg.text_role.markup = args.text
-        end
-      }
-    },
-  }
+  local password = awidget.inputbox { hint_text = "Password..." }
 
-  local ret = awful.popup {
+  local ret = apopup {
     widget = {
       {
         { -- Header
@@ -71,7 +39,7 @@ function ap_form.new(args)
             {
               {
                 widget = wibox.widget.textbox,
-                text = args.ssid,
+                text = NM.utils_ssid_to_utf8(args.NetworkManagerAccessPoint.Ssid),
                 font = User_config.font.specify .. ",extra bold 16",
                 halign = "center",
                 valign = "center",
@@ -115,7 +83,30 @@ function ap_form.new(args)
             right = dpi(20),
           },
           -- Change to inputtextbox container
-          settigns_form.password,
+          {
+            {
+              {
+                password,
+                widget = wibox.container.margin,
+                margins = 5,
+                id = "marg"
+              },
+              widget = wibox.container.constraint,
+              strategy = "exact",
+              width = 400,
+              height = 50,
+              id = "const"
+            },
+            widget = wibox.container.background,
+            bg = "#212121",
+            fg = "#F0F0F0",
+            border_color = "#414141",
+            border_width = 2,
+            shape = gshape.rounded_rect,
+            forced_width = 300,
+            forced_height = 50,
+            id = "password_container"
+          },
           layout = wibox.layout.align.horizontal
         },
         { -- Actions
@@ -181,7 +172,7 @@ function ap_form.new(args)
       widget = wibox.container.margin,
       margins = dpi(10)
     },
-    placement = awful.placement.centered,
+    placement = aplacement.centered,
     ontop = true,
     visible = false,
     width = dpi(600),
@@ -194,6 +185,30 @@ function ap_form.new(args)
     type = "dialog",
     screen = args.screen,
   }
+
+  local password_container = ret.widget:get_children_by_id("password_container")[1]
+
+  -- Focus the searchbar when its left clicked
+  password_container:buttons(gtable.join {
+    abutton({}, 1, function()
+      password:focus()
+    end)
+  })
+
+  --#region Hover signals to change the cursor to a text cursor
+  local old_cursor, old_wibox
+  password_container:connect_signal("mouse::enter", function()
+    local wid = capi.mouse.current_wibox
+    if wid then
+      old_cursor, old_wibox = wid.cursor, wid
+      wid.cursor = "xterm"
+    end
+  end)
+  password_container:connect_signal("mouse::leave", function()
+    old_wibox.cursor = old_cursor
+    old_wibox = nil
+  end)
+  --#endregion
 
   gtable.crush(ret, ap_form, true)
 
@@ -210,13 +225,10 @@ function ap_form.new(args)
 
   local connect_button = ret.widget:get_children_by_id("connect_button")[1]
   connect_button:connect_signal("button::press", function()
-    ret:emit_signal("ap_form::connect", {
-      ssid = args.ssid,
-      password = settigns_form.password:get_text(),
-      auto_connect = ret.widget:get_children_by_id("checkbox")[1].checked
-    })
-    print("Connect to " .. args.ssid:get_text(), "\nPassword: " .. settigns_form.password:get_text(),
-      "\nAuto connect: " .. tostring(ret.widget:get_children_by_id("checkbox")[1].checked))
+    password:stop()
+    args.ap:connect(args.NetworkManagerAccessPoint, password:get_text(),
+      ret.widget:get_children_by_id("checkbox")[1].checked)
+    ret:popup_toggle()
   end)
   Hover_signal(connect_button)
 

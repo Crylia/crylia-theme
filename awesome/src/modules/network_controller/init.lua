@@ -4,12 +4,11 @@
 
 -- Awesome Libs
 local awful = require("awful")
-local dbus_proxy = require("dbus_proxy")
+local dbus_proxy = require("src.lib.lua-dbus_proxy.src.dbus_proxy")
 local dpi = require("beautiful").xresources.apply_dpi
 local gtable = require("gears").table
 local gtimer = require("gears").timer
 local gshape = require("gears").shape
-local gobject = require("gears").object
 local gcolor = require("gears").color
 local gears = require("gears")
 local lgi = require("lgi")
@@ -23,11 +22,6 @@ local access_point = require("src.modules.network_controller.access_point")
 local dnd_widget = require("awful.widget.toggle_widget")
 
 local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/network/"
-
-
-local capi = {
-  awesome = awesome,
-}
 
 local network = { mt = {} }
 
@@ -62,31 +56,6 @@ network.DeviceState = {
   DEACTIVATING = 110,
   FAILED = 120
 }
-
-local function flags_to_security(flags, wpa_flags, rsn_flags)
-  local str = ""
-  if flags == 1 and wpa_flags == 0 and rsn_flags == 0 then
-    str = str .. " WEP"
-  end
-  if wpa_flags ~= 0 then
-    str = str .. " WPA1"
-  end
-  if not rsn_flags ~= 0 then
-    str = str .. " WPA2"
-  end
-  if wpa_flags == 512 or rsn_flags == 512 then
-    str = str .. " 802.1X"
-  end
-
-  return (str:gsub("^%s", ""))
-end
-
-local function generate_uuid()
-  return string.gsub('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx', '[xy]', function(c)
-    local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
-    return string.format('%x', v)
-  end)
-end
 
 function network:get_wifi_proxy()
   local devices = self._private.NetworkManager:GetDevices()
@@ -146,74 +115,16 @@ function network.device_state_to_string(state)
   return device_state_to_string[state]
 end
 
-function network:get_access_point_connections(ssid)
-  local cn = {}
-
-  local connections = self._private.NetworkManagerSettings:ListConnections()
-  for _, connection_path in ipairs(connections) do
-    local NetworkManagerSettingsConnection = dbus_proxy.Proxy:new {
-      bus = dbus_proxy.Bus.SYSTEM,
-      name = "org.freedesktop.NetworkManager",
-      interface = "org.freedesktop.NetworkManager.Settings.Connection",
-      path = connection_path
-    }
-
-    if NetworkManagerSettingsConnection.Filename:find(ssid) then
-      table.insert(cn, NetworkManagerSettingsConnection)
-    end
-  end
-
-  return cn
-end
-
-function network:create_profile(ap, password, auto_connect)
-  local s_wsec = {}
-  if ap.security ~= "" then
-    if ap.security:match("WPA") then
-      s_wsec["key-mgmt"] = lgi.GLib.Variant("s", "wpa-psk")
-      s_wsec["auth-alg"] = lgi.GLib.Variant("s", "open")
-      --s_wsec["psk"] = lgi.GLib.Variant("s", helpers.string.trim(password))
-    else
-      s_wsec["key-mgmt"] = lgi.GLib.Variant("s", "None")
-      s_wsec["wep-key-type"] = lgi.GLib.Variant("s", NM.WepKeyType.PASSPHRASE)
-      --s_wsec["wep-key0"] = lgi.GLib.Variant("s", helpers.string.trim(password))
-    end
-  end
-
-  return {
-    ["connection"] = {
-      -- ["interface-name"] = lgi.GLib.Variant("s", ap.device_interface),
-      ["uuid"] = lgi.GLib.Variant("s", generate_uuid()),
-      ["id"] = lgi.GLib.Variant("s", ap.ssid),
-      ["type"] = lgi.GLib.Variant("s", "802-11-wireless"),
-      ["autoconnect"] = lgi.GLib.Variant("b", auto_connect),
-    },
-    ["ipv4"] = {
-      ["method"] = lgi.GLib.Variant("s", "auto")
-    },
-    ["ipv6"] = {
-      ["method"] = lgi.GLib.Variant("s", "auto"),
-    },
-    ["802-11-wireless"] = {
-      ["mode"] = lgi.GLib.Variant("s", "infrastructure"),
-    },
-    ["802-11-wireless-security"] = s_wsec
-  }
-end
-
 ---Scan for access points and create a widget for each one.
 function network:scan_access_points()
   local ap_list = self:get_children_by_id("wifi_ap_list")[1]
-
+  ap_list:reset()
   self._private.NetworkManagerDeviceWireless:RequestScanAsync(function(proxy, context, success, failure)
     if failure then
-      -- Send an error notification
-      print("AP Scan failed: ", failure)
       return
     end
 
     -- Get every access point even those who hide their ssid
-    print(#self._private.NetworkManagerDeviceWireless:GetAllAccessPoints())
     for _, ap in ipairs(self._private.NetworkManagerDeviceWireless:GetAllAccessPoints()) do
 
       -- Create a new proxy for every ap
@@ -223,69 +134,27 @@ function network:scan_access_points()
         interface = "org.freedesktop.NetworkManager.AccessPoint",
         path = ap
       }
-      --[[ for _, ap2 in ipairs(ap_list.children) do
-        if ap2.NetworkManagerAccessPoint.HwAddress:match(ap.HwAddress or "") then
-          goto continue
-        end
-      end ]]
-
-      print("AP Found: ", NetworkManagerAccessPoint.HwAddress, NM.utils_ssid_to_utf8(NetworkManagerAccessPoint.Ssid),
-        NetworkManagerAccessPoint.Strength)
-
 
       -- We are only interested in those with a ssid
       if NetworkManagerAccessPoint.Ssid then
-        ap_list:add(access_point { NetworkManagerAccessPoint = NetworkManagerAccessPoint })
+        ap_list:add(access_point {
+          NetworkManagerAccessPoint = NetworkManagerAccessPoint,
+          NetworkManagerDevice = self._private.NetworkManagerDevice,
+          NetworkManagerSettings = self._private.NetworkManagerSettings,
+          NetworkManager = self._private.NetworkManager,
+          NetworkManagerDeviceWireless = self._private.NetworkManagerDeviceWireless
+        })
       end
     end
 
     table.sort(ap_list, function(a, b)
       return a.NetworkManagerAccessPoint.Strength > b.NetworkManagerAccessPoint.Strength
     end)
-    print("AP_Anzahl: ", #ap_list.children)
   end, { call_id = "my-id" }, {})
 end
 
 function network:is_ap_active(ap)
-  return ap.path == self._private.wifi_proxy.ActiveAccessPoint
-end
-
-function network:disconnect_ap()
-  self._private.NetworkManager:DeactivateConnection(self._private.NetworkManagerDevice.ActiveConnection)
-end
-
-function network:connect_ap(ap, pw, auto_connect)
-  local connections = self:get_access_point_connections(ap.ssid)
-  local profile = self:create_profile(ap, pw, auto_connect)
-
-  if #connections == 0 then
-    self._private.NetworkManager:AddAndActivateConnectionAsync(function(proxy, context, success, failure)
-      if failure then
-        self:emit_signal("NM::AccessPointFailed", tostring(failure))
-        return
-      end
-
-      self:emit_signal("NM::AccessPointConnected", ap.ssid)
-    end, { call_id = "my-id", profile, ap.device_proxy_path, ap.path })
-  else
-    connections[1]:Update(profile)
-    self._private.NetworkManager:ActivateConnectionAsync(function(proxy, context, success, failure)
-      if failure then
-        self:emit_signal("NM::AccessPointFailed", tostring(failure))
-        return
-      end
-
-      self:emit_signal("NM::AccessPointConnected", ap.ssid)
-    end, { call_id = "my-id", connections[1].object_path, ap.device_proxy_path, ap.path })
-  end
-end
-
-function network:toggle_access_point(ap, password, auto_connect)
-  if self:is_ap_active(ap) then
-    self:disconnect_ap()
-  else
-    self:connect_ap(ap, password, auto_connect)
-  end
+  return ap.path == self._private.NetworkManagerDeviceWireless.ActiveAccessPoint
 end
 
 ---Toggles networking on or off

@@ -16,7 +16,8 @@ local cm = require("src.modules.context_menu.init")
 
 local capi = {
   mouse = mouse,
-  awesome = awesome
+  awesome = awesome,
+  screen = screen,
 }
 
 local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/desktop/"
@@ -46,7 +47,7 @@ function desktop:save_layout()
     }
   end
 
-  local dir = gfilesystem.get_configuration_dir() .. "src/config"
+  dir = gfilesystem.get_configuration_dir() .. "src/config"
   gfilesystem.make_directories(dir)
   if not gfilesystem.file_readable(dir .. "/desktop.json") then
     os.execute("touch " .. dir .. "/desktop.json")
@@ -214,6 +215,9 @@ function desktop:add_element(args, pos)
     cm_popup.visible = false
   end)
 
+  local cols = math.floor(self.args.screen.geometry.width / (args.icon_size * 1.75 * (4 / 3)))
+  local rows = math.floor((self.args.screen.geometry.height - 75 + 95) / (args.icon_size * 1.75))
+  print(cols, rows)
   -- While the mouse is down, remove the element from the grid and add it to manual then move it
   -- until the mouse is released and then add it back to the grid.
   e:connect_signal("button::press", function(_, _, _, b)
@@ -221,8 +225,8 @@ function desktop:add_element(args, pos)
 
     if not mousegrabber.isrunning() then
 
-      local width = args.icon_size * 1.75 * (4 / 3)
-      local height = args.icon_size * 1.75
+      local width = (self.args.screen.geometry.width - 20 - ((cols - 1) * 10)) / cols
+      local height = (self.args.screen.geometry.height - 170 - 20) / rows
 
       local dnd_widget = element {
         icon = args.icon,
@@ -291,33 +295,39 @@ function desktop:add_element(args, pos)
 end
 
 function desktop:draw_selector()
-  local start_pos = mouse.coords()
+  local start_pos = capi.mouse.coords()
   if not mousegrabber.isrunning() then
     local selector = wibox.widget {
       widget = wibox.container.background,
       bg = gcolor("#0ffff088"),
       border_color = gcolor("#0ffff0"),
       border_width = dpi(2),
-      width = 100,
-      height = 100,
+      forced_width = 0,
+      forced_height = 0,
+      x = start_pos.x,
+      y = start_pos.y,
       visible = true,
       shape = function(cr, w, h)
         gshape.rounded_rect(cr, w, h, dpi(10))
       end
     }
-
-    local coords = capi.mouse.coords()
-    selector.point = { x = coords.x, y = coords.y }
+    selector.point = { x = start_pos.x, y = start_pos.y }
     self.widget.manual:add(selector)
     mousegrabber.run(function(m)
       if m.buttons[1] then
         selector.visible = true
       end
       if not m.buttons[1] then
+        print("stop")
         mousegrabber.stop()
         selector.visible = false
         self.widget.manual:reset()
       end
+      selector.forced_width = selector.forced_width + ((start_pos.x - m.x) * -1)
+      selector.forced_height = selector.forced_width + ((start_pos.y - m.y) * -1)
+
+      print(selector.forced_width, selector.forced_height)
+      return m.buttons[1]
     end, "left_ptr")
   end
 end
@@ -341,18 +351,10 @@ end
 function desktop.new(args)
   args = args or {}
 
-  args.screen = args.screen or awful.screen.focused()
-
   local icon_size = args.icon_size or dpi(96)
 
-  -- calculate the row and column count based on the screen size and icon size and aspect ratio of 16:9
-  local screen_width = awful.screen.focused().geometry.width
-  local screen_height = awful.screen.focused().geometry.height
-  local aspect_ratio = 4 / 3
-
-  local cols = math.floor(screen_width / (icon_size * 1.75 * aspect_ratio))
-  local rows = math.floor((screen_height - (dpi(75 + 95))) / (icon_size * 1.75))
-
+  local cols = math.floor(args.screen.geometry.width / (icon_size * 1.75 * (4 / 3)))
+  local rows = math.floor((args.screen.geometry.height - 75 + 95) / (icon_size * 1.75))
   --[[
     The wibox has a stacked layout with a manual layout over a grid.
     
@@ -371,15 +373,15 @@ function desktop.new(args)
     x = 0,
     y = 0,
     bg = gcolor.transparent,
-    width = 1920,
-    height = 1080,
+    width = args.screen.geometry.width,
+    height = args.screen.geometry.height,
     screen = args.screen,
     widget = wibox.widget {
       {
         {
           layout = grid,
           homogeneous = true,
-          spacing = dpi(10),
+          spacing = 10,
           expand = true,
           orientation = "horizontal",
           forced_num_cols = cols,
@@ -400,6 +402,8 @@ function desktop.new(args)
       layout = wibox.layout.stack,
     }
   }
+
+  w.args = args
 
   local cm_popup = cm {
     widget_template = wibox.widget {
@@ -563,29 +567,19 @@ function desktop.new(args)
     }
   }
 
-  w.widget.manual:buttons(
-    gtable.join(
-      awful.button(
-        {},
-        1,
-        function()
-          cm_popup.visible = false
-          if capi.mouse.current_widgets[4] == w.widget.manual then
-            --w:draw_selector()
-          end
-        end
-      ),
-      awful.button(
-        {},
-        3,
-        function()
-          if capi.mouse.current_widgets[4] == w.widget.manual then
-            cm_popup:toggle()
-          end
-        end
-      )
-    )
-  )
+  w.widget.manual:buttons(gtable.join(
+    awful.button({}, 1, function()
+      cm_popup.visible = false
+      if capi.mouse.current_widgets[4] == w.widget.manual then
+        w:draw_selector()
+      end
+    end),
+    awful.button({}, 3, function()
+      if capi.mouse.current_widgets[4] == w.widget.manual then
+        cm_popup:toggle()
+      end
+    end)
+  ))
 
   gtable.crush(w, desktop, true)
 

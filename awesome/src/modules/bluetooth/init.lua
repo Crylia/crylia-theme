@@ -6,7 +6,7 @@
 local abutton = require("awful.button")
 local aspawn = require("awful.spawn")
 local base = require("wibox.widget.base")
-local dbus_proxy = require("dbus_proxy")
+local dbus_proxy = require("src.lib.lua-dbus_proxy.src.dbus_proxy")
 local dpi = require("beautiful").xresources.apply_dpi
 local gcolor = require("gears").color
 local gfilesystem = require("gears").filesystem
@@ -249,167 +249,159 @@ end
 function bluetooth.new(args)
   args = args or {}
 
-  local ret = base.make_widget_from_value(wibox.widget {
+  -- For some reason the first widget isn't read so the first container is a duplicate
+  local ret = base.make_widget_from_value({
     {
       {
         {
           {
             {
               {
-                {
-                  resize = false,
-                  image = gcolor.recolor_image(icondir .. "menu-down.svg",
-                    Theme_config.bluetooth_controller.connected_icon_color),
-                  widget = wibox.widget.imagebox,
-                  valign = "center",
-                  halign = "center",
-                  id = "icon"
-                },
-                {
-                  {
-                    text = "Paired Devices",
-                    valign = "center",
-                    halign = "center",
-                    widget = wibox.widget.textbox,
-                  },
-                  margins = dpi(5),
-                  widget = wibox.container.margin
-                },
-                id = "connected",
-                layout = wibox.layout.fixed.horizontal
-              },
-              bg = Theme_config.bluetooth_controller.connected_bg,
-              fg = Theme_config.bluetooth_controller.connected_fg,
-              shape = Theme_config.bluetooth_controller.connected_shape,
-              widget = wibox.container.background
-            },
-            id = "connected_margin",
-            widget = wibox.container.margin
-          },
-          {
-            {
-              {
-                step = dpi(50),
-                spacing = dpi(10),
-                layout = require("src.lib.overflow_widget.overflow").vertical,
-                scrollbar_width = 0,
-                id = "connected_device_list"
-              },
-              id = "margin",
-              margins = dpi(10),
-              widget = wibox.container.margin
-            },
-            border_color = Theme_config.bluetooth_controller.con_device_border_color,
-            border_width = Theme_config.bluetooth_controller.con_device_border_width,
-            shape = Theme_config.bluetooth_controller.con_device_shape,
-            widget = wibox.container.background,
-            forced_height = 0,
-            id = "connected_list",
-          },
-          {
-            {
-              {
-                {
-                  resize = false,
-                  image = gcolor.recolor_image(icondir .. "menu-down.svg",
-                    Theme_config.bluetooth_controller.discovered_icon_color),
-                  widget = wibox.widget.imagebox,
-                  valign = "center",
-                  halign = "center",
-                  id = "icon",
-                },
-                {
-                  {
-                    text = "Nearby Devices",
-                    valign = "center",
-                    halign = "center",
-                    widget = wibox.widget.textbox,
-                  },
-                  margins = dpi(5),
-                  widget = wibox.container.margin
-                },
-                id = "discovered",
-                layout = wibox.layout.fixed.horizontal
-              },
-              id = "discovered_bg",
-              bg = Theme_config.bluetooth_controller.discovered_bg,
-              fg = Theme_config.bluetooth_controller.discovered_fg,
-              shape = Theme_config.bluetooth_controller.discovered_shape,
-              widget = wibox.container.background
-            },
-            id = "discovered_margin",
-            top = dpi(10),
-            widget = wibox.container.margin
-          },
-          {
-            {
-              {
-                id = "discovered_device_list",
-                spacing = dpi(10),
-                step = dpi(50),
-                layout = require("src.lib.overflow_widget.overflow").vertical,
-                scrollbar_width = 0,
-              },
-              margins = dpi(10),
-              widget = wibox.container.margin
-            },
-            border_color = Theme_config.bluetooth_controller.con_device_border_color,
-            border_width = Theme_config.bluetooth_controller.con_device_border_width,
-            shape = Theme_config.bluetooth_controller.con_device_shape,
-            widget = wibox.container.background,
-            forced_height = 0,
-            id = "discovered_list",
-          },
-          {
-            { -- action buttons
-              {
-                dnd_widget {
-                  color = Theme_config.bluetooth_controller.power_bg,
-                  size = dpi(40)
-                },
-                id = "dnd",
-                widget = wibox.container.place,
+                resize = false,
+                image = gcolor.recolor_image(icondir .. "menu-down.svg",
+                  Theme_config.bluetooth_controller.connected_icon_color),
+                widget = wibox.widget.imagebox,
                 valign = "center",
-                halign = "center"
+                halign = "center",
+                id = "connected_icon"
               },
-              nil,
-              { -- refresh
+              {
                 {
-                  {
-                    image = gcolor.recolor_image(icondir .. "refresh.svg",
-                      Theme_config.bluetooth_controller.refresh_icon_color),
-                    resize = false,
-                    valign = "center",
-                    halign = "center",
-                    widget = wibox.widget.imagebox,
-                  },
-                  widget = wibox.container.margin,
-                  margins = dpi(5),
+                  text = "Paired Devices",
+                  valign = "center",
+                  halign = "center",
+                  widget = wibox.widget.textbox,
                 },
-                shape = Theme_config.bluetooth_controller.refresh_shape,
-                bg = Theme_config.bluetooth_controller.refresh_bg,
-                id = "scan",
-                widget = wibox.container.background
+                margins = dpi(5),
+                widget = wibox.container.margin
               },
-              layout = wibox.layout.align.horizontal
+              layout = wibox.layout.fixed.horizontal
             },
-            widget = wibox.container.margin,
-            top = dpi(10),
+            bg = Theme_config.bluetooth_controller.connected_bg,
+            fg = Theme_config.bluetooth_controller.connected_fg,
+            shape = Theme_config.bluetooth_controller.connected_shape,
+            widget = wibox.container.background,
+            id = "connected_bg"
           },
-          layout = wibox.layout.fixed.vertical
+          id = "connected_margin",
+          widget = wibox.container.margin
         },
-        margins = dpi(15),
-        widget = wibox.container.margin
+        {
+          {
+            {
+              step = dpi(50),
+              spacing = dpi(10),
+              layout = require("src.lib.overflow_widget.overflow").vertical,
+              scrollbar_width = 0,
+              id = "connected_device_list"
+            },
+            id = "margin",
+            margins = dpi(10),
+            widget = wibox.container.margin
+          },
+          border_color = Theme_config.bluetooth_controller.con_device_border_color,
+          border_width = Theme_config.bluetooth_controller.con_device_border_width,
+          shape = Theme_config.bluetooth_controller.con_device_shape,
+          widget = wibox.container.background,
+          forced_height = 0,
+          id = "connected_list",
+        },
+        {
+          {
+            {
+              {
+                resize = false,
+                image = gcolor.recolor_image(icondir .. "menu-down.svg",
+                  Theme_config.bluetooth_controller.discovered_icon_color),
+                widget = wibox.widget.imagebox,
+                valign = "center",
+                halign = "center",
+                id = "discovered_icon",
+              },
+              {
+                {
+                  text = "Nearby Devices",
+                  valign = "center",
+                  halign = "center",
+                  widget = wibox.widget.textbox,
+                },
+                margins = dpi(5),
+                widget = wibox.container.margin
+              },
+              layout = wibox.layout.fixed.horizontal
+            },
+            id = "discovered_bg",
+            bg = Theme_config.bluetooth_controller.discovered_bg,
+            fg = Theme_config.bluetooth_controller.discovered_fg,
+            shape = Theme_config.bluetooth_controller.discovered_shape,
+            widget = wibox.container.background
+          },
+          id = "discovered_margin",
+          top = dpi(10),
+          widget = wibox.container.margin
+        },
+        {
+          {
+            {
+              id = "discovered_device_list",
+              spacing = dpi(10),
+              step = dpi(50),
+              layout = require("src.lib.overflow_widget.overflow").vertical,
+              scrollbar_width = 0,
+            },
+            margins = dpi(10),
+            widget = wibox.container.margin
+          },
+          border_color = Theme_config.bluetooth_controller.con_device_border_color,
+          border_width = Theme_config.bluetooth_controller.con_device_border_width,
+          shape = Theme_config.bluetooth_controller.con_device_shape,
+          widget = wibox.container.background,
+          forced_height = 0,
+          id = "discovered_list",
+        },
+        {
+          { -- action buttons
+            {
+              dnd_widget {
+                color = Theme_config.bluetooth_controller.power_bg,
+                size = dpi(40)
+              },
+              id = "dnd",
+              widget = wibox.container.place,
+              valign = "center",
+              halign = "center"
+            },
+            nil,
+            { -- refresh
+              {
+                {
+                  image = gcolor.recolor_image(icondir .. "refresh.svg",
+                    Theme_config.bluetooth_controller.refresh_icon_color),
+                  resize = false,
+                  valign = "center",
+                  halign = "center",
+                  widget = wibox.widget.imagebox,
+                },
+                widget = wibox.container.margin,
+                margins = dpi(5),
+              },
+              shape = Theme_config.bluetooth_controller.refresh_shape,
+              bg = Theme_config.bluetooth_controller.refresh_bg,
+              id = "scan",
+              widget = wibox.container.background
+            },
+            layout = wibox.layout.align.horizontal
+          },
+          widget = wibox.container.margin,
+          top = dpi(10),
+        },
+        layout = wibox.layout.fixed.vertical
       },
-      shape = Theme_config.bluetooth_controller.shape,
-      border_color = Theme_config.bluetooth_controller.container_border_color,
-      border_width = Theme_config.bluetooth_controller.container_border_width,
-      bg = Theme_config.bluetooth_controller.container_bg,
-      widget = wibox.container.background
+      margins = dpi(15),
+      widget = wibox.container.margin,
     },
-    width = dpi(400),
-    strategy = "exact",
-    widget = wibox.container.constraint
+    margins = dpi(15),
+    widget = wibox.container.margin,
   })
 
   -- Get a reference to the dnd button
@@ -489,7 +481,7 @@ function bluetooth.new(args)
   --#region Dropdown logic
   local connected_margin = ret:get_children_by_id("connected_margin")[1]
   local connected_list = ret:get_children_by_id("connected_list")[1]
-  local connected = ret:get_children_by_id("connected")[1].center
+  local connected_icon = ret:get_children_by_id("connected_icon")[1]
 
   connected_margin:connect_signal(
     "button::press",
@@ -503,21 +495,23 @@ function bluetooth.new(args)
         end
       }
       if connected_list.forced_height == 0 then
-        local size = (#ret:get_paired_devices() * 60) + 1
+        local size = (#ret:get_paired_devices() * 60)
         if size < 210 then
           rubato_timer.target = dpi(size)
         end
-        connected_margin.connected_bg.shape = function(cr, width, height)
-          gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+        if size > 0 then
+          connected_margin.connected_bg.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+          end
+          connected_icon:set_image(gcolor.recolor_image(icondir .. "menu-up.svg",
+            Theme_config.bluetooth_controller.connected_icon_color))
         end
-        connected.icon:set_image(gcolor.recolor_image(icondir .. "menu-up.svg",
-          Theme_config.bluetooth_controller.connected_icon_color))
       else
         rubato_timer.target = 0
         connected_margin.connected_bg.shape = function(cr, width, height)
           gshape.rounded_rect(cr, width, height, 4)
         end
-        connected.icon:set_image(gcolor.recolor_image(icondir .. "menu-down.svg",
+        connected_icon:set_image(gcolor.recolor_image(icondir .. "menu-down.svg",
           Theme_config.bluetooth_controller.connected_icon_color))
       end
     end
@@ -526,7 +520,7 @@ function bluetooth.new(args)
   local discovered_margin = ret:get_children_by_id("discovered_margin")[1]
   local discovered_list = ret:get_children_by_id("discovered_list")[1]
   local discovered_bg = ret:get_children_by_id("discovered_bg")[1]
-  local discovered = ret:get_children_by_id("discovered")[1].center
+  local discovered_icon = ret:get_children_by_id("discovered_icon")[1]
 
   discovered_margin:connect_signal(
     "button::press",
@@ -541,22 +535,24 @@ function bluetooth.new(args)
       }
 
       if discovered_list.forced_height == 0 then
-        local size = (#ret:get_discovered_devices() * 60) + 1
+        local size = (#ret:get_discovered_devices() * 60)
         if size > 210 then
           size = 210
         end
-        rubato_timer.target = dpi(size)
-        discovered_margin.discovered_bg.shape = function(cr, width, height)
-          gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+        if size > 0 then
+          rubato_timer.target = dpi(size)
+          discovered_margin.discovered_bg.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+          end
+          discovered_icon:set_image(gcolor.recolor_image(icondir .. "menu-up.svg",
+            Theme_config.bluetooth_controller.discovered_icon_color))
         end
-        discovered.icon:set_image(gcolor.recolor_image(icondir .. "menu-up.svg",
-          Theme_config.bluetooth_controller.discovered_icon_color))
       else
         rubato_timer.target = 0
         discovered_bg.shape = function(cr, width, height)
           gshape.rounded_rect(cr, width, height, 4)
         end
-        discovered.icon:set_image(gcolor.recolor_image(icondir .. "menu-down.svg",
+        discovered_icon:set_image(gcolor.recolor_image(icondir .. "menu-down.svg",
           Theme_config.bluetooth_controller.discovered_icon_color))
       end
     end

@@ -56,6 +56,14 @@ User_config = {
   battery_path = nil,
 
   --[[
+    The brightness increase/decrease step in percent.
+    Example:
+      brightness_step = 5
+    Will increase the brightness by 5% at a time
+  ]]
+  brightness_step = 2,
+
+  --[[
       DnD or 'Do not Disturb' will prevent notifications from poping up.
       This is just a default value, you can toggle it in the notification-center, but it won't be saved.
   ]] --
@@ -213,7 +221,7 @@ User_config = {
   --[[
     This is the default terminal, Alacritty is the default.
   ]] --
-  terminal = "alacritty",
+  terminal = "kitty",
 
   text_editor = "code",
 
