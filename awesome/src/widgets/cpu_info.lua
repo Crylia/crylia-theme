@@ -3,7 +3,6 @@
 ---------------------------------
 
 -- Awesome Libs
-local awful = require("awful")
 local dpi = require("beautiful").xresources.apply_dpi
 local gears = require("gears")
 local wibox = require("wibox")
@@ -13,7 +12,7 @@ local rubato = require("src.lib.rubato")
 
 require("src.tools.helpers.cpu_freq")
 require("src.tools.helpers.cpu_temp")
---!Has to be disabled until rewritten to perform better require("src.tools.helpers.cpu_usage")
+require("src.tools.helpers.cpu_usage")
 
 local capi = {
   awesome = awesome,
@@ -22,7 +21,7 @@ local capi = {
 local icon_dir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/cpu/"
 
 --TODO: Add tooltip with more CPU and per core information
-return function(widget, _)
+return function(widget)
 
   local cpu_usage_widget = wibox.widget {
     {
@@ -153,12 +152,9 @@ return function(widget, _)
     widget = wibox.container.background
   }
 
-  capi.awesome.connect_signal(
-    "update::cpu_usage",
-    function(usage)
-      cpu_usage_widget.container.cpu_layout.label.text = usage .. "%"
-    end
-  )
+  capi.awesome.connect_signal("update::cpu_usage", function(usage)
+    cpu_usage_widget.container.cpu_layout.label.text = usage .. "%"
+  end)
 
   local r_timed_cpu_bg = rubato.timed { duration = 2.5 }
   local g_timed_cpu_bg = rubato.timed { duration = 2.5 }
@@ -180,42 +176,33 @@ return function(widget, _)
     r_timed_cpu_bg.target, g_timed_cpu_bg.target, b_timed_cpu_bg.target = color.utils.hex_to_rgba(newbg)
   end
 
-  capi.awesome.connect_signal(
-    "update::cpu_temp",
-    function(temp)
-      local temp_icon
-      local temp_color
+  capi.awesome.connect_signal("update::cpu_temp", function(temp)
+    local temp_icon
+    local temp_color
 
-      if temp < 50 then
-        temp_color = Theme_config.cpu_temp.bg_low
-        temp_icon = icon_dir .. "thermometer-low.svg"
-      elseif temp >= 50 and temp < 80 then
-        temp_color = Theme_config.cpu_temp.bg_mid
-        temp_icon = icon_dir .. "thermometer.svg"
-      elseif temp >= 80 then
-        temp_color = Theme_config.cpu_temp.bg_high
-        temp_icon = icon_dir .. "thermometer-high.svg"
-      end
-      cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
-      set_bg(temp_color)
-      cpu_temp.container.cpu_layout.label.text = math.floor(temp) .. "°C"
-      capi.awesome.emit_signal("update::cpu_temp_widget", temp, temp_icon)
+    if temp < 50 then
+      temp_color = Theme_config.cpu_temp.bg_low
+      temp_icon = icon_dir .. "thermometer-low.svg"
+    elseif temp >= 50 and temp < 80 then
+      temp_color = Theme_config.cpu_temp.bg_mid
+      temp_icon = icon_dir .. "thermometer.svg"
+    elseif temp >= 80 then
+      temp_color = Theme_config.cpu_temp.bg_high
+      temp_icon = icon_dir .. "thermometer-high.svg"
     end
-  )
+    cpu_temp.container.cpu_layout.icon_margin.icon_layout.icon:set_image(temp_icon)
+    set_bg(temp_color)
+    cpu_temp.container.cpu_layout.label.text = math.floor(temp) .. "°C"
+    capi.awesome.emit_signal("update::cpu_temp_widget", temp, temp_icon)
+  end)
 
-  capi.awesome.connect_signal(
-    "update::cpu_freq_average",
-    function(average)
-      cpu_clock.container.cpu_layout.label.text = average .. "Mhz"
-    end
-  )
+  capi.awesome.connect_signal("update::cpu_freq_average", function(average)
+    cpu_clock.container.cpu_layout.label.text = average .. "Mhz"
+  end)
 
-  capi.awesome.connect_signal(
-    "update::cpu_freq_core",
-    function(freq)
-      cpu_clock.container.cpu_layout.label.text = freq .. "Mhz"
-    end
-  )
+  capi.awesome.connect_signal("update::cpu_freq_core", function(freq)
+    cpu_clock.container.cpu_layout.label.text = freq .. "Mhz"
+  end)
 
   Hover_signal(cpu_temp)
   Hover_signal(cpu_usage_widget)

@@ -18,11 +18,9 @@ User_config = {
   ]] --
   autostart = {
     "picom",
-    "xfce4-power-manager",
-    "light-locker --lock-on-suspend --lock-on-lid &",
     "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
     "setxkbmap -option caps:swapescape",
-    "/home/crylia/.screenlayout/single.sh"
+    "/home/crylia/.screenlayout/double.sh"
   },
 
   --[[
@@ -45,7 +43,7 @@ User_config = {
       "MEDIA_PLAYER"
       More information at: https://lazka.github.io/pgi-docs/UPowerGlib-1.0/enums.html#UPowerGlib.DeviceKind.KEYBOARD
   ]] --
-  battery_kind = "BATTERY",
+  battery_kind = "LINE_POWER",
 
   --[[
     If your battery is not found you can specify its path here.
@@ -208,8 +206,6 @@ User_config = {
     "volume",
     "gpu_temp",
     "gpu_usage",
-    "battery",
-    "backlight"
   },
 
   --[[
@@ -267,7 +263,7 @@ User_config = {
     unit = "metric"
   },
 
-  web_browser = "brave-browser",
+  web_browser = "firefox",
 
   --[[
     You can configure your bar's here, if you leave it empty the bar will not be shown.
@@ -305,16 +301,36 @@ User_config = {
         "Tasklist"
       },
       right_bar = {
-        "Battery",
-        "Network",
-        "Bluetooth",
+        "Cpu Frequency",
+        "Cpu Temperature",
+        "Cpu Usage",
         "Audio",
         "Keyboard Layout",
         "Date",
         "Clock",
         "Power Button"
       }
-    }
+    },
+    --[[ [2] = {
+      left_bar = {
+        "Tiling Layout",
+        "Systray",
+        "Taglist"
+      },
+      center_bar = {
+        "Tasklist"
+      },
+      right_bar = {
+        "Gpu Temperature",
+        "Gpu Usage",
+        "Ram",
+        "Audio",
+        "Keyboard Layout",
+        "Date",
+        "Clock",
+        "Power Button"
+      }
+    }]]
   },
 
   crylia_wibox = {

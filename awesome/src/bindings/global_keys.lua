@@ -7,9 +7,6 @@ local ruled = require("ruled")
 -- Third party libs
 local json = require("src.lib.json-lua.json-lua")
 
--- Own libs
-local backlight_helper = require("src.tools.helpers.backlight")
-
 local capi = {
   awesome = awesome,
   mousegrabber = mousegrabber,

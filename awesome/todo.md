@@ -16,6 +16,15 @@
 - Algorithm to select the best search match
 - Keep track of most launched applications and serve them over others
 
+### Audio [0% Done]
+
+#### TODO
+
+- Reliabely fetch audio devices
+- Switch inputs
+- Fetch programs that make audio
+- Mute toggle
+
 ### Backlight [100% Done]
 
 #### Features
@@ -42,6 +51,7 @@
 
 #### TODO
 
+- Don't try to create a bluetooth proxy if there is no bluetooth adapter
 - Getting and asking for a passcode
 - "Greying out" non avaiable options in the dropdown
 
@@ -65,16 +75,18 @@
 
 ### Desktop [40% Done]
 
+#### Features
+
 - Create desktop icons, folders or files
 - Drag and drop desktop icons
 - Context menu
 - Saves accross restart
 - Desktop context menu
 
-TODO
+#### TODO
 
 - Actions for the context menu
-- Open width in context menu
+- "Open with" in context menu
 - Drag across multiple screens
 - Proper size calculation for desktop icons and desktop
 - Multiscreen support in general
@@ -82,5 +94,74 @@ TODO
 - xdg folder types
 - Drag-select
 - Cross-DE support (e.g. use the same desktop icons as used in KDE or Mate ...)
+
+### crylia_bar [100% Done]
+
+#### Features
+
+- Add widgets into three different bars (Left, Center, Right)
+- Hide when no widget is present
+- Auto resize based on widgets size
+- Automatically loads widgets from config
+
+### crylia_wibox [? Done]
+
+#### Features
+
+- Single bar that can be placed at the bottom
+- Automatically loads widgets from config
+
+#### TODO
+
+### Network Controller [50% Done]
+
+#### Features
+
+- List and show all WiFi-AccessPoints
+- Connect to an AccessPoint
+- Enter a password for each AccessPoint
+
+#### TODO
+
+- Toggle WiFi On/Off
+- Mark the connected AccessPoint
+- Send signals for connected AccessPoints wifi strength
+- Send notifications for various events
+- Only show the Module when a WiFi Agent exists
+
+### Notification Center [95% Done]
+
+#### Features
+
+- Multiple widgets (Weather, Profile, Status Bars, Music, Notification, Date Time)
+- Keeps track of notification time sent
+- Displays bars which visualize various system resources (CPU/GPU-Usage/Temp, Ram, Audio Volume,Mic Volume, Battery, Backlight)
+- Fetches the user Profile picture and different informations like name, OS etc
+- Shows the current weather with the openweather.com API
+- Music widget which can fetch an album cover, song metadata etc
+- Do not Disturb button to hide notifications
+
+#### TODO
+
+- Cleanup
+- _Maybe_ add more widgets
+
+### Powermenu [100% Done]
+
+#### Feature
+
+- Logout, Reboot, Shutdown, Lock or **Sus**pend system
+- Display user profile picture and name or hostname
+
+### Window Switcher[90% Done]
+
+#### Features
+
+- Alt-Tab to cycle trough windows and switch to the tag and focus them
+
+#### TODO
+
+- "Toggle" alt tab to switch between two windows (keep track which was the last one as put it as the first one)
+- Rewrite and try to make more performant
 
 ## Widgets

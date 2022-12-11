@@ -6,16 +6,12 @@
 -- ╚██████╗██║  ██║   ██║   ███████╗██║██║  ██║ --
 --  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝╚═╝  ╚═╝ --
 --------------------------------------------------
-local awful = require("awful")
 local beautiful = require("beautiful")
 local gears = require("gears")
 
 local capi = {
   screen = screen,
 }
-
-require("src.theme.user_config")
-require("src.theme.theme_config")
 
 Theme_path = gears.filesystem.get_configuration_dir() .. "/src/theme/"
 Theme = {}
@@ -52,9 +48,6 @@ Theme.hotkeys_group_margin = Theme_config.hotkeys.group_margin
 Theme.hotkeys_label_bg = Theme_config.hotkeys.label_bg
 Theme.hotkeys_label_fg = Theme_config.hotkeys.label_fg
 --#endregion
-
-Theme.awesome_icon = Theme_path .. "../assets/icons/ArchLogo.png"
-Theme.awesome_subicon = Theme_path .. "../assets/icons/ArchLogo.png"
 
 -- Wallpaper
 beautiful.wallpaper = User_config.wallpaper

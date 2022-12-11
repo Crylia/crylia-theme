@@ -432,6 +432,8 @@ function inputbox.new(args)
     --gtable.crush(w, args)
     gtable.crush(w, inputbox, true)
 
+    w.font = args.font or beautiful.font
+
     w.keybindings = args.keybindings or {}
     w.hint_text = args.hint_text
 

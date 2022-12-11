@@ -497,7 +497,6 @@ return function()
         local rubato_timer = rubato.timed {
           duration = 1,
           pos = bar.value,
-          easing = rubato.linear,
           subscribed = function(v)
             bar.value = v
           end
@@ -594,7 +593,6 @@ return function()
         local rubato_timer = rubato.timed {
           duration = 1,
           pos = bar.value,
-          easing = rubato.linear,
           subscribed = function(v)
             bar.value = v
           end

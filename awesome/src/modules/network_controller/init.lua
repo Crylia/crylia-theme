@@ -59,6 +59,7 @@ network.DeviceState = {
 
 function network:get_wifi_proxy()
   local devices = self._private.NetworkManager:GetDevices()
+  if (not devices) or (#devices == 0) then return end
   for _, path in ipairs(devices) do
     local NetworkManagerDevice = dbus_proxy.Proxy:new {
       bus = dbus_proxy.Bus.SYSTEM,
@@ -117,6 +118,7 @@ end
 
 ---Scan for access points and create a widget for each one.
 function network:scan_access_points()
+  if not self._private.NetworkManagerDeviceWireless then return end
   local ap_list = self:get_children_by_id("wifi_ap_list")[1]
   ap_list:reset()
   self._private.NetworkManagerDeviceWireless:RequestScanAsync(function(proxy, context, success, failure)
@@ -358,7 +360,7 @@ function network.new(args)
 
   ret:scan_access_points()
 
-  gtimer.delayed_call(function()
+  --[[ gtimer.delayed_call(function()
     local active_access_point = ret._private.NetworkManagerDeviceWireless.ActiveAccessPoint
     if ret._private.NetworkManager.State == network.DeviceState.ACTIVATED and active_access_point ~= "/" then
       local active_access_point_proxy = dbus_proxy.Proxy:new {
@@ -368,7 +370,7 @@ function network.new(args)
         path = active_access_point,
       }
     end
-  end)
+  end) ]]
 
   --#endregion
 

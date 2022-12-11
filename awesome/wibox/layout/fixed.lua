@@ -23,7 +23,6 @@
 -- @supermodule wibox.widget.base
 ---------------------------------------------------------------------------
 
----@diagnostic disable-next-line: deprecated
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 local base   = require("wibox.widget.base")
 local table  = table
@@ -364,7 +363,7 @@ function fixed:fit(context, orig_width, orig_height)
         local is_enough
 
         if is_y then
-            is_enough = height_left >= h
+            is_enough = h > 0 and height_left >= h
 
             if is_enough then
                 used_max = math.max(used_max, w)

@@ -93,7 +93,10 @@ Theme_config.kblayout = {
 
 Theme_config.layout_list = {
   bg = color["LightBlue200"],
-  fg = color["Grey900"]
+  fg = color["Grey900"],
+  shape = function(cr, width, height)
+    gshape.rounded_rect(cr, width, height, dpi(6))
+  end
 }
 
 Theme_config.network = {
@@ -670,6 +673,73 @@ Theme_config.context_menu = {
     end,
     icon_color = color["Grey100"],
     icon_color_hover = color["Teal200"]
+  }
+}
+
+Theme_config.setup = {
+  bg = color["Grey900"],
+  border_color = color["Grey800"],
+  border_width = dpi(4),
+  wallpaper = {
+    bg = color["Grey900"],
+    fg = color["Grey100"],
+    clip_shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(12))
+    end,
+    button_bg = color["Yellow200"],
+    button_fg = color["Grey900"],
+    button_shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(12))
+    end,
+    close_fg = color["Red200"],
+    path_bg = color["Grey800"],
+    path_fg = color["Grey100"],
+    path_border_color = color["Grey700"],
+    path_border_width = dpi(2),
+    path_shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(12))
+    end,
+  },
+  bar = {
+    shape = gshape.circle,
+    color = color["Green200"],
+    padding = dpi(4),
+    border_width = dpi(2),
+    border_color = color["Grey800"],
+    widget_bg = color["Grey800"],
+    widget_fg = color["Grey100"],
+    widget_border_color = color["Grey700"],
+    widget_border_width = dpi(2),
+    widget_shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(8))
+    end,
+    widget_toggle_color = color["Blue200"],
+    bar_shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(8))
+    end,
+    bar_image_shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(4))
+    end,
+  },
+  notification = {
+    separator_color = color["Grey800"],
+    checkbox_color = color["Purple200"],
+    checkbox_paddings = dpi(4),
+    checkbox_shape = gshape.circle,
+    border_color = color["Grey800"],
+    border_width = dpi(2),
+    shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(4))
+    end,
+  },
+  layout = {
+    bg = color["Orange200"],
+    border_color = color["Grey800"],
+    border_width = dpi(2),
+    shape = function(cr, width, height)
+      gshape.rounded_rect(cr, width, height, dpi(8))
+    end,
+    border_color_selected = color["DeepOrange200"]
   }
 }
 -- #endregion

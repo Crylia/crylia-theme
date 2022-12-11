@@ -14,8 +14,6 @@ awful.screen.connect_for_each_screen(function(s)
   require("src.modules.audio.volume_osd") { screen = s }
   --require("src.modules.audio.volume_controller") { screen = s }
   require("src.modules.brightness.brightness_osd") { screen = s }
-  require("src.lib.nice") { titlebar_font = User_config.font.bold,
-    titlebar_items = { left = { "icon" }, right = { "minimize", "maximize", "close" } } }
   require("src.modules.crylia_bar.init")(s)
   --require("src.modules.crylia_wibox.init")(s)
   require("src.modules.notification-center.init")(s)
@@ -23,3 +21,8 @@ awful.screen.connect_for_each_screen(function(s)
   require("src.modules.application_launcher.init") { screen = s }
   require("src.modules.network_controller.init") { screen = s }
 end)
+
+do
+  require("src.lib.nice") { titlebar_font = User_config.font.bold,
+    titlebar_items = { left = { "icon" }, right = { "minimize", "maximize", "close" } } }
+end
