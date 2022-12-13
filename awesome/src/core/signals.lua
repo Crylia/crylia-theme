@@ -92,17 +92,17 @@ function Hover_signal(widget, bg_override, fg_override, border_override, icon_ov
   local _, rf, gf, bf = widget.fg:get_rgba()
   local rbo, gbo, bbo = color.utils.hex_to_rgba(widget.border_color)
 
-  local r_timed_bg = rubato.timed { duration = 0.3, pos = math.floor(rb * 255) }
-  local g_timed_bg = rubato.timed { duration = 0.3, pos = math.floor(gb * 255) }
-  local b_timed_bg = rubato.timed { duration = 0.3, pos = math.floor(bb * 255) }
+  local r_timed_bg = rubato.timed { duration = 0.3, pos = math.floor(rb * 255), rate = 24 }
+  local g_timed_bg = rubato.timed { duration = 0.3, pos = math.floor(gb * 255), rate = 24 }
+  local b_timed_bg = rubato.timed { duration = 0.3, pos = math.floor(bb * 255), rate = 24 }
 
-  local r_timed_fg = rubato.timed { duration = 0.3, pos = math.floor(rf * 255) }
-  local g_timed_fg = rubato.timed { duration = 0.3, pos = math.floor(gf * 255) }
-  local b_timed_fg = rubato.timed { duration = 0.3, pos = math.floor(bf * 255) }
+  local r_timed_fg = rubato.timed { duration = 0.3, pos = math.floor(rf * 255), rate = 24 }
+  local g_timed_fg = rubato.timed { duration = 0.3, pos = math.floor(gf * 255), rate = 24 }
+  local b_timed_fg = rubato.timed { duration = 0.3, pos = math.floor(bf * 255), rate = 24 }
 
-  local r_timed_border = rubato.timed { duration = 0.3, pos = math.floor(rbo) }
-  local g_timed_border = rubato.timed { duration = 0.3, pos = math.floor(gbo) }
-  local b_timed_border = rubato.timed { duration = 0.3, pos = math.floor(bbo) }
+  local r_timed_border = rubato.timed { duration = 0.3, pos = math.floor(rbo), rate = 24 }
+  local g_timed_border = rubato.timed { duration = 0.3, pos = math.floor(gbo), rate = 24 }
+  local b_timed_border = rubato.timed { duration = 0.3, pos = math.floor(bbo), rate = 24 }
 
   local function update_bg()
     widget:set_bg("#" ..

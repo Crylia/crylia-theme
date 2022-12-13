@@ -1,15 +1,12 @@
 [submodule "awesome/src/lib/rubato"]
 	path = awesome/src/lib/rubato
 	url = https://github.com/andOrlando/rubato
-[submodule "awesome/src/lib/awesome/src/lib/color"]
-	path = awesome/src/lib/awesome/src/lib/color
-	url = https://github.com/andOrlando/color
 [submodule "awesome/src/lib/color"]
 	path = awesome/src/lib/color
 	url = https://github.com/andOrlando/color
 [submodule "awesome/src/lib/nice"]
 	path = awesome/src/lib/nice
-	url = https://github.com/Crylia/awesome-wm-nice
+	url = git@github.com:Crylia/awesome-wm-nice.git
 [submodule "awesome/src/lib/dbus_proxy"]
 	path = awesome/src/lib/dbus_proxy
 	url = git@github.com:Crylia/lua-dbus_proxy.git

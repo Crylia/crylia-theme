@@ -1,0 +1,109 @@
+################################################
+#  ██████╗██████╗ ██╗   ██╗██╗     ██╗ █████╗  #
+# ██╔════╝██╔══██╗╚██╗ ██╔╝██║     ██║██╔══██╗ #
+# ██║     ██████╔╝ ╚████╔╝ ██║     ██║███████║ #
+# ██║     ██╔══██╗  ╚██╔╝  ██║     ██║██╔══██║ #
+# ╚██████╗██║  ██║   ██║   ███████╗██║██║  ██║ #
+#  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝╚═╝  ╚═╝ #
+################################################
+
+# Set the window Width and Height in console columns.
+# The window size will change if the font size changes.
+window:
+  padding:
+    x: 24
+    y: 24
+  dimensions:
+    columns: 110
+    lines: 30
+  decorations: full
+  startup_mode: Windowed
+  title: "Alacritty Terminal"
+  dynamic_title: true
+# Scrolling history and multiplier
+scrolling:
+  history: 10000
+  multiplier: 3
+# Font family and style
+font:
+  normal:
+    family: "JetBrains Mono Nerd Font"
+    style: Regular
+  bold:
+    family: "JetBrains Mono Nerd Font"
+    style: Bold
+  italic:
+    family: "JetBrains Mono Nerd Font"
+    style: italic
+  bold_italic:
+    family: "JetBrains Mono Nerd Font"
+    style: Bold Italic
+  size: 13.0
+  offset:
+    y: 0
+  glyph_offset:
+    y: 0
+# Background opacity from 0.0 transparent, 1.0 Opaque
+window:
+  opacity: 0.4
+# Terminal colors
+colors:
+  primary:
+    background: '0x131621'
+    foreground: '0xa6accd'
+  cursor:
+    text: CellBackground
+    cursor: CellForeground
+  search:
+    matches:
+      foreground: '0x1b1e28'
+      background: '0xadd7ff'
+    focus_match:
+      foreground: '0x1b1e28'
+      background: '0xadd7ff'
+  selection:
+    text: CellForeground
+    background: '0x303340'
+  normal:
+    black: '0x1b1e28'
+    red: '0xd0679d'
+    green: '0x5de4c7'
+    yellow: '0xfffac2'
+    blue: '#435c89'
+    magenta: '0xfcc5e9'
+    cyan: '0xadd7ff'
+    white: '0xffffff'
+  bright:
+    black: '0xa6accd'
+    red: '0xd0679d'
+    green: '0x5de4c7'
+    yellow: '0xfffac2'
+    blue: '0xadd7ff'
+    magenta: '0xfae4fc'
+    cyan: '0x89ddff'
+    white: '0xffffff'
+# Cursor styling
+cursor:
+  style: Beam
+  thickness: 0.2
+  unfocused_hollow: false
+  blink_interval: 750
+
+################################################################################
+# ███████╗██╗  ██╗ ██████╗ ██████╗ ████████╗ ██████╗██╗   ██╗████████╗███████╗ #
+# ██╔════╝██║  ██║██╔═══██╗██╔══██╗╚══██╔══╝██╔════╝██║   ██║╚══██╔══╝██╔════╝ #
+# ███████╗███████║██║   ██║██████╔╝   ██║   ██║     ██║   ██║   ██║   ███████╗ #
+# ╚════██║██╔══██║██║   ██║██╔══██╗   ██║   ██║     ██║   ██║   ██║   ╚════██║ #
+# ███████║██║  ██║╚██████╔╝██║  ██║   ██║   ╚██████╗╚██████╔╝   ██║   ███████║ #
+# ╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═════╝    ╚═╝   ╚══════╝ #
+################################################################################                                                                            
+
+# Mouse
+mouse_bindings:
+ - { mouse: Right, action: Paste }
+
+# Keyboard
+key_bindings:
+ - { key: C, mods: Control|Shift, action: Copy }
+ - { key: V, mods: Control|Shift, action: Paste }
+ - { key: C, mods: Control, mode: Vi, action: ClearSelection }

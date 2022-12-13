@@ -34,4 +34,4 @@ require("src.bindings.bind_to_tags")
 require("src.modules.init")
 require("src.tools.auto_starter")(User_config.autostart)
 
---require("src.config.setup")()
+require("src.config.setup")()
