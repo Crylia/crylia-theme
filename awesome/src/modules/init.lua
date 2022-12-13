@@ -19,7 +19,7 @@ awful.screen.connect_for_each_screen(function(s)
   require("src.modules.notification-center.init")(s)
   require("src.modules.window_switcher.init")(s)
   require("src.modules.application_launcher.init") { screen = s }
-  require("src.modules.network_controller.init") { screen = s }
+  --require("src.modules.network_controller.init") { screen = s }
 end)
 
 do

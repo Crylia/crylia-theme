@@ -19,7 +19,7 @@ return function(s)
         elseif widget == "Clock" then
           table.insert(widget_table, require("src.widgets.clock")())
         elseif widget == "Cpu Frequency" then
-          table.insert(widget_table, require("src.widgets.cpu_info")("freq", User_config.cpu_frequency))
+          table.insert(widget_table, require("src.widgets.cpu_info")("freq"))
         elseif widget == "Cpu Temperature" then
           table.insert(widget_table, require("src.widgets.cpu_info")("temp"))
         elseif widget == "Cpu Usage" then
@@ -35,7 +35,7 @@ return function(s)
         elseif widget == "Tiling Layout" then
           table.insert(widget_table, require("src.widgets.layout_list")())
         elseif widget == "Network" then
-          table.insert(widget_table, require("src.widgets.network")())
+          table.insert(widget_table, require("src.widgets.network") { screen = s })
         elseif widget == "Power Button" then
           table.insert(widget_table, require("src.widgets.power")())
         elseif widget == "Ram Usage" then

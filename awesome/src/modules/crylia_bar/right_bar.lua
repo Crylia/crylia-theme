@@ -55,7 +55,6 @@ return function(s, w)
     bg = Theme_config.right_bar.bg,
     visible = true,
     screen = s,
-    maximum_width = dpi(650),
     placement = function(c) awful.placement.top_right(c, { margins = dpi(10) }) end
   }
 

@@ -3,25 +3,28 @@
 ------------------------------------
 
 -- Awesome Libs
-local awful = require("awful")
+local abutton = require("awful.button")
+local base = require("wibox.widget.base")
 local dbus_proxy = require("src.lib.lua-dbus_proxy.src.dbus_proxy")
 local dpi = require("beautiful").xresources.apply_dpi
-local gtable = require("gears").table
-local gtimer = require("gears").timer
-local gshape = require("gears").shape
-local gcolor = require("gears").color
-local gears = require("gears")
+local gcolor = require("gears.color")
+local gfilesystem = require("gears.filesystem")
+local gshape = require("gears.shape")
+local gtable = require("gears.table")
+local gtimer = require("gears.timer")
 local lgi = require("lgi")
+local NM = lgi.NM
+local naughty = require("naughty")
 local wibox = require("wibox")
-local NM = require("lgi").NM
-local base = require("wibox.widget.base")
 
+-- Third party libs
 local rubato = require("src.lib.rubato")
 
+-- Local libs
 local access_point = require("src.modules.network_controller.access_point")
 local dnd_widget = require("awful.widget.toggle_widget")
 
-local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/network/"
+local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/network/"
 
 local network = { mt = {} }
 
@@ -57,10 +60,17 @@ network.DeviceState = {
   FAILED = 120
 }
 
-function network:get_wifi_proxy()
+---Get the wifi and or ethernet proxy and connect to their PropertiesChanged signal
+-- The signals will return the following
+-- wifi: { "Bitrate", "Strength" }
+-- ethernet: { "Carrier", "Speed" }
+function network:get_active_device()
+  --Get all devices
   local devices = self._private.NetworkManager:GetDevices()
   if (not devices) or (#devices == 0) then return end
+  -- Loop trough every found device
   for _, path in ipairs(devices) do
+    --Create a new proxy for every device
     local NetworkManagerDevice = dbus_proxy.Proxy:new {
       bus = dbus_proxy.Bus.SYSTEM,
       name = "org.freedesktop.NetworkManager",
@@ -68,52 +78,85 @@ function network:get_wifi_proxy()
       path = path
     }
 
-    if NetworkManagerDevice.DeviceType == network.DeviceType.WIFI then
+    --Check if the device is either a wifi or ethernet device, and if its activated
+    -- if its activated then its currently in use
+    if (NetworkManagerDevice.DeviceType == network.DeviceType.WIFI) and
+        (NetworkManagerDevice.State == network.DeviceState.ACTIVATED) then
+      -- Set the wifi device as the main device
       self._private.NetworkManagerDevice = NetworkManagerDevice
+      --New wifi proxy to check the bitrate
       self._private.NetworkManagerDeviceWireless = dbus_proxy.Proxy:new {
         bus = dbus_proxy.Bus.SYSTEM,
         name = "org.freedesktop.NetworkManager",
         interface = "org.freedesktop.NetworkManager.Device.Wireless",
         path = path
       }
+      -- Watch PropertiesChanged and update the bitrate
+      local NetworkManagerDeviceWirelessProperties = dbus_proxy.Proxy:new {
+        bus = dbus_proxy.Bus.SYSTEM,
+        name = "org.freedesktop.NetworkManager",
+        interface = "org.freedesktop.DBus.Properties",
+        path = self._private.NetworkManagerDeviceWireless.object_path
+      }
 
-      self._private.NetworkManagerDevice:connect_signal(function(proxy, new_state, old_state, reason)
+      NetworkManagerDeviceWirelessProperties:connect_signal(function(_, properties, data)
+        if data.Bitrate then
+          self:emit_signal("NM::Bitrate", data.Bitrate)
+        end
+      end, "PropertiesChanged")
+      -- Watch the StateChanged signal, update and notify when a new AP is connected
+      self._private.NetworkManagerDevice:connect_signal(function(proxy, new_state)
         local NetworkManagerAccessPoint = dbus_proxy.Proxy:new {
           bus = dbus_proxy.Bus.SYSTEM,
           name = "org.freedesktop.NetworkManager",
           interface = "org.freedesktop.NetworkManager.AccessPoint",
-          path = self._private.wifi_proxy.ActiveAccessPoint
+          path = self._private.NetworkManagerDeviceWireless.ActiveAccessPoint
         }
 
-        self:emit_signal(tostring(NetworkManagerAccessPoint.HwAddress) .. "::state", new_state, old_state)
         if new_state == network.DeviceState.ACTIVATED then
           local ssid = NM.utils_ssid_to_utf8(NetworkManagerAccessPoint.Ssid)
           self:emit_signal("NM::AccessPointConnected", ssid, NetworkManagerAccessPoint.Strength)
-          print("AP Connected: ", ssid, NetworkManagerAccessPoint.Strength)
+        end
+      end, "StateChanged")
+
+    elseif (NetworkManagerDevice.DeviceType == network.DeviceType.ETHERNET) and
+        (NetworkManagerDevice.State == network.DeviceState.ACTIVATED) then
+      -- Create a new ethernet device and set it as the active device
+      self._private.NetworkManagerDevice = NetworkManagerDevice
+      self._private.NetworkManagerDeviceWired = dbus_proxy.Proxy:new {
+        bus = dbus_proxy.Bus.SYSTEM,
+        name = "org.freedesktop.NetworkManager",
+        interface = "org.freedesktop.NetworkManager.Device.Wired",
+        path = path
+      }
+
+      local NetworkManagerDeviceWiredProperties = dbus_proxy.Proxy:new {
+        bus = dbus_proxy.Bus.SYSTEM,
+        name = "org.freedesktop.NetworkManager",
+        interface = "org.freedesktop.DBus.Properties",
+        path = self._private.NetworkManagerDeviceWired.object_path
+      }
+
+      -- Watch the PropertiesChanged signal and update the speed and carrier
+      NetworkManagerDeviceWiredProperties:connect_signal(function(_, properties, data)
+        if data.Speed then
+          print(data.Speed)
+          self:emit_signal("NM::Speed", data.Speed)
+        elseif data.Carrier then
+          print(data.Carrier)
+          self:emit_signal("NM::Carrier", data.Carrier)
+        end
+      end, "PropertiesChanged")
+
+      -- Connect to the StateChanged signal and notify when the wired connection is ready
+      self._private.NetworkManagerDevice:connect_signal(function(proxy, new_state)
+        if new_state == network.DeviceState.ACTIVATED then
+          self:emit_signal("NM::EthernetActive")
+          print("Ethernet active")
         end
       end, "StateChanged")
     end
   end
-end
-
-function network.device_state_to_string(state)
-  local device_state_to_string = {
-    [0] = "Unknown",
-    [10] = "Unmanaged",
-    [20] = "Unavailable",
-    [30] = "Disconnected",
-    [40] = "Prepare",
-    [50] = "Config",
-    [60] = "Need Auth",
-    [70] = "IP Config",
-    [80] = "IP Check",
-    [90] = "Secondaries",
-    [100] = "Activated",
-    [110] = "Deactivated",
-    [120] = "Failed"
-  }
-
-  return device_state_to_string[state]
 end
 
 ---Scan for access points and create a widget for each one.
@@ -121,14 +164,22 @@ function network:scan_access_points()
   if not self._private.NetworkManagerDeviceWireless then return end
   local ap_list = self:get_children_by_id("wifi_ap_list")[1]
   ap_list:reset()
-  self._private.NetworkManagerDeviceWireless:RequestScanAsync(function(proxy, context, success, failure)
+  local ap_table = {}
+  self._private.NetworkManagerDeviceWireless:RequestScanAsync(function(_, _, _, failure)
     if failure then
+      naughty.notification {
+        app_icon = icondir .. "ethernet.svg",
+        app_name = "Network Manager",
+        title = "Error: Scan failed!",
+        message = "Failed to scan for access points.\n" .. failure,
+        icon = gcolor.recolor_image(icondir .. "ethernet.svg", Theme_config.network.icon_color),
+        timeout = 5,
+      }
       return
     end
 
     -- Get every access point even those who hide their ssid
     for _, ap in ipairs(self._private.NetworkManagerDeviceWireless:GetAllAccessPoints()) do
-
       -- Create a new proxy for every ap
       local NetworkManagerAccessPoint = dbus_proxy.Proxy:new {
         bus = dbus_proxy.Bus.SYSTEM,
@@ -138,34 +189,42 @@ function network:scan_access_points()
       }
 
       -- We are only interested in those with a ssid
-      if NetworkManagerAccessPoint.Ssid then
-        ap_list:add(access_point {
-          NetworkManagerAccessPoint = NetworkManagerAccessPoint,
-          NetworkManagerDevice = self._private.NetworkManagerDevice,
-          NetworkManagerSettings = self._private.NetworkManagerSettings,
-          NetworkManager = self._private.NetworkManager,
-          NetworkManagerDeviceWireless = self._private.NetworkManagerDeviceWireless
-        })
+      if NM.utils_ssid_to_utf8(NetworkManagerAccessPoint.Ssid) and NetworkManagerAccessPoint.Strength then
+        if (ap_table[NetworkManagerAccessPoint.Ssid] == nil) or
+            NetworkManagerAccessPoint.Strength > ap_table[NetworkManagerAccessPoint.Ssid].Strength then
+          ap_table[NetworkManagerAccessPoint.Ssid] = NetworkManagerAccessPoint
+        end
       end
     end
 
-    table.sort(ap_list, function(a, b)
-      return a.NetworkManagerAccessPoint.Strength > b.NetworkManagerAccessPoint.Strength
+    --sort ap_table first by strength
+    local sorted_ap_table = {}
+    for _, NetworkManagerAccessPoint in pairs(ap_table) do
+      table.insert(sorted_ap_table, NetworkManagerAccessPoint)
+    end
+    --sort the table by strength but have the active_ap at the top
+    table.sort(sorted_ap_table, function(a, b)
+      if a.object_path == self._private.NetworkManagerDeviceWireless.ActiveAccessPoint then
+        return true
+      else
+        return a.Strength > b.Strength
+      end
     end)
+    for _, NetworkManagerAccessPoint in ipairs(sorted_ap_table) do
+      ap_list:add(access_point {
+        NetworkManagerAccessPoint = NetworkManagerAccessPoint,
+        NetworkManagerDevice = self._private.NetworkManagerDevice,
+        NetworkManagerSettings = self._private.NetworkManagerSettings,
+        NetworkManager = self._private.NetworkManager,
+        NetworkManagerDeviceWireless = self._private.NetworkManagerDeviceWireless
+      })
+    end
   end, { call_id = "my-id" }, {})
-end
-
-function network:is_ap_active(ap)
-  return ap.path == self._private.NetworkManagerDeviceWireless.ActiveAccessPoint
 end
 
 ---Toggles networking on or off
 function network:toggle_wifi()
   local enable = not self._private.NetworkManager.WirelessEnabled
-  if enable then
-    self._private.NetworkManager.Enable(true)
-  end
-
   self._private.NetworkManager:Set("org.freedesktop.NetworkManager", "WirelessEnabled", lgi.GLib.Variant("b", enable))
   self._private.NetworkManager.WirelessEnabled = { signature = "b", value = enable }
 end
@@ -336,11 +395,16 @@ function network.new(args)
   }
 
   ret._private.NetworkManagerProperties:connect_signal(function(_, properties, data)
-    if data.WirelessEnables ~= nil and ret._private.WirelessEnabled ~= data.WirelessEnabled then
+    if data.WirelessEnabled ~= nil and ret._private.WirelessEnabled ~= data.WirelessEnabled then
       ret._private.WirelessEnabled = data.WirelessEnabled
 
+      if ret._private.WirelessEnabled then
+        dnd:set_enabled()
+      else
+        dnd:set_disabled()
+      end
+
       ret:emit_signal("NetworkManager::status", ret._private.WirelessEnabled)
-      print(ret._private.WirelessEnabled)
 
       if data.WirelessEnabled then
         gtimer {
@@ -356,21 +420,15 @@ function network.new(args)
     end
   end, "PropertiesChanged")
 
-  ret:get_wifi_proxy()
+  ret:get_active_device()
 
   ret:scan_access_points()
 
-  --[[ gtimer.delayed_call(function()
-    local active_access_point = ret._private.NetworkManagerDeviceWireless.ActiveAccessPoint
-    if ret._private.NetworkManager.State == network.DeviceState.ACTIVATED and active_access_point ~= "/" then
-      local active_access_point_proxy = dbus_proxy.Proxy:new {
-        bus = dbus_proxy.Bus.SYSTEM,
-        name = "org.freedesktop.NetworkManager",
-        interface = "org.freedesktop.NetworkManager.AccessPoint",
-        path = active_access_point,
-      }
-    end
-  end) ]]
+  if ret._private.NetworkManager.WirelessEnabled then
+    dnd:set_enabled()
+  else
+    dnd:set_disabled()
+  end
 
   --#endregion
 
@@ -389,7 +447,7 @@ function network.new(args)
   }
 
   wifi_margin:buttons(gtable.join(
-    awful.button({}, 1, nil,
+    abutton({}, 1, nil,
       function()
         if wifi_list.forced_height == 0 then
           if not ret:get_children_by_id("wifi_ap_list")[1].children then
@@ -420,7 +478,7 @@ function network.new(args)
 
   local refresh_button = ret:get_children_by_id("refresh")[1]
   refresh_button:buttons(gtable.join(
-    awful.button({}, 1, nil,
+    abutton({}, 1, nil,
       function()
         ret:scan_access_points()
       end
