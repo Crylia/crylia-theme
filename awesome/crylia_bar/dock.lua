@@ -288,6 +288,7 @@ return function(screen, programs)
         create_incicator_widget(programs),
         layout = wibox.layout.fixed.vertical
       }
+      dock_intelligent_hide:again()
     end
   )
 
