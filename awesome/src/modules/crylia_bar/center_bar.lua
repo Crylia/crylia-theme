@@ -2,10 +2,10 @@
 -- This is the statusbar, every widget, module and so on is combined to all the stuff you see on the screen --
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local gears = require("gears")
-local wibox = require("wibox")
+local aplacement = require('awful.placement')
+local apopup = require('awful.popup')
+local dpi = require('beautiful').xresources.apply_dpi
+local wibox = require('wibox')
 
 local capi = {
   awesome = awesome,
@@ -17,7 +17,7 @@ return function(s, widgets)
   local function prepare_widgets(w)
     local layout = {
       forced_height = dpi(50),
-      layout = wibox.layout.fixed.horizontal
+      layout = wibox.layout.fixed.horizontal,
     }
     for i, widget in pairs(w) do
       if i == 1 then
@@ -28,7 +28,7 @@ return function(s, widgets)
             right = dpi(6),
             top = dpi(6),
             bottom = dpi(6),
-            widget = wibox.container.margin
+            widget = wibox.container.margin,
           })
       elseif i == #w then
         table.insert(layout,
@@ -38,7 +38,7 @@ return function(s, widgets)
             right = dpi(6),
             top = dpi(6),
             bottom = dpi(6),
-            widget = wibox.container.margin
+            widget = wibox.container.margin,
           })
       else
         table.insert(layout,
@@ -48,28 +48,28 @@ return function(s, widgets)
             right = dpi(3),
             top = dpi(6),
             bottom = dpi(6),
-            widget = wibox.container.margin
+            widget = wibox.container.margin,
           })
       end
     end
     return layout
   end
 
-  local top_center = awful.popup {
+  local top_center = apopup {
     screen = s,
     widget = prepare_widgets(widgets),
     ontop = false,
     bg = Theme_config.center_bar.bg,
     visible = true,
     maximum_width = dpi(500),
-    placement = function(c) awful.placement.top(c, { margins = dpi(10) }) end
+    placement = function(c) aplacement.top(c, { margins = dpi(10) }) end,
   }
 
   top_center:struts {
-    top = dpi(55)
+    top = dpi(55),
   }
 
-  capi.client.connect_signal("manage", function(c)
+  capi.client.connect_signal('manage', function(c)
     if #s.selected_tag:clients() < 1 then
       top_center.visible = false
     else
@@ -77,7 +77,7 @@ return function(s, widgets)
     end
   end)
 
-  capi.client.connect_signal("unmanage", function(c)
+  capi.client.connect_signal('unmanage', function(c)
     if #s.selected_tag:clients() < 1 then
       top_center.visible = false
     else
@@ -85,7 +85,7 @@ return function(s, widgets)
     end
   end)
 
-  capi.client.connect_signal("property::selected", function(c)
+  capi.client.connect_signal('property::selected', function(c)
     if #s.selected_tag:clients() < 1 then
       top_center.visible = false
     else
@@ -93,7 +93,7 @@ return function(s, widgets)
     end
   end)
 
-  capi.awesome.connect_signal("refresh", function(c)
+  capi.awesome.connect_signal('refresh', function(c)
     if #s.selected_tag:clients() < 1 then
       top_center.visible = false
     else

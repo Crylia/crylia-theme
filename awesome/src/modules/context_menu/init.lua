@@ -2,32 +2,33 @@
 -- This is the brightness_osd module --
 ---------------------------------------
 -- Awesome Libs
-local awful = require("awful")
+local awful = require('awful')
 local abutton = awful.button
-local dpi = require("beautiful").xresources.apply_dpi
-local gtable = require("gears.table")
-local base = require("wibox.widget.base")
-local wibox = require("wibox")
-local gfilesystem = require("gears.filesystem")
-local gobject = require("gears.object")
-local gcolor = require("gears.color")
-local gtimer = require("gears.timer")
+local dpi = require('beautiful').xresources.apply_dpi
+local gtable = require('gears.table')
+local base = require('wibox.widget.base')
+local wibox = require('wibox')
+local gfilesystem = require('gears.filesystem')
+local gcolor = require('gears.color')
+local gtimer = require('gears.timer')
+
+local hover = require('src.tools.hover')
 
 local capi = {
   awesome = awesome,
-  mouse = mouse
+  mouse = mouse,
 }
 
-local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/context_menu/"
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/context_menu/'
 
 local context_menu = {
-  mt = {}
+  mt = {},
 }
 
 function context_menu:layout(_, width, height)
   if self._private.widget then
     return {
-      base.place_widget_at(self._private.widget, 0, 0, width, height)
+      base.place_widget_at(self._private.widget, 0, 0, width, height),
     }
   end
 end
@@ -45,7 +46,7 @@ context_menu.set_widget = base.set_widget_common
 function context_menu:make_entries(wtemplate, entries, spacing)
   local menu_entries = {
     layout = wibox.layout.fixed.vertical,
-    spacing = spacing
+    spacing = spacing,
   }
 
   if not wtemplate then
@@ -53,8 +54,7 @@ function context_menu:make_entries(wtemplate, entries, spacing)
   end
 
   for key, entry in pairs(entries) do
-    -- TODO: Figure out how to make a new widget from etemplate
-    local menu_entry = wibox.widget {
+    local menu_entry = base.make_widget_from_value {
       {
         {
           {
@@ -62,72 +62,74 @@ function context_menu:make_entries(wtemplate, entries, spacing)
               {
                 widget = wibox.widget.imagebox,
                 resize = true,
-                valign = "center",
-                halign = "center",
-                id = "icon_role"
+                valign = 'center',
+                halign = 'center',
+                id = 'icon_role',
               },
               widget = wibox.container.constraint,
-              stragety = "exact",
+              stragety = 'exact',
               width = dpi(24),
               height = dpi(24),
-              id = "const"
+              id = 'const',
             },
             {
               widget = wibox.widget.textbox,
-              valign = "center",
-              halign = "left",
-              id = "text_role"
+              valign = 'center',
+              halign = 'left',
+              id = 'text_role',
             },
             spacing = dpi(10),
-            layout = wibox.layout.fixed.horizontal
+            layout = wibox.layout.fixed.horizontal,
           },
           nil,
           {
             {
               widget = wibox.widget.imagebox,
               resize = true,
-              valign = "center",
-              halign = "center",
-              id = "arrow_role"
+              valign = 'center',
+              halign = 'center',
+              id = 'arrow_role',
             },
             widget = wibox.container.constraint,
-            stragety = "exact",
+            stragety = 'exact',
             width = dpi(24),
             height = dpi(24),
-            id = "const"
+            id = 'const',
           },
-          layout = wibox.layout.align.horizontal
+          layout = wibox.layout.align.horizontal,
         },
         margins = dpi(5),
-        widget = wibox.container.margin
+        widget = wibox.container.margin,
       },
       bg = Theme_config.desktop.context_menu.entry_bg,
       fg = Theme_config.desktop.context_menu.entry_fg,
-      widget = wibox.container.background
+      widget = wibox.container.background,
     }
 
-    Hover_signal(menu_entry)
+    assert(type(menu_entry) == 'table', 'Entry must be a table')
 
-    menu_entry:get_children_by_id("icon_role")[1].image = entry.icon
-    menu_entry:get_children_by_id("text_role")[1].text = entry.name
+    hover.bg_hover { widget = menu_entry }
+
+    menu_entry:get_children_by_id('icon_role')[1].image = entry.icon
+    menu_entry:get_children_by_id('text_role')[1].text = entry.name
     if entry.submenu then
-      menu_entry:get_children_by_id("arrow_role")[1].image =
-      gcolor.recolor_image(icondir .. "entry.svg", Theme_config.desktop.context_menu.entry_fg)
+      menu_entry:get_children_by_id('arrow_role')[1].image =
+      gcolor.recolor_image(icondir .. 'entry.svg', Theme_config.desktop.context_menu.entry_fg)
     end
     gtable.crush(menu_entry, entry, true)
 
     menu_entry:buttons(gtable.join {
-      abutton({
+      abutton {
         modifiers = {},
         button = 1,
         on_release = function()
           if not entry.submenu then
             entry.callback()
           end
-          capi.awesome.emit_signal("submenu::close")
-          capi.awesome.emit_signal("cm::hide")
-        end
-      })
+          capi.awesome.emit_signal('submenu::close')
+          capi.awesome.emit_signal('cm::hide')
+        end,
+      },
     })
 
     if entry.submenu then
@@ -139,7 +141,7 @@ function context_menu:make_entries(wtemplate, entries, spacing)
         border_width = Theme_config.desktop.context_menu.border_width,
         border_color = Theme_config.desktop.context_menu.border_color,
         shape = Theme_config.desktop.context_menu.shape,
-        visible = false
+        visible = false,
       }
 
       local hide_timer = gtimer {
@@ -148,25 +150,25 @@ function context_menu:make_entries(wtemplate, entries, spacing)
         single_shot = true,
         callback = function()
           menu_entry.popup.visible = false
-        end
+        end,
       }
 
-      menu_entry:connect_signal("mouse::enter", function()
+      menu_entry:connect_signal('mouse::enter', function()
         -- place widget right of parent
         menu_entry.popup:move_next_to(capi.mouse.current_widget_geometry)
         hide_timer:stop()
         menu_entry.popup.visible = true
       end)
-      menu_entry.popup:connect_signal("mouse::leave", function()
+      menu_entry.popup:connect_signal('mouse::leave', function()
         hide_timer:again()
       end)
-      menu_entry.popup:connect_signal("mouse::enter", function()
+      menu_entry.popup:connect_signal('mouse::enter', function()
         hide_timer:stop()
       end)
-      menu_entry:connect_signal("mouse::leave", function()
+      menu_entry:connect_signal('mouse::leave', function()
         hide_timer:again()
       end)
-      capi.awesome.connect_signal("submenu::close", function()
+      capi.awesome.connect_signal('submenu::close', function()
         menu_entry.popup.visible = false
       end)
     end
@@ -176,8 +178,11 @@ function context_menu:make_entries(wtemplate, entries, spacing)
 end
 
 function context_menu:toggle()
-  self.x = capi.mouse.coords().x
-  self.y = capi.mouse.coords().y
+  self.x = capi.mouse.coords().x - dpi(5)
+  self.y = capi.mouse.coords().y - dpi(5)
+  if self.y + self.height > capi.mouse.screen.geometry.height then
+    self.y = self.y - self.height + dpi(10)
+  end
   self.visible = not self.visible
 end
 
@@ -190,8 +195,10 @@ function context_menu.new(args)
 
   gtable.crush(ret, context_menu, true)
 
+  local entries = ret:make_entries(args.widget_template, args.entries, args.spacing)
+
   ret = awful.popup {
-    widget = ret:make_entries(args.widget_template, args.entries, args.spacing),
+    widget = entries,
     bg = Theme_config.desktop.context_menu.bg,
     fg = Theme_config.desktop.context_menu.fg,
     ontop = true,
@@ -200,11 +207,11 @@ function context_menu.new(args)
     shape = Theme_config.desktop.context_menu.shape,
     visible = false,
     x = capi.mouse.coords().x + 10,
-    y = capi.mouse.coords().y - 10
+    y = capi.mouse.coords().y - 10,
   }
 
   -- I literally have no clue how to do it better, it doesn't really matter anyways
-  capi.awesome.connect_signal("cm::hide", function()
+  capi.awesome.connect_signal('cm::hide', function()
     ret.visible = false
   end)
 

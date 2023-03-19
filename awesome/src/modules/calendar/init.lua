@@ -1,23 +1,21 @@
 -- Awesome Libs
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local gtable = require("gears.table")
-local gobject = require("gears.object")
-local gshape = require("gears.shape")
-local gcolor = require("gears.color")
-local gfilesystem = require("gears").filesystem
-local wibox = require("wibox")
-local base = require("wibox.widget.base")
+local awful = require('awful')
+local dpi = require('beautiful').xresources.apply_dpi
+local gtable = require('gears.table')
+local gcolor = require('gears.color')
+local gfilesystem = require('gears').filesystem
+local wibox = require('wibox')
+local base = require('wibox.widget.base')
 
 local capi = {
-  awesome = awesome,
   mouse = mouse,
 }
 
-local ical_parser = require("src.tools.ical_parser")()
-local task_info = require("src.modules.calendar.task_info")
+local ical_parser = require('src.tools.ical_parser')()
+local task_info = require('src.modules.calendar.task_info')
+local hover = require('src.tools.hover')
 
-local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/calendar/"
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/calendar/'
 
 local calendar = { mt = {} }
 calendar.tasks = {}
@@ -27,36 +25,36 @@ calendar._private = {}
 
 -- Month lookup table
 calendar._private.months = {
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December"
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 }
 
 -- Weeks shortname lookup table
 calendar._private.weeks = {
-  "Mon",
-  "Tue",
-  "Wed",
-  "Thu",
-  "Fri",
-  "Sat",
-  "Sun"
+  'Mon',
+  'Tue',
+  'Wed',
+  'Thu',
+  'Fri',
+  'Sat',
+  'Sun',
 }
 
 --- A date table to keep track of the needed date
 calendar.date = {
-  day = tonumber(os.date("%d")) or 1,
-  month = tonumber(os.date("%m")) or 1,
-  year = tonumber(os.date("%Y")) or 1970
+  day = tonumber(os.date('%d')) or 1,
+  month = tonumber(os.date('%m')) or 1,
+  year = tonumber(os.date('%Y')) or 1970,
 }
 
 --#region base widget functions
@@ -67,7 +65,7 @@ function calendar:layout(_, width, height)
 end
 
 function calendar:fit(context, width, height)
-  local w, h = 0, 0
+  local w, h = 0, 0 ---@type number|nil, number|nil
   if self._private.widget then
     w, h = base.fit_widget(self, context, self._private.widget, width, height)
   end
@@ -102,7 +100,7 @@ function calendar:get_last_day_in_month(month, year)
     [9] = 30,
     [10] = 31,
     [11] = 30,
-    [12] = 31
+    [12] = 31,
   }
 
   if (month == 2) and (math.floor(year % 4) == 0) then
@@ -136,10 +134,10 @@ function calendar:weekday_for_day(day, month, year)
   end
 
   -- Forgot what the algorithm was called
-  local w = ((day + math.floor(2.6 * month - 0.2) - 2 * tonumber(tostring(year):match("([0-9]+)[0-9][0-9]")) +
-      tonumber(tostring(year):match("[0-9][0-9]([0-9]+)")) +
-      math.floor(tonumber(tostring(year):match("[0-9][0-9]([0-9]+)")) / 4) +
-      math.floor(tonumber(tostring(year):match("([0-9]+)[0-9][0-9]")) / 4)) % 7)
+  local w = ((day + math.floor(2.6 * month - 0.2) - 2 * tonumber(tostring(year):match('([0-9]+)[0-9][0-9]')) +
+      tonumber(tostring(year):match('[0-9][0-9]([0-9]+)')) +
+      math.floor(tonumber(tostring(year):match('[0-9][0-9]([0-9]+)')) / 4) +
+      math.floor(tonumber(tostring(year):match('([0-9]+)[0-9][0-9]')) / 4)) % 7)
 
   -- If the week should start on monday, sunday is default. Since the function returns 0 - 6, we have to add 1 for lua's tables
   if w == 0 then w = 7 end
@@ -181,7 +179,7 @@ function calendar:get_tasks()
         day = start_date.d,
         hour = start_date.hour or 0,
         min = start_date.min or 0,
-        sec = start_date.sec or 0
+        sec = start_date.sec or 0,
       },
       date_end = {
         year = end_date.y,
@@ -189,7 +187,7 @@ function calendar:get_tasks()
         day = end_date.d,
         hour = end_date.hour or 0,
         min = end_date.min or 0,
-        sec = end_date.sec or 0
+        sec = end_date.sec or 0,
       },
       summary = sum,
       location = loc,
@@ -219,12 +217,12 @@ function calendar:get_tasks()
             day = start_time.day,
             hour = start_time.hour,
             min = start_time.min,
-            sec = start_time.sec
+            sec = start_time.sec,
           }
         end
         -- Get repeat cases
         if event.RRULE then
-          if event.RRULE.FREQ == "DAILY" then
+          if event.RRULE.FREQ == 'DAILY' then
             local year_counter, month_counter, day_counter = start_time.year, start_time.month,
                 start_time.day
             while (year_counter < event.RRULE.UNTIL.year) or (month_counter < event.RRULE.UNTIL.month) or
@@ -235,14 +233,14 @@ function calendar:get_tasks()
                 d = day_counter,
                 hour = start_time.hour,
                 min = start_time.min,
-                sec = start_time.sec
+                sec = start_time.sec,
               }, {
                 y = year_counter,
                 m = month_counter,
                 d = day_counter,
                 hour = end_time.hour,
                 min = end_time.min,
-                sec = end_time.sec
+                sec = end_time.sec,
               }, event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
 
               day_counter = day_counter + 1
@@ -255,14 +253,14 @@ function calendar:get_tasks()
                 end
               end
             end
-          elseif event.RRULE.FREQ == "WEEKLY" then
+          elseif event.RRULE.FREQ == 'WEEKLY' then
             local year_counter, month_counter, day_counter = start_time.year, start_time.month,
                 start_time.day
             while (year_counter < event.RRULE.UNTIL.year) or (month_counter < event.RRULE.UNTIL.month) or
                 (day_counter <= event.RRULE.UNTIL.day) do
               task_factory({ y = year_counter, m = month_counter, d = day_counter, hour = start_time.hour,
-                min = start_time.min, sec = start_time.sec }, { y = year_counter, m = month_counter,
-                d = day_counter, hour = end_time.hour, min = end_time.min, sec = end_time.sec },
+                min = start_time.min, sec = start_time.sec, }, { y = year_counter, m = month_counter,
+                d = day_counter, hour = end_time.hour, min = end_time.min, sec = end_time.sec, },
                 event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
               day_counter = day_counter + 7
               local month_length = calendar:get_last_day_in_month(month_counter, year_counter)
@@ -275,14 +273,14 @@ function calendar:get_tasks()
                 end
               end
             end
-          elseif event.RRULE.FREQ == "MONTHLY" then
+          elseif event.RRULE.FREQ == 'MONTHLY' then
             local year_counter, month_counter, day_counter = start_time.year, start_time.month,
                 start_time.day
             while (year_counter < event.RRULE.UNTIL.year) or (month_counter < event.RRULE.UNTIL.month) or
                 (day_counter <= event.RRULE.UNTIL.day) do
               task_factory({ y = year_counter, m = month_counter, d = day_counter, hour = start_time.hour,
-                min = start_time.min, sec = start_time.sec }, { y = year_counter, m = month_counter,
-                d = day_counter, hour = end_time.hour, min = end_time.min, sec = end_time.sec },
+                min = start_time.min, sec = start_time.sec, }, { y = year_counter, m = month_counter,
+                d = day_counter, hour = end_time.hour, min = end_time.min, sec = end_time.sec, },
                 event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
               month_counter = month_counter + 1
               if month_counter > 12 then
@@ -290,27 +288,27 @@ function calendar:get_tasks()
                 year_counter = year_counter + 1
               end
             end
-          elseif event.RRULE.FREQ == "YEARLY" then
+          elseif event.RRULE.FREQ == 'YEARLY' then
             end_time = event.RRULE.UNTIL
             if not event.RRULE.UNTIL then
               end_time = {
                 year = start_time.year + 1000,
                 month = start_time.month,
-                day = start_time.day
+                day = start_time.day,
               }
             end
             for i = start_time.year, end_time.year, 1 do
               task_factory({ y = i, m = start_time.month, d = start_time.day, hour = start_time.hour,
-                min = start_time.min, sec = start_time.sec }, { y = i, m = end_time.month, d = end_time.day,
-                hour = end_time.hour, min = end_time.min, sec = end_time.sec }, event.SUMMARY,
+                min = start_time.min, sec = start_time.sec, }, { y = i, m = end_time.month, d = end_time.day,
+                hour = end_time.hour, min = end_time.min, sec = end_time.sec, }, event.SUMMARY,
                 event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
             end
           end
           -- If RRULE is empty we just add a single day event
         else
           task_factory({ y = start_time.year, m = start_time.month, d = start_time.day, hour = start_time.hour,
-            min = start_time.min, sec = start_time.sec }, { y = end_time.year, m = end_time.month,
-            d = end_time.day, hour = end_time.hour, min = end_time.min, sec = end_time.sec },
+            min = start_time.min, sec = start_time.sec, }, { y = end_time.year, m = end_time.month,
+            d = end_time.day, hour = end_time.hour, min = end_time.min, sec = end_time.sec, },
             event.SUMMARY, event.LOCATION, event.DESCRIPTION, event.UID, event.RRULE.FREQ)
         end
         if event.VALARM then
@@ -323,7 +321,7 @@ function calendar:get_tasks()
     table.insert(self.tasks, tasks)
     table.insert(self.calendars, {
       tasks = self.tasks,
-      color = cal.color
+      color = cal.color,
     })
   end
 end
@@ -344,19 +342,19 @@ function calendar:create_calendar_weeks_widget()
       {
         {
           text = i,
-          id = "num",
-          align = "center",
-          valign = "top",
+          id = 'num',
+          align = 'center',
+          valign = 'top',
           widget = wibox.widget.textbox,
         },
-        id = "background",
+        id = 'background',
         fg = Theme_config.calendar.day.fg_unfocus,
         widget = wibox.container.background,
       },
-      strategy = "exact",
+      strategy = 'exact',
       height = dpi(120),
       width = dpi(40),
-      widget = wibox.container.constraint
+      widget = wibox.container.constraint,
     })
   end
 end
@@ -369,8 +367,8 @@ function calendar:create_weekdays_widget()
     self._private.weekdays:add(wibox.widget {
       {
         text = self._private.weeks[i],
-        align = "center",
-        valign = "center",
+        align = 'center',
+        valign = 'center',
         widget = wibox.widget.textbox,
       },
       bg = Theme_config.calendar.weekdays.bg,
@@ -404,10 +402,10 @@ function calendar:create_calendar_widget()
   local function get_tasks_for_day(day, month, year)
     if not self.tasks or #self.tasks == 0 then return end
     local tasks_layout = {
-      layout = require("src.lib.overflow_widget.overflow").vertical,
+      layout = require('src.lib.overflow_widget.overflow').vertical,
       scrollbar_width = 0,
       step = dpi(50),
-      spacing = dpi(2)
+      spacing = dpi(2),
     }
 
     local function task_factory(task, bg)
@@ -415,19 +413,19 @@ function calendar:create_calendar_widget()
         {
           {
             text = task.summary,
-            align = "left",
-            halign = "center",
-            font = "JetBrainsMono Nerd Font, bold 10",
-            widget = wibox.widget.textbox
+            align = 'left',
+            halign = 'center',
+            font = 'JetBrainsMono Nerd Font, bold 10',
+            widget = wibox.widget.textbox,
           },
           margins = dpi(2),
-          widget = wibox.container.margin
+          widget = wibox.container.margin,
         },
         fg = Theme_config.calendar.task.fg,
         bg = bg,
         shape = Theme_config.calendar.task.shape,
         forced_height = dpi(20),
-        widget = wibox.container.background
+        widget = wibox.container.background,
       }
     end
 
@@ -442,7 +440,7 @@ function calendar:create_calendar_widget()
                 (
                 task.date_start.year == self.date.year and task.date_start.month == self.date.month and
                     task.date_start.day < self.date.day) then
-              tw = task_factory(task, cal.color .. "55")
+              tw = task_factory(task, cal.color .. '55')
             else
               tw = task_factory(task, cal.color)
             end
@@ -466,10 +464,10 @@ function calendar:create_calendar_widget()
               widget = ti,
               ontop = true,
               visible = false,
-              bg = "#00000000",
+              bg = '#00000000',
               x = capi.mouse.coords().x,
               y = capi.mouse.coords().y,
-              screen = self.screen
+              screen = capi.mouse.screen,
             }
 
             tw:buttons(
@@ -482,11 +480,11 @@ function calendar:create_calendar_widget()
               )
             )
 
-            tw:connect_signal("mouse::leave", function()
+            tw:connect_signal('mouse::leave', function()
               task_popup.visible = false
             end)
 
-            Hover_signal(tw)
+            hover.bg_hover { widget = tw }
 
             table.insert(tasks_layout, tw)
           end
@@ -514,8 +512,8 @@ function calendar:create_calendar_widget()
       local bg = Theme_config.calendar.day.bg_unfocus
       local fg = Theme_config.calendar.day.fg_unfocus
 
-      local y = tonumber(os.date("%Y"))
-      local m = tonumber(os.date("%m"))
+      local y = tonumber(os.date('%Y'))
+      local m = tonumber(os.date('%m'))
 
       if (i == self.date.day) and (m == last_month) and (y == year) then
         bg = Theme_config.calendar.day.bg_focus
@@ -531,39 +529,39 @@ function calendar:create_calendar_widget()
                   {
                     { -- Day
                       widget = wibox.widget.textbox,
-                      align = "center",
-                      valign = "center",
+                      align = 'center',
+                      valign = 'center',
                       text = math.floor(i),
-                      id = "day_text",
+                      id = 'day_text',
                     },
                     widget = wibox.container.margin,
                     margins = dpi(2),
                   },
-                  id = "day_bg",
+                  id = 'day_bg',
                   widget = wibox.container.background,
                   bg = bg,
                   shape = Theme_config.calendar.day.shape,
                   fg = fg,
                 },
                 widget = wibox.container.place,
-                valign = "center",
-                halign = "center",
+                valign = 'center',
+                halign = 'center',
               },
               {
                 get_tasks_for_day(math.floor(i), last_month, year),
                 widget = wibox.container.margin,
                 margins = dpi(4),
-                id = "day_tasks",
+                id = 'day_tasks',
               },
-              id = "tasks",
+              id = 'tasks',
               spacing = dpi(4),
-              layout = wibox.layout.fixed.vertical
+              layout = wibox.layout.fixed.vertical,
             },
-            id = "day_bg",
+            id = 'day_bg',
             widget = wibox.container.margin,
-            top = dpi(4)
+            top = dpi(4),
           },
-          id = "background",
+          id = 'background',
           widget = wibox.container.background,
           bg = Theme_config.calendar.day.bg_unfocus,
           fg = Theme_config.calendar.day.fg_unfocus,
@@ -571,11 +569,11 @@ function calendar:create_calendar_widget()
           border_width = Theme_config.calendar.day.border_width,
           shape = Theme_config.calendar.day.shape,
         },
-        id = "day",
+        id = 'day',
         widget = wibox.container.constraint,
         width = dpi(100),
         height = dpi(120),
-        strategy = "exact"
+        strategy = 'exact',
       }
 
       self._private.calendar_matrix:add_widget_at(day, 1, column)
@@ -592,8 +590,8 @@ function calendar:create_calendar_widget()
     local bg = Theme_config.calendar.day.bg
     local fg = Theme_config.calendar.day.fg
 
-    local m = tonumber(os.date("%m"))
-    local y = tonumber(os.date("%Y"))
+    local m = tonumber(os.date('%m'))
+    local y = tonumber(os.date('%Y'))
     if (i == self.date.day) and (m == self.date.month) and (y == self.date.year) then
       bg = Theme_config.calendar.day.bg_focus
       fg = Theme_config.calendar.day.fg_focus
@@ -608,37 +606,37 @@ function calendar:create_calendar_widget()
                 {
                   { -- Day
                     widget = wibox.widget.textbox,
-                    align = "center",
-                    valign = "center",
+                    align = 'center',
+                    valign = 'center',
                     text = math.floor(i),
-                    id = "day_text",
+                    id = 'day_text',
                   },
                   widget = wibox.container.margin,
                   margins = dpi(2),
                 },
-                id = "day_bg",
+                id = 'day_bg',
                 widget = wibox.container.background,
                 bg = bg,
                 shape = Theme_config.calendar.day.shape,
                 fg = fg,
               },
               widget = wibox.container.place,
-              valign = "center",
-              halign = "center",
+              valign = 'center',
+              halign = 'center',
             },
             {
               get_tasks_for_day(math.floor(i), self.date.month, self.date.year),
               widget = wibox.container.margin,
-              margins = dpi(4)
+              margins = dpi(4),
             },
-            id = "tasks",
+            id = 'tasks',
             spacing = dpi(4),
-            layout = wibox.layout.fixed.vertical
+            layout = wibox.layout.fixed.vertical,
           },
           widget = wibox.container.margin,
-          top = dpi(4)
+          top = dpi(4),
         },
-        id = "background",
+        id = 'background',
         widget = wibox.container.background,
         bg = Theme_config.calendar.day.bg,
         fg = Theme_config.calendar.day.fg,
@@ -649,7 +647,7 @@ function calendar:create_calendar_widget()
       widget = wibox.container.constraint,
       width = dpi(100),
       height = dpi(120),
-      strategy = "exact"
+      strategy = 'exact',
     }
 
     self._private.calendar_matrix:add_widget_at(day, row, col)
@@ -674,8 +672,8 @@ function calendar:create_calendar_widget()
       local bg = Theme_config.calendar.day.bg_unfocus
       local fg = Theme_config.calendar.day.fg_unfocus
 
-      local m = tonumber(os.date("%m"))
-      local y = tonumber(os.date("%Y"))
+      local m = tonumber(os.date('%m'))
+      local y = tonumber(os.date('%Y'))
       if (i == self.date.day) and (m == next_month) and (y == year) then
         bg = Theme_config.calendar.day.bg_focus
         fg = Theme_config.calendar.day.fg_focus
@@ -689,37 +687,37 @@ function calendar:create_calendar_widget()
                   {
                     { -- Day
                       widget = wibox.widget.textbox,
-                      align = "center",
-                      valign = "center",
+                      align = 'center',
+                      valign = 'center',
                       text = math.floor(i),
-                      id = "day_text",
+                      id = 'day_text',
                     },
                     widget = wibox.container.margin,
                     margins = dpi(2),
                   },
-                  id = "day_bg",
+                  id = 'day_bg',
                   widget = wibox.container.background,
                   bg = bg,
                   shape = Theme_config.calendar.day.shape,
                   fg = fg,
                 },
                 widget = wibox.container.place,
-                valign = "center",
-                halign = "center",
+                valign = 'center',
+                halign = 'center',
               },
               {
                 get_tasks_for_day(math.floor(i), next_month, year),
                 widget = wibox.container.margin,
-                margins = dpi(4)
+                margins = dpi(4),
               },
-              id = "tasks",
+              id = 'tasks',
               spacing = dpi(4),
-              layout = wibox.layout.fixed.vertical
+              layout = wibox.layout.fixed.vertical,
             },
             widget = wibox.container.margin,
-            top = dpi(4)
+            top = dpi(4),
           },
-          id = "background",
+          id = 'background',
           widget = wibox.container.background,
           bg = Theme_config.calendar.day.bg_unfocus,
           fg = Theme_config.calendar.day.fg_unfocus,
@@ -730,7 +728,7 @@ function calendar:create_calendar_widget()
         widget = wibox.container.constraint,
         width = dpi(100),
         height = dpi(120),
-        strategy = "exact"
+        strategy = 'exact',
       }
       self._private.calendar_matrix:add_widget_at(day, months_t[self.date.month].weeks,
         months_t[self.date.month].last_day + i)
@@ -754,44 +752,44 @@ function calendar.new(args)
                 {
                   widget = wibox.widget.imagebox,
                   resize = false,
-                  image = gcolor.recolor_image(icondir .. "add_ical.svg", Theme_config.calendar.add_ical.fg_focus),
-                  halign = "center",
-                  valign = "center"
+                  image = gcolor.recolor_image(icondir .. 'add_ical.svg', Theme_config.calendar.add_ical.fg_focus),
+                  halign = 'center',
+                  valign = 'center',
                 },
-                id = "add_ical",
+                id = 'add_ical',
                 shape = Theme_config.calendar.add_ical.shape,
                 bg = Theme_config.calendar.add_ical.bg,
-                widget = wibox.container.background
+                widget = wibox.container.background,
               },
               widget = wibox.container.margin,
-              margins = dpi(4)
+              margins = dpi(4),
             },
             { -- New task button
               {
                 {
                   widget = wibox.widget.imagebox,
                   resize = false,
-                  image = gcolor.recolor_image(icondir .. "add_task.svg", Theme_config.calendar.add_task.fg),
-                  halign = "center",
-                  valign = "center"
+                  image = gcolor.recolor_image(icondir .. 'add_task.svg', Theme_config.calendar.add_task.fg),
+                  halign = 'center',
+                  valign = 'center',
                 },
-                id = "add_task",
+                id = 'add_task',
                 shape = Theme_config.calendar.add_task.shape,
                 bg = Theme_config.calendar.add_task.bg,
-                widget = wibox.container.background
+                widget = wibox.container.background,
               },
               widget = wibox.container.margin,
-              margins = dpi(4)
+              margins = dpi(4),
             },
-            layout = wibox.layout.fixed.vertical
+            layout = wibox.layout.fixed.vertical,
           },
           widget = wibox.container.constraint,
-          strategy = "exact",
-          height = dpi(75)
+          strategy = 'exact',
+          height = dpi(75),
         },
         ret._private.calendar_weeks_widget,
-        id = "weekdaysnum",
-        layout = wibox.layout.fixed.vertical
+        id = 'weekdaysnum',
+        layout = wibox.layout.fixed.vertical,
       },
       {
         {
@@ -800,88 +798,88 @@ function calendar.new(args)
               { -- Prev arrow
                 widget = wibox.widget.imagebox,
                 resize = true,
-                image = icondir .. "chevron-left.svg",
-                valign = "center",
-                halign = "center",
-                id = "prev_month",
+                image = icondir .. 'chevron-left.svg',
+                valign = 'center',
+                halign = 'center',
+                id = 'prev_month',
               },
               {
                 { -- Month
                   widget = wibox.widget.textbox,
                   text = ret._private.months[ret.date.month],
-                  id = "month",
-                  valign = "center",
-                  align = "center"
+                  id = 'month',
+                  valign = 'center',
+                  align = 'center',
                 },
                 widget = wibox.container.constraint,
-                strategy = "exact",
-                width = dpi(150)
+                strategy = 'exact',
+                width = dpi(150),
               },
               { -- Next year arrow
                 widget = wibox.widget.imagebox,
                 resize = true,
-                image = icondir .. "chevron-right.svg",
-                valign = "center",
-                halign = "center",
-                id = "next_month",
+                image = icondir .. 'chevron-right.svg',
+                valign = 'center',
+                halign = 'center',
+                id = 'next_month',
               },
-              layout = wibox.layout.fixed.horizontal
+              layout = wibox.layout.fixed.horizontal,
             },
             nil,
             { -- Year year switcher
               { -- Prev arrow
                 widget = wibox.widget.imagebox,
                 resize = true,
-                image = icondir .. "chevron-left.svg",
-                valign = "center",
-                halign = "center",
-                id = "prev_year"
+                image = icondir .. 'chevron-left.svg',
+                valign = 'center',
+                halign = 'center',
+                id = 'prev_year',
               },
               {
                 { -- Year
                   widget = wibox.widget.textbox,
                   text = calendar.date.year,
-                  id = "year",
-                  valign = "center",
-                  align = "center"
+                  id = 'year',
+                  valign = 'center',
+                  align = 'center',
                 },
                 widget = wibox.container.constraint,
-                strategy = "exact",
-                width = dpi(150)
+                strategy = 'exact',
+                width = dpi(150),
               },
               { -- Next year arrow
                 widget = wibox.widget.imagebox,
                 resize = true,
-                image = icondir .. "chevron-right.svg",
-                valign = "center",
-                halign = "center",
-                id = "next_year"
+                image = icondir .. 'chevron-right.svg',
+                valign = 'center',
+                halign = 'center',
+                id = 'next_year',
               },
-              layout = wibox.layout.fixed.horizontal
+              layout = wibox.layout.fixed.horizontal,
             },
-            layout = wibox.layout.align.horizontal
+            layout = wibox.layout.align.horizontal,
           },
           widget = wibox.container.constraint,
           height = dpi(40),
-          strategy = "exact"
+          strategy = 'exact',
         },
         { -- Weekdays
           ret._private.weekdays,
-          widget = wibox.container.background
+          widget = wibox.container.background,
         },
         ret._private.calendar_matrix,
-        id = "calendar",
+        id = 'calendar',
         spacing = dpi(5),
-        layout = wibox.layout.fixed.vertical
+        layout = wibox.layout.fixed.vertical,
       },
-      id = "lay1",
+      id = 'lay1',
       layout = wibox.layout.fixed.horizontal,
     },
     widget = wibox.container.background,
     bg = Theme_config.calendar.bg,
     border_color = Theme_config.calendar.border_color,
     border_width = Theme_config.calendar.border_width,
-    border_strategy = "inner",
+    border_strategy = 'inner',
     fg = Theme_config.calendar.fg,
     shape = Theme_config.calendar.shape,
   })
@@ -893,13 +891,13 @@ function calendar.new(args)
   ret:create_weekdays_widget()
   ret:create_calendar_weeks_widget()
 
-  ret:get_widget():get_children_by_id("add_ical")[1]:buttons(gtable.join(
+  ret:get_widget():get_children_by_id('add_ical')[1]:buttons(gtable.join(
     awful.button({}, 1, function()
       awful.spawn.easy_async_with_shell(
         "zenity --file-selection --title='Select an ICalendar file' --file-filter='iCalendar File | *.ics'",
         function(path_to_file)
-          path_to_file = string.gsub(path_to_file, "\n", "")
-          if (not path_to_file) or (path_to_file == "") then return end
+          path_to_file = string.gsub(path_to_file, '\n', '')
+          if (not path_to_file) or (path_to_file == '') then return end
           ical_parser:add_calendar(path_to_file)
           ret:get_tasks()
           ret:create_calendar_widget()
@@ -908,7 +906,7 @@ function calendar.new(args)
     end)
   ))
 
-  ret:get_widget():get_children_by_id("add_task")[1]:buttons(gtable.join(
+  ret:get_widget():get_children_by_id('add_task')[1]:buttons(gtable.join(
     awful.button({}, 1, function()
       awful.spawn.easy_async_with_shell(
         "zenity --info --text='Soon TM'",
@@ -919,53 +917,56 @@ function calendar.new(args)
     end)
   ))
 
-  ret:get_widget():get_children_by_id("prev_month")[1]:buttons(gtable.join(
+  ret:get_widget():get_children_by_id('prev_month')[1]:buttons(gtable.join(
     awful.button({}, 1, function()
       ret.date.month = ret.date.month - 1
       if ret.date.month == 0 then
         ret.date.month = 12
         ret.date.year = ret.date.year - 1
       end
-      ret:get_widget():get_children_by_id("month")[1].text = ret._private.months[ret.date.month]
-      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:get_widget():get_children_by_id('month')[1].text = ret._private.months[ret.date.month]
+      ret:get_widget():get_children_by_id('year')[1].text = ret.date.year
       ret:create_calendar_weeks_widget()
       ret:create_calendar_widget()
     end)
   ))
 
-  ret:get_widget():get_children_by_id("next_month")[1]:buttons(gtable.join(
+  ret:get_widget():get_children_by_id('next_month')[1]:buttons(gtable.join(
     awful.button({}, 1, function()
       ret.date.month = ret.date.month + 1
       if ret.date.month == 13 then
         ret.date.month = 1
         ret.date.year = ret.date.year + 1
       end
-      ret:get_widget():get_children_by_id("month")[1].text = ret._private.months[ret.date.month]
-      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:get_widget():get_children_by_id('month')[1].text = ret._private.months[ret.date.month]
+      ret:get_widget():get_children_by_id('year')[1].text = ret.date.year
       ret:create_calendar_weeks_widget()
       ret:create_calendar_widget()
     end)
   ))
 
   --- Calendar switch year back
-  ret:get_widget():get_children_by_id("prev_year")[1]:buttons(gtable.join(
+  ret:get_widget():get_children_by_id('prev_year')[1]:buttons(gtable.join(
     awful.button({}, 1, function()
       ret.date.year = ret.date.year - 1
-      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:get_widget():get_children_by_id('year')[1].text = ret.date.year
       ret:create_calendar_weeks_widget()
       ret:create_calendar_widget()
     end)
   ))
 
   --- Calendar switch year forward
-  ret:get_widget():get_children_by_id("next_year")[1]:buttons(gtable.join(
+  ret:get_widget():get_children_by_id('next_year')[1]:buttons(gtable.join(
     awful.button({}, 1, function()
       ret.date.year = ret.date.year + 1
-      ret:get_widget():get_children_by_id("year")[1].text = ret.date.year
+      ret:get_widget():get_children_by_id('year')[1].text = ret.date.year
       ret:create_calendar_weeks_widget()
       ret:create_calendar_widget()
     end)
   ))
+
+  hover.bg_hover { widget = ret:get_widget():get_children_by_id('add_ical')[1] }
+  hover.bg_hover { widget = ret:get_widget():get_children_by_id('add_task')[1] }
 
   return ret
 end

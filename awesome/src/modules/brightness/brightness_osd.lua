@@ -3,17 +3,17 @@
 ---------------------------------------
 
 -- Awesome Libs
-local aplacement = require("awful.placement")
-local apopup = require("awful.popup")
-local dpi = require("beautiful").xresources.apply_dpi
-local gcolor = require("gears.color")
-local gfilesystem = require("gears.filesystem")
-local gtable = require("gears.table")
-local gshape = require("gears.shape")
-local gtimer = require("gears.timer")
-local wibox = require("wibox")
+local aplacement = require('awful.placement')
+local apopup = require('awful.popup')
+local dpi = require('beautiful').xresources.apply_dpi
+local gcolor = require('gears.color')
+local gfilesystem = require('gears.filesystem')
+local gshape = require('gears.shape')
+local gtable = require('gears.table')
+local gtimer = require('gears.timer')
+local wibox = require('wibox')
 
-local backlight_helper = require("src.tools.helpers.backlight")
+local backlight_helper = require('src.tools.helpers.backlight')
 
 local capi = {
   awesome = awesome,
@@ -21,125 +21,119 @@ local capi = {
 }
 
 -- Icon directory path
-local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/brightness/"
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/brightness/'
 
 local brightness_osd = { mt = {} }
 
 -- Hide the brightness_osd after 3 seconds
-function brightness_osd:hide()
-  self.timer:stop(false)
-end
-
--- Rerun the timer
-function brightness_osd:rerun()
+function brightness_osd:run()
   self.visible = true
-  self.timer:again(true)
-end
-
--- Show the brightness_osd for 3 seconds
-function brightness_osd:show()
-  self.visible = true
-  self.timer:start(true)
+  if self.timer.started then
+    self.timer:again()
+  else
+    self.timer:start()
+  end
 end
 
 function brightness_osd.new(args)
   args = args or {}
 
-  local osd = apopup {
+  local w = apopup {
     widget = {
       {
         {
           { -- Brightness Icon
-            image = gcolor.recolor_image(icondir .. "brightness-high.svg", Theme_config.brightness_osd.icon_color),
-            valign = "center",
-            halign = "center",
-            resize = false,
-            id = "icon",
-            widget = wibox.widget.imagebox
+            {
+              image = gcolor.recolor_image(icondir .. 'volume-off.svg', Theme_config.brightness_ods.icon_color),
+              valign = 'center',
+              halign = 'center',
+              resize = true,
+              id = 'icon_role',
+              widget = wibox.widget.imagebox
+            },
+            widget = wibox.container.constraint,
+            width = dpi(25),
+            height = dpi(25),
+            strategy = 'exact'
           },
           { -- Brightness Bar
             {
               {
-                id = "progressbar1",
-                color = Theme_config.brightness_osd.bar_bg_active,
-                background_color = Theme_config.brightness_osd.bar_bg,
+                id = 'progressbar',
+                color = Theme_config.brightness_ods.bar_bg_active,
+                background_color = Theme_config.brightness_ods.bar_bg,
                 max_value = 100,
                 value = 0,
-                forced_height = dpi(6),
-                shape = function(cr, width, height)
-                  gshape.rounded_bar(cr, width, height, dpi(6))
-                end,
+                shape = gshape.rounded_rect,
                 widget = wibox.widget.progressbar
               },
-              id = "progressbar_container2",
-              halign = "center",
-              valign = "center",
-              widget = wibox.container.place
+              widget = wibox.container.constraint,
+              width = dpi(250),
+              height = dpi(5),
             },
-            id = "progressbar_container",
-            width = dpi(240),
-            heigth = dpi(20),
-            stragety = "max",
-            widget = wibox.container.constraint
+            widget = wibox.container.place
           },
-          id = "layout1",
+          { -- Brightness text
+            widget = wibox.widget.textbox,
+            id = 'text_role',
+            text = '0',
+            valign = 'center',
+            halign = 'center'
+          },
           spacing = dpi(10),
           layout = wibox.layout.fixed.horizontal
         },
-        id = "margin",
-        margins = dpi(10),
+        left = dpi(10),
+        right = dpi(10),
+        top = dpi(20),
+        bottom = dpi(20),
         widget = wibox.container.margin
       },
-      forced_width = dpi(300),
-      forced_height = dpi(80),
-      border_color = Theme_config.brightness_osd.border_color,
-      border_width = Theme_config.brightness_osd.border_width,
-      fg = Theme_config.brightness_osd.fg,
-      bg = Theme_config.brightness_osd.bg,
+      shape = Theme_config.brightness_ods.shape,
       widget = wibox.container.background
     },
     ontop = true,
     stretch = false,
     visible = false,
-    screen = args.screen,
-    placement = function(c) aplacement.bottom_left(c, { margins = dpi(20) }) end,
-    shape = function(cr, width, height)
-      gshape.rounded_rect(cr, width, height, dpi(14))
+    border_color = Theme_config.brightness_ods.border_color,
+    border_width = Theme_config.brightness_ods.border_width,
+    fg = Theme_config.brightness_ods.fg,
+    bg = Theme_config.brightness_ods.bg,
+    screen = 1,
+    placement = function(c) aplacement.bottom(c, { margins = dpi(20) }) end,
+  }
+
+  gtable.crush(w, brightness_osd, true)
+
+  w.timer = gtimer {
+    timeout = 2,
+    autostart = true,
+    callback = function()
+      w.visible = false
     end
   }
 
-  gtable.crush(osd, brightness_osd, true)
+  backlight_helper:connect_signal('brightness_changed', function()
+    backlight_helper:brightness_get_async(function(brightness)
+      brightness = brightness / (backlight_helper.brightness_max or 24000) * 100
+      w.widget:get_children_by_id('progressbar')[1].value = brightness
 
-  -- Called when the brightness changes, updates the brightness osd and icon
-  capi.awesome.connect_signal("brightness::changed", function(brightness)
-    if not capi.mouse.screen == args.screen then return end
-    assert(type(brightness) == "number", "brightness must be a number")
+      local icon = icondir .. 'brightness'
+      if brightness >= 0 and brightness < 34 then
+        icon = icon .. '-low.svg'
+      elseif brightness >= 34 and brightness < 67 then
+        icon = icon .. '-medium.svg'
+      elseif brightness >= 67 then
+        icon = icon .. '-high.svg'
+      end
 
-    brightness = (brightness - 0) / ((backlight_helper.brightness_max or 24000) - 0) * 100
-    osd.widget:get_children_by_id("progressbar1")[1].value = brightness
-
-    local icon = icondir .. "brightness"
-    if brightness >= 0 and brightness < 34 then
-      icon = icon .. "-low.svg"
-    elseif brightness >= 34 and brightness < 67 then
-      icon = icon .. "-medium.svg"
-    elseif brightness >= 67 then
-      icon = icon .. "-high.svg"
-    end
-
-    osd:rerun(true)
-    osd.widget:get_children_by_id("icon")[1]:set_image(gcolor.recolor_image(icon,
-      Theme_config.brightness_osd.icon_color))
+      w.widget:get_children_by_id('icon')[1]:set_image(gcolor.recolor_image(icon, Theme_config.brightness_osd.icon_color))
+      w.widget:get_children_by_id('text_role')[1].text = brightness
+      w:run()
+    end)
   end)
 
-  -- osd timer
-  osd.timer = gtimer {
-    timeout = 3,
-    single_shot = true,
-    callback = function()
-      osd.visible = false
-    end
-  }
+  return w
 end
 
 function brightness_osd.mt:__call(...)

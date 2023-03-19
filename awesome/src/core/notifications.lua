@@ -2,347 +2,331 @@
 -- The Notification defaults --
 -------------------------------
 -- Awesome Libs
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local gears = require("gears")
-local menubar = require('menubar')
-local naughty = require("naughty")
-local wibox = require("wibox")
 
-local rubato = require("src.lib.rubato")
+local aspawn = require('awful.spawn')
+local dpi = require('beautiful').xresources.apply_dpi
+local gcolor = require('gears.color')
+local gfilesystem = require('gears.filesystem')
+local gshape = require('gears.shape')
+local naughty = require('naughty')
+local wibox = require('wibox')
+local abutton = require('awful.button')
+local gtable = require('gears.table')
+
+local rubato = require('src.lib.rubato')
+local hover = require('src.tools.hover')
 
 local capi = {
   client = client,
   screen = screen,
 }
 
-local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/notifications/"
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/notifications/'
 
 naughty.config.defaults.ontop = true
 naughty.config.defaults.icon_size = dpi(80)
-naughty.config.defaults.timeout = Theme_config.notification.timeout
-naughty.config.defaults.title = "System Notification"
+naughty.config.defaults.timeout = 5
+naughty.config.defaults.title = 'System Notification'
 naughty.config.defaults.margin = dpi(10)
 naughty.config.defaults.position = Theme_config.notification.position
-naughty.config.defaults.shape = Theme_config.notification.shape
 naughty.config.defaults.border_width = Theme_config.notification.border_width
 naughty.config.defaults.border_color = Theme_config.notification.border_color
 naughty.config.defaults.spacing = Theme_config.notification.spacing
 
 Theme.notification_spacing = Theme_config.notification.corner_spacing
 
-naughty.connect_signal('request::icon', function(n, context, hints)
-  if context ~= 'app_icon' then
-    return
-  end
-  local path = menubar.utils.lookup_icon(hints.app_icon) or menubar.utils.lookup_icon(hints.app_icon:lower())
-  if path then
-    n.icon = path
-  end
-end)
-
-naughty.connect_signal("request::display", function(n)
+naughty.connect_signal('request::display', function(n)
   if User_config.dnd then
     n:destroy()
   else
-    if n.urgency == "critical" then
-      n.title = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, ExtraBold 16'>%s</span>",
-        Theme_config.notification.fg_urgent_title, n.title) or ""
-      n.message = string.format("<span foreground='%s'>%s</span>", Theme_config.notification.fg_urgent_message,
-        n.message) or ""
-      n.app_name = string.format("<span foreground='%s'>%s</span>", Theme_config.notification.fg_urgent_app_name,
-        n.app_name) or ""
-      n.bg = Theme_config.notification.bg_urgent
-    else
-      n.title = string.format("<span foreground='%s' font='JetBrainsMono Nerd Font, ExtraBold 16'>%s</span>",
-        Theme_config.notification.fg_normal_title, n.title) or ""
-      n.message = string.format("<span foreground='%s'>%s</span>", Theme_config.notification.fg_normal_message,
-        n.message) or ""
-      n.bg = Theme_config.notification.bg_normal
-      n.timeout = n.timeout or Theme_config.notification.timeout or 3
+    if not n.icon then n.icon = gfilesystem.get_configuration_dir() .. 'src/assets/CT.svg' end
+    if not n.app_name then n.app_name = 'System' end
+    if not n.title then n.title = 'System Notification' end
+    if not n.message then n.message = 'No message provided' end
+
+    local color = Theme_config.notification.bg_normal
+    if n.urgency == 'critical' then
+      color = Theme_config.notification.fg_urgent_message
     end
 
-    local use_image = false
-
-    if n.app_name == "Spotify" then
+    if n.app_name == 'Spotify' then
       n.actions = {
         naughty.action {
-          program = "Spotify",
-          id = "skip-prev",
-          icon = gears.color.recolor_image(icondir .. "skip-prev.svg",
-            Theme_config.notification.spotify_button_icon_color)
+          program = 'Spotify',
+          id = 'skip-prev',
+          name = 'Previous',
+          position = 1,
         }, naughty.action {
-          program = "Spotify",
-          id = "play-pause",
-          icon = gears.color.recolor_image(icondir .. "play-pause.svg",
-            Theme_config.notification.spotify_button_icon_color)
+          program = 'Spotify',
+          id = 'play-pause',
+          name = 'Play/Pause',
+          position = 2,
         }, naughty.action {
-          program = "Spotify",
-          id = "skip-next",
-          icon = gears.color.recolor_image(icondir .. "skip-next.svg",
-            Theme_config.notification.spotify_button_icon_color)
-        }
+          program = 'Spotify',
+          id = 'skip-next',
+          name = 'Next',
+          position = 3,
+        },
       }
-      use_image = true
+      n.resident = true
     end
 
-    local action_template_widget
-
-    if use_image then
-      action_template_widget = wibox.template {
-        {
-          {
-            {
-              {
-                id = "icon_role",
-                valign = "center",
-                halign = "center",
-                widget = wibox.widget.imagebox
-              },
-              id = "centered",
-              valign = "center",
-              halign = "center",
-              widget = wibox.container.place
-            },
-            margins = dpi(5),
-            widget = wibox.container.margin
-          },
-          forced_height = dpi(35),
-          forced_width = dpi(35),
-          bg = Theme_config.notification.action_bg,
-          shape = function(cr, width, height)
-            gears.shape.rounded_rect(cr, width, height, dpi(6))
-          end,
-          widget = wibox.container.background,
-          id = "bgrnd"
-        },
-        id = "mrgn",
-        top = dpi(10),
-        bottom = dpi(10),
-        widget = wibox.container.margin
-      }
-    else
-      action_template_widget = wibox.template {
-        {
-          {
-            {
-              {
-                id = "text_role",
-                font = "JetBrainsMono Nerd Font, Regular 12",
-                widget = wibox.widget.textbox
-              },
-              id = "centered",
-              widget = wibox.container.place
-            },
-            margins = dpi(5),
-            widget = wibox.container.margin
-          },
-          fg = Theme_config.notification.action_fg,
-          bg = Theme_config.notification.action_bg,
-          shape = function(cr, width, height)
-            gears.shape.rounded_rect(cr, width, height, dpi(6))
-          end,
-          widget = wibox.container.background,
-          id = "bgrnd"
-        },
-        id = "mrgn",
-        top = dpi(10),
-        bottom = dpi(10),
-        widget = wibox.container.margin
-      }
+    if n.category == 'device.added' or n.category == 'network.connected' then
+      aspawn('ogg123 /usr/share/sounds/Pop/stereo/notification/device-added.oga')
+    elseif n.category == 'device.removed' or n.category == 'network.disconnected' then
+      aspawn('ogg123 /usr/share/sounds/Pop/stereo/notification/device-removed.oga')
+    elseif n.category == 'device.error' or n.category == 'im.error' or n.category == 'network.error' or n.category ==
+        'transfer.error' then
+      aspawn('ogg123 ogg123 /usr/share/sounds/Pop/stereo/alert/battery-low.oga')
+    elseif n.category == 'email.arrived' then
+      aspawn('ogg123 /usr/share/sounds/Pop/stereo/notification/message-new-email.oga')
     end
 
-    local actions_template = wibox.widget {
+    local action_template = wibox.widget {
       notification = n,
       base_layout = wibox.widget {
-        spacing = dpi(40),
-        layout = wibox.layout.fixed.horizontal
+        spacing = dpi(90),
+        layout = wibox.layout.flex.horizontal,
       },
-      widget_template = action_template_widget,
+      widget_template = {
+        {
+          {
+            widget = wibox.widget.textbox,
+            id = 'text_role',
+            valign = 'center',
+            halign = 'center',
+            font = 'JetBrainsMono Nerd Font, Bold 16',
+          },
+          widget = wibox.container.constraint,
+          height = dpi(35),
+          strategy = 'exact',
+        },
+        id = 'background_role',
+        widget = wibox.container.background,
+        bg = color,
+        fg = Theme_config.notification.bg,
+        shape = function(cr, width, height)
+          gshape.rounded_rect(cr, width, height, dpi(8))
+        end,
+      },
       style = {
         underline_normal = false,
-        underline_selected = true
+        underline_selected = false,
+        shape_normal = function(cr, width, height)
+          gshape.rounded_rect(cr, width, height, dpi(8))
+        end,
+        --Don't remove or it will break
+        bg_normal = color,
+        bg_selected = color,
+        fg_normal = Theme_config.notification.bg,
+        fg_selected = Theme_config.notification.bg,
       },
-      widget = naughty.list.actions
+      widget = naughty.list.actions,
     }
 
-    local arc_start = n.timeout
+    -- Hack to get the action buttons to work even after update
+    --[[ for i = 1, #action_template._private.layout.children, 1 do
+      hover.bg_hover { widget = action_template._private.layout.children[i].children[1], overlay = 12, press_overlay = 24 }
+    end
+    if (#action_template._private.layout.children > 0) and action_template._private.notification[1].actions[1].program == 'Spotify' then
+      action_template._private.layout.children[1].children[1]:connect_signal('button::press', function()
+        aspawn('playerctl previous')
+      end)
+      action_template._private.layout.children[2].children[1]:connect_signal('button::press', function()
+        aspawn('playerctl play-pause')
+      end)
+      action_template._private.layout.children[3].children[1]:connect_signal('button::press', function()
+        aspawn('playerctl next')
+      end)
+    end ]]
+
+    local start_timer = n.timeout
     if n.timeout == 0 then
-      arc_start = 10
+      start_timer = 5
     end
 
-    local w_template = wibox.template {
+    local notification = wibox.template {
       widget = wibox.widget {
         {
           {
             {
-              {
+              { -- Title
                 {
                   {
-                    {
-                      {
-                        {
-                          {
-                            image = gears.color.recolor_image(icondir .. "notification-outline.svg",
-                              Theme_config.notification.icon_color),
-                            resize = false,
-                            valign = "center",
-                            halign = "center",
-                            widget = wibox.widget.imagebox
-                          },
-                          right = dpi(5),
-                          widget = wibox.container.margin
-                        },
-                        {
-                          markup = n.app_name or 'System Notification',
-                          align = "center",
-                          valign = "center",
-                          widget = wibox.widget.textbox
-                        },
-                        layout = wibox.layout.fixed.horizontal
-                      },
-                      fg = Theme_config.notification.fg_appname,
-                      widget = wibox.container.background
-                    },
-                    margins = dpi(10),
-                    widget = wibox.container.margin
-                  },
-                  nil,
-                  {
-                    {
-                      {
-                        text = os.date("%H:%M"),
-                        widget = wibox.widget.textbox
-                      },
-                      id = "background",
-                      fg = Theme_config.notification.fg_time,
-                      widget = wibox.container.background
-                    },
-                    {
+                    { -- Icon
                       {
                         {
                           {
                             {
-                              font = User_config.font.specify .. ", 10",
-                              text = "✕",
-                              align = "center",
-                              valign = "center",
-                              widget = wibox.widget.textbox
+                              notification = n,
+                              widget = naughty.widget.icon,
+                              image = n.icon,
+                              resize = true,
                             },
-                            start_angle = 4.71239,
-                            thickness = dpi(2),
-                            min_value = 0,
-                            max_value = arc_start,
-                            value = arc_start,
-                            widget = wibox.container.arcchart,
-                            id = "arc_chart"
+                            widget = wibox.container.background,
+                            shape = function(cr, width, height)
+                              gshape.rounded_rect(cr, width, height, dpi(4))
+                            end,
                           },
-                          id = "background1",
-                          fg = Theme_config.notification.fg_close,
-                          bg = Theme_config.notification.bg_close,
-                          widget = wibox.container.background
+                          widget = wibox.container.place,
                         },
-                        strategy = "exact",
+                        widget = wibox.container.constraint,
+                        strategy = 'exact',
                         width = dpi(20),
                         height = dpi(20),
+                      },
+                      { -- Title
+                        {
+                          notification = n,
+                          widget = naughty.widget.title,
+                          markup = [[<span foreground="]] ..
+                              Theme_config.notification.bg .. [[" font="JetBrainsMono Nerd Font, Bold 16">]] .. (n.app_name or
+                                  'Unknown App') .. [[</span> | <span font="JetBrainsMono Nerd Font, Regular 16">]] .. (n.title or 'System Notification') .. [[</span>]],
+                          halign = 'left',
+                          valign = 'center',
+                        },
                         widget = wibox.container.constraint,
-                        id = "const1"
+                        width = dpi(430),
+                        height = dpi(35),
+                        strategy = 'max',
                       },
-                      margins = dpi(10),
-                      widget = wibox.container.margin,
-                      id = "arc_margin"
+                      spacing = dpi(10),
+                      layout = wibox.layout.fixed.horizontal,
                     },
-                    layout = wibox.layout.fixed.horizontal,
-                    id = "arc_app_layout_2"
+                    widget = wibox.container.margin,
+                    left = dpi(10),
                   },
-                  id = "arc_app_layout",
-                  layout = wibox.layout.align.horizontal
-                },
-                id = "arc_app_bg",
-                border_color = Theme_config.notification.title_border_color,
-                border_width = Theme_config.notification.title_border_width,
-                widget = wibox.container.background
-              },
-              {
-                {
+                  nil,
                   {
                     {
-                      {
-                        image = n.icon,
-                        resize = true,
-                        widget = wibox.widget.imagebox,
-                        valign = "center",
-                        halign = "center",
-                        clip_shape = function(cr, width, height)
-                          gears.shape.rounded_rect(cr, width, height, 10)
-                        end
+                      { -- Clock
+                        widget = wibox.widget.textclock,
+                        format = '%H:%M',
+                        font = 'JetBrainsMono Nerd Font, Bold 16',
+                        fg = Theme_config.notification.bg,
+                        halign = 'right',
+                        valign = 'center',
                       },
-                      width = naughty.config.defaults.icon_size,
-                      height = naughty.config.defaults.icon_size,
-                      strategy = "exact",
-                      widget = wibox.container.constraint
+                      { -- Close button
+                        {
+                          {
+                            {
+                              {
+                                widget = wibox.widget.imagebox,
+                                image = gcolor.recolor_image(icondir .. 'close.svg', Theme_config.notification.bg),
+                                resize = true,
+                                halign = 'center',
+                                valign = 'center',
+                              },
+                              start_angle = 4.71239,
+                              thickness = dpi(2),
+                              min_value = 0,
+                              max_value = start_timer,
+                              value = start_timer,
+                              widget = wibox.container.arcchart,
+                              id = 'arc',
+                            },
+                            fg = Theme_config.notification.bg_close,
+                            bg = color,
+                            widget = wibox.container.background,
+                            id = 'arc_bg',
+                          },
+                          strategy = 'exact',
+                          width = dpi(18),
+                          height = dpi(18),
+                          widget = wibox.container.constraint,
+                        },
+                        left = dpi(5),
+                        widget = wibox.container.margin,
+                      },
+                      layout = wibox.layout.fixed.horizontal,
                     },
-                    halign = "center",
-                    valign = "top",
-                    widget = wibox.container.place
+                    right = dpi(5),
+                    widget = wibox.container.margin,
                   },
-                  left = dpi(20),
-                  bottom = dpi(15),
-                  top = dpi(15),
-                  right = dpi(10),
-                  widget = wibox.container.margin
+                  layout = wibox.layout.align.horizontal,
+                },
+                widget = wibox.container.background,
+                bg = color,
+                fg = '#212121',
+                shape = function(cr, width, height)
+                  gshape.rounded_rect(cr, width, height, dpi(8))
+                end,
+              },
+              { -- Main body
+                { -- Image
+                  {
+                    {
+                      notification = n,
+                      image = n.icon,
+                      valign = 'center',
+                      halign = 'center',
+                      upscale = true,
+                      resize_strategy = 'scale',
+                      widget = naughty.widget.icon,
+                    },
+                    widget = wibox.container.background,
+                    shape = function(cr, width, height)
+                      gshape.rounded_rect(cr, width, height, dpi(10))
+                    end,
+                  },
+                  widget = wibox.container.constraint,
+                  strategy = 'exact',
+                  height = dpi(128),
+                  width = dpi(128),
                 },
                 {
                   {
-                    {
-                      widget = naughty.widget.title,
-                      align = "left"
-                    },
-                    {
-                      widget = naughty.widget.message,
-                      align = "left"
-                    },
-                    {
-                      actions_template,
-                      widget = wibox.container.place
-                    },
-                    layout = wibox.layout.fixed.vertical
+                    notification = n,
+                    widget = naughty.widget.message,
+                    font = 'JetBrainsMono Nerd Font, Regular 10',
+                    halign = 'left',
+                    valign = 'center',
                   },
-                  left = dpi(10),
-                  bottom = dpi(10),
-                  top = dpi(10),
-                  right = dpi(20),
-                  widget = wibox.container.margin
+                  widget = wibox.container.constraint,
+                  strategy = 'exact',
+                  height = dpi(128),
                 },
-                layout = wibox.layout.fixed.horizontal
+                spacing = dpi(15),
+                layout = wibox.layout.fixed.horizontal,
               },
-              id = "widget_layout",
-              layout = wibox.layout.fixed.vertical
+              { -- Spacer
+                {
+                  widget = wibox.container.background,
+                  bg = Theme_config.notification.action_bg,
+                },
+                widget = wibox.container.constraint,
+                strategy = 'exact',
+                height = dpi(2),
+              },
+              action_template,
+              spacing = dpi(15),
+              id = 'main_layout',
+              layout = wibox.layout.fixed.vertical,
             },
-            id = "min_size",
-            strategy = "min",
-            width = dpi(100),
-            widget = wibox.container.constraint
+            widget = wibox.container.margin,
+            margins = dpi(15),
           },
-          id = "max_size",
-          strategy = "max",
-          width = Theme.notification_max_width or dpi(500),
-          widget = wibox.container.constraint
+          bg = '#212121',
+          border_color = '#414141',
+          border_width = dpi(2),
+          shape = function(cr, width, height)
+            gshape.rounded_rect(cr, width, height, dpi(8))
+          end,
+          widget = wibox.container.background,
         },
-        id = "background",
-        bg = Theme_config.notification.bg,
-        border_color = Theme_config.notification.border_color,
-        border_width = Theme_config.notification.border_width,
-        shape = Theme_config.notification.shape_inside,
-        widget = wibox.container.background
+        widget = wibox.container.constraint,
+        strategy = 'exact',
+        width = dpi(600),
       },
-      update_callback = function()
-
-      end
     }
-    local close = w_template:get_widget().max_size.min_size.widget_layout.arc_app_bg.arc_app_layout.arc_app_layout_2.arc_margin
-        .const1.background1
-    local arc = close.arc_chart
+
+    if #action_template._private.layout.children < 1 then
+      notification:get_widget().children[1].children[1].children[1].children[3] = nil
+    end
+
+    local arc_bg = notification:get_widget().children[1].children[1].children[1].children[1].children[1].children[2].children[1].children[2].children[1].children[1]
+    local arc = arc_bg.children[1]
 
     local timeout = n.timeout
 
@@ -352,45 +336,36 @@ naughty.connect_signal("request::display", function(n)
         duration = n.timeout,
         pos = n.timeout,
         easing = rubato.linear,
+        clamp_position = true,
         subscribed = function(value)
           arc.value = value
-        end
+        end,
       }
 
       rubato_timer.target = 0
 
-      w_template:get_widget():connect_signal(
-        "mouse::enter",
-        function()
-          n.timeout = 99999
-          rubato_timer.pause = true
-        end
-      )
+      notification:get_widget():connect_signal('mouse::enter', function()
+        n.timeout = 99999
+        rubato_timer.pause = true
+      end)
 
-      w_template:get_widget():connect_signal(
-        "mouse::leave",
-        function()
-          n.timeout = rubato_timer.pos
-          rubato_timer.pause = false
-          rubato_timer.target = 0
-        end
-      )
+      notification:get_widget():connect_signal('mouse::leave', function()
+        n.timeout = rubato_timer.pos
+        rubato_timer.pause = false
+        rubato_timer.target = 0
+      end)
     end
 
-    Hover_signal(close)
+    hover.bg_hover { widget = arc_bg }
 
-    close:connect_signal("button::press", function()
+    arc_bg:connect_signal('button::press', function()
       n:destroy()
     end)
 
-    w_template:get_widget():connect_signal("button::press", function(_, _, _, key)
-      if key == 3 then
-        n:destroy()
-      end
-      -- Raise the client on click
-      if key == 1 then
+    notification:get_widget():buttons { gtable.join(
+      abutton({}, 1, function()
         for _, client in ipairs(capi.client.get()) do
-          if client.name:match(n.app_name) then
+          if client.class:lower():match(n.app_name:lower()) then
             if not client:isvisible() and client.first_tag then
               client.first_tag:view_only()
             end
@@ -398,44 +373,209 @@ naughty.connect_signal("request::display", function(n)
             client:raise()
           end
         end
-      end
-    end)
+      end),
+      abutton({}, 3, function()
+        n:destroy()
+      end)
+    ), }
 
     local box = naughty.layout.box {
       notification = n,
       timeout = 5,
-      type = "notification",
+      type = 'notification',
       screen = capi.screen.primary,
-      shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, 10)
-      end,
-      widget_template = w_template
+      widget_template = notification,
     }
-
     box.buttons = {}
     n.buttons = {}
+
+    -- This is stupid but there is on way to clone the notifaction widget and being able to modify only the clone
+    --[=[ naughty.emit_signal('notification_surface', wibox.template {
+      widget = wibox.widget {
+        {
+          {
+            {
+              { -- Title
+                {
+                  {
+                    { -- Icon
+                      {
+                        {
+                          {
+                            {
+                              notification = n,
+                              widget = naughty.widget.icon,
+                              --image = n.icon or '',
+                              resize = true,
+                            },
+                            widget = wibox.container.background,
+                            shape = function(cr, width, height)
+                              gshape.rounded_rect(cr, width, height, dpi(4))
+                            end,
+                          },
+                          widget = wibox.container.place,
+                        },
+                        widget = wibox.container.constraint,
+                        strategy = 'exact',
+                        width = dpi(20),
+                        height = dpi(20),
+                      },
+                      { -- Title
+                        {
+                          notification = n,
+                          widget = naughty.widget.title,
+                          markup = [[<span foreground="]] ..
+                              Theme_config.notification.bg .. [[" font="JetBrainsMono Nerd Font, Bold 16">]] .. (n.app_name or
+                                  'Unknown App') .. [[</span> | <span font="JetBrainsMono Nerd Font, Regular 16">]] .. (n.title or 'System Notification') .. [[</span>]],
+                          halign = 'left',
+                          valign = 'center',
+                        },
+                        widget = wibox.container.constraint,
+                        width = dpi(280),
+                        height = dpi(35),
+                        strategy = 'max',
+                      },
+                      spacing = dpi(10),
+                      layout = wibox.layout.fixed.horizontal,
+                    },
+                    widget = wibox.container.margin,
+                    left = dpi(10),
+                  },
+                  nil,
+                  {
+                    {
+                      { -- Clock
+                        widget = wibox.widget.textclock,
+                        format = '%H:%M',
+                        font = 'JetBrainsMono Nerd Font, Bold 16',
+                        fg = Theme_config.notification.bg,
+                        halign = 'right',
+                        valign = 'center',
+                      },
+                      { -- Close button
+                        {
+                          {
+                            {
+                              {
+                                widget = wibox.widget.imagebox,
+                                image = gcolor.recolor_image(icondir .. 'close.svg', Theme_config.notification.bg),
+                                resize = true,
+                                halign = 'center',
+                                valign = 'center',
+                              },
+                              start_angle = 4.71239,
+                              thickness = dpi(2),
+                              min_value = 0,
+                              max_value = start_timer,
+                              value = start_timer,
+                              widget = wibox.container.arcchart,
+                              id = 'arc',
+                            },
+                            fg = Theme_config.notification.bg_close,
+                            bg = color,
+                            widget = wibox.container.background,
+                            id = 'arc_bg',
+                          },
+                          strategy = 'exact',
+                          width = dpi(18),
+                          height = dpi(18),
+                          widget = wibox.container.constraint,
+                        },
+                        left = dpi(5),
+                        widget = wibox.container.margin,
+                      },
+                      layout = wibox.layout.fixed.horizontal,
+                    },
+                    right = dpi(5),
+                    widget = wibox.container.margin,
+                  },
+                  layout = wibox.layout.align.horizontal,
+                },
+                widget = wibox.container.background,
+                bg = color,
+                fg = '#212121',
+                shape = function(cr, width, height)
+                  gshape.rounded_rect(cr, width, height, dpi(8))
+                end,
+              },
+              { -- Main body
+                { -- Image
+                  {
+                    {
+                      notification = n,
+                      --image = n.icon or '',
+                      valign = 'center',
+                      halign = 'center',
+                      upscale = true,
+                      resize_strategy = 'scale',
+                      widget = naughty.widget.icon,
+                    },
+                    widget = wibox.container.background,
+                    shape = function(cr, width, height)
+                      gshape.rounded_rect(cr, width, height, dpi(10))
+                    end,
+                  },
+                  widget = wibox.container.constraint,
+                  strategy = 'exact',
+                  height = dpi(128),
+                  width = dpi(128),
+                },
+                {
+                  {
+                    notification = n,
+                    widget = naughty.widget.message,
+                    text = n.message,
+                    font = 'JetBrainsMono Nerd Font, Regular 8',
+                    halign = 'left',
+                    valign = 'center',
+                  },
+                  widget = wibox.container.constraint,
+                  strategy = 'exact',
+                  height = dpi(128),
+                },
+                spacing = dpi(15),
+                layout = wibox.layout.fixed.horizontal,
+              },
+            },
+            widget = wibox.container.margin,
+            margins = dpi(15),
+          },
+          bg = '#212121',
+          border_color = '#414141',
+          border_width = dpi(2),
+          shape = function(cr, width, height)
+            gshape.rounded_rect(cr, width, height, dpi(8))
+          end,
+          widget = wibox.container.background,
+        },
+        widget = wibox.container.constraint,
+        strategy = 'exact',
+        width = dpi(600),
+      },
+    }) ]=]
   end
 end)
-
-naughty.connect_signal(
-  "destroyed",
-  function()
-  end
-)
-
-naughty.connect_signal(
-  "invoked",
-  function(_, action)
-    if action.program == "Spotify" then
-      if action.id == "skip-prev" then
-        awful.spawn("playerctl previous")
-      end
-      if action.id == "play-pause" then
-        awful.spawn("playerctl play-pause")
-      end
-      if action.id == "skip-next" then
-        awful.spawn("playerctl next")
-      end
-    end
-  end
-)
+--[[ 
+naughty.notification {
+  app_name = 'Spotify',
+  title = 'The Beatles - Here Comes The Sun',
+  message = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.',
+  icon = '/home/crylia/Bilder/57384097.jpg',
+  timeout = 30,
+  actions = {
+    naughty.action {
+      name = 'amet',
+      position = 1,
+      text = 'Test',
+    },
+    naughty.action {
+      name = 'Lorem ipsum dolor sit amet',
+      position = 2,
+    },
+    naughty.action {
+      name = 'Lorem',
+      position = 3,
+    },
+  },
+}
+ ]]

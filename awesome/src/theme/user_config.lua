@@ -1,9 +1,9 @@
 -------------------------------------------
 -- Uservariables are stored in this file --
 -------------------------------------------
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local home = os.getenv("HOME")
+local awful = require('awful')
+local dpi = require('beautiful').xresources.apply_dpi
+local home = os.getenv('HOME')
 
 -- If you want different default programs, wallpaper path or modkey; edit this file.
 User_config = {
@@ -17,10 +17,13 @@ User_config = {
       Flatpak application: flatpak run com.example.App
   ]] --
   autostart = {
-    "picom",
-    "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
-    "setxkbmap -option caps:swapescape",
-    "/home/crylia/.screenlayout/double.sh"
+    'nm-applet',
+    'protonvpn-cli ks --off',
+    'picom',
+    '/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1',
+    'setxkbmap -option caps:swapescape',
+    '/home/crylia/.screenlayout/double.sh',
+    'gnome-keyring-daemon --start --components=secrets',
   },
 
   --[[
@@ -43,7 +46,7 @@ User_config = {
       "MEDIA_PLAYER"
       More information at: https://lazka.github.io/pgi-docs/UPowerGlib-1.0/enums.html#UPowerGlib.DeviceKind.KEYBOARD
   ]] --
-  battery_kind = "LINE_POWER",
+  battery_kind = 'LINE_POWER',
 
   --[[
     If your battery is not found you can specify its path here.
@@ -60,6 +63,8 @@ User_config = {
     Will increase the brightness by 5% at a time
   ]]
   brightness_step = 2,
+
+  clock_mode = 'average',
 
   --[[
       DnD or 'Do not Disturb' will prevent notifications from poping up.
@@ -78,12 +83,12 @@ User_config = {
     This is the program that will be started when clicking on the battery widget
     If you don't want any just leave it as nil
   ]] --
-  energy_manager = "xfce4-power-manager-settings",
+  energy_manager = 'xfce4-power-manager-settings',
 
   --[[
     Your filemanager. Will be opened with <super> + <e>
   ]] --
-  file_manager = "nautilus",
+  file_manager = 'nemo',
 
   --[[
     The font that will be used on all widgets/modules etc.
@@ -98,19 +103,19 @@ User_config = {
       }
   ]]
   font = {
-    regular = "JetBrainsMono Nerd Font, " .. dpi(16),
-    bold = "JetBrainsMono Nerd Font, bold " .. dpi(16),
-    extrabold = "JetBrainsMono Nerd Font, ExtraBold " .. dpi(16),
-    specify = "JetBrainsMono Nerd Font"
+    regular = 'JetBrainsMono Nerd Font, ' .. dpi(16),
+    bold = 'JetBrainsMono Nerd Font, bold ' .. dpi(16),
+    extrabold = 'JetBrainsMono Nerd Font, ExtraBold ' .. dpi(16),
+    specify = 'JetBrainsMono Nerd Font',
   },
 
-  gtk_settings = "lxappearance",
+  gtk_settings = 'lxappearance',
 
   --[[
     The icon theme name must be exactly as the folder is called
     The folder can be in any $XDG_DATA_DIRS/icons/[icon_theme_name]
   ]] --
-  icon_theme = "Papirus-Dark",
+  icon_theme = 'Papirus-Dark',
 
   -- List every Keyboard layout you use here comma seperated. (run localectl list-keymaps to list all averiable keymaps)
   --[[
@@ -119,28 +124,15 @@ User_config = {
     Example:
       kblayout = { "de", "ru", "us" }
   ]] --
-  kblayout = { "de", "ru" },
+  kblayout = { 'de', 'ru' },
 
   --[[
     This is a list of every layout you can use.
     Remove every that you don't want to use.
   ]] --
   layouts = {
-    awful.layout.suit.tile,
-    awful.layout.suit.tile.left,
-    awful.layout.suit.tile.bottom,
-    awful.layout.suit.tile.top,
-    awful.layout.suit.floating,
     awful.layout.suit.fair,
-    awful.layout.suit.fair.horizontal,
-    awful.layout.suit.corner.nw,
-    awful.layout.suit.corner.ne,
-    awful.layout.suit.corner.sw,
-    awful.layout.suit.corner.se,
-    awful.layout.suit.magnifier,
-    awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
-    awful.layout.suit.spiral.dwindle,
+    awful.layout.suit.floating,
   },
 
   --[[
@@ -153,9 +145,9 @@ User_config = {
       "mod4" <-- for the super/windows key
       "mod5" <-- for the shift key
   ]] --
-  modkey = "Mod4",
+  modkey = 'Mod4',
 
-  music_player = "flatpak run com.spotify.Client",
+  music_player = 'spotify',
 
   --[[
     This is the naming sheme used for the powermenu and maybe some other places in the future.
@@ -164,7 +156,7 @@ User_config = {
       "fullname" <-- Will display "Firstname Surname"
       "?" <-- Will display "?"
   ]] --
-  namestyle = "userhost",
+  namestyle = 'userhost',
 
   --[[
     This is used to identify your network adapters.
@@ -174,16 +166,16 @@ User_config = {
       ethernet = "eno1"
   ]] --
   network = {
-    wlan = "wlo1",
-    ethernet = "eno1"
+    wlan = 'wlo1',
+    ethernet = 'eno1',
   },
 
-  screen_settings = "arandr",
+  screen_settings = 'arandr',
 
   --[[
     This is the program that will be executed when hitting the print key.
   ]] --
-  screenshot_program = "flameshot gui",
+  screenshot_program = 'flameshot gui',
 
   --[[
     These are the status bar widgets which are to be found in the notification-center.
@@ -199,13 +191,13 @@ User_config = {
       "backlight"
   ]] --
   status_bar_widgets = {
-    "cpu_usage",
-    "cpu_temp",
-    "ram_usage",
-    "microphone",
-    "volume",
-    "gpu_temp",
-    "gpu_usage",
+    'cpu_usage',
+    'cpu_temp',
+    'ram_usage',
+    'microphone',
+    'volume',
+    'gpu_temp',
+    'gpu_usage',
   },
 
   --[[
@@ -217,9 +209,9 @@ User_config = {
   --[[
     This is the default terminal, Alacritty is the default.
   ]] --
-  terminal = "kitty",
+  terminal = 'kitty',
 
-  text_editor = "code",
+  text_editor = 'code',
 
   --[[
     Add every client that should get no titlebar.
@@ -233,7 +225,7 @@ User_config = {
       }
   ]] --
   titlebar_exception = {
-    "protonvpn"
+    'protonvpn',
   },
 
   --[[
@@ -241,13 +233,19 @@ User_config = {
       Example:
         titlebar_position = "top"
   ]] --
-  titlebar_position = "top",
+  titlebar_position = 'left',
+
+  titlebar_items = {
+    left_and_bottom = { 'icon' },
+    --middle = "title",
+    right_and_top = { 'close', 'maximize', 'minimize' },
+  },
 
   --[[
       This is the path to your wallpaper.
       home is $HOME, you can also use an absolute path.
   ]] --
-  wallpaper = home .. "/Bilder/Hintergründe/784194.jpg",
+  wallpaper = home .. '/Bilder/Hintergründe/784194.jpg',
 
   --[[
     This is the weather widget.
@@ -258,12 +256,12 @@ User_config = {
       unit = "metric" or "imperial"
   ]]
   weather_secrets = {
-    key = "e71b00168ca7219563dde4514a425b14",
-    city_id = "2864118",
-    unit = "metric"
+    key = 'e71b00168ca7219563dde4514a425b14',
+    city_id = '2864118',
+    unit = 'metric',
   },
 
-  web_browser = "firefox",
+  web_browser = 'firefox',
 
   --[[
     You can configure your bar's here, if you leave it empty the bar will not be shown.
@@ -293,65 +291,64 @@ User_config = {
   crylia_bar = {
     [1] = {
       left_bar = {
-        "Tiling Layout",
-        "Systray",
-        "Taglist"
+        'Tiling Layout',
+        'Systray',
+        'Taglist',
       },
       center_bar = {
-        "Tasklist"
+        'Tasklist',
       },
       right_bar = {
-        "Cpu Frequency",
-        "Cpu Temperature",
-        "Cpu Usage",
-        "Audio",
-        "Keyboard Layout",
-        "Date",
-        "Clock",
-        "Power Button"
-      }
+        'Bluetooth',
+        'Network',
+        'Cpu Frequency',
+        'Cpu Usage',
+        'Cpu Temperature',
+        'Audio',
+        'Keyboard Layout',
+        'Date',
+        'Clock',
+        'Power Button',
+      },
     },
-    --[[ [2] = {
+    [2] = {
       left_bar = {
-        "Tiling Layout",
-        "Systray",
-        "Taglist"
+        'Tiling Layout',
+        'Taglist',
       },
       center_bar = {
-        "Tasklist"
+        'Tasklist',
       },
       right_bar = {
-        "Gpu Temperature",
-        "Gpu Usage",
-        "Ram",
-        "Audio",
-        "Keyboard Layout",
-        "Date",
-        "Clock",
-        "Power Button"
-      }
-    }]]
+        'Gpu Temperature',
+        'Gpu Usage',
+        'Ram Usage',
+        'Audio',
+        'Date',
+        'Clock',
+      },
+    },
   },
 
   crylia_wibox = {
     [1] = {
       left_bar = {
-        "Tiling Layout",
-        "Taglist"
+        'Tiling Layout',
+        'Taglist',
       },
       center_bar = {
-        "Tasklist"
+        'Tasklist',
       },
       right_bar = {
-        "Systray",
-        "Battery",
-        "Bluetooth",
-        "Audio",
-        "Network",
-        "Keyboard Layout",
-        "Date",
-        "Clock",
-      }
-    }
-  }
+        'Systray',
+        'Battery',
+        'Bluetooth',
+        'Audio',
+        'Network',
+        'Keyboard Layout',
+        'Date',
+        'Clock',
+      },
+    },
+  },
 }

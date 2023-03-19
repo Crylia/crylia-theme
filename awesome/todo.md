@@ -165,3 +165,8 @@
 - Rewrite and try to make more performant
 
 ## Widgets
+
+## General
+
+- Constantly monitor for a bluetooth adapter to appear and then add the bluetooth module
+- Probably the same with WiFi

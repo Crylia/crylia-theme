@@ -1,21 +1,23 @@
-local abutton = require("awful.button")
-local aplacement = require("awful.placement")
-local apopup = require("awful.popup")
-local awidget = require("awful.widget")
-local dpi = require("beautiful").xresources.apply_dpi
-local gtable = require("gears.table")
-local gcolor = require("gears.color")
-local gshape = require("gears.shape")
-local gfilesystem = require("gears.filesystem")
-local NM = require("lgi").NM
-local wibox = require("wibox")
+local abutton = require('awful.button')
+local aplacement = require('awful.placement')
+local apopup = require('awful.popup')
+local awidget = require('awful.widget')
+local dpi = require('beautiful').xresources.apply_dpi
+local gtable = require('gears.table')
+local gcolor = require('gears.color')
+local gshape = require('gears.shape')
+local gfilesystem = require('gears.filesystem')
+local NM = require('lgi').NM
+local wibox = require('wibox')
 
-local icondir = gfilesystem.get_configuration_dir() .. "src/assets/icons/network/"
+local hover = require('src.tools.hover')
+
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/network/'
 
 local capi = {
   awesome = awesome,
   mouse = mouse,
-  mousegrabber = mousegrabber
+  mousegrabber = mousegrabber,
 }
 
 local ap_form = { mt = {} }
@@ -28,7 +30,7 @@ function ap_form.new(args)
   args = args or {}
   args.screen = args.screen
 
-  local password = awidget.inputbox { hint_text = "Password..." }
+  local password = awidget.inputbox { hint_text = 'Password...' }
 
   local ret = apopup {
     widget = {
@@ -40,31 +42,31 @@ function ap_form.new(args)
               {
                 widget = wibox.widget.textbox,
                 text = NM.utils_ssid_to_utf8(args.NetworkManagerAccessPoint.Ssid),
-                font = User_config.font.specify .. ",extra bold 16",
-                halign = "center",
-                valign = "center",
+                font = User_config.font.specify .. ',extra bold 16',
+                halign = 'center',
+                valign = 'center',
               },
               widget = wibox.container.margin,
-              margins = dpi(5)
+              margins = dpi(5),
             },
             { -- Close button
               {
                 {
                   widget = wibox.widget.imagebox,
-                  image = gcolor.recolor_image(icondir .. "close.svg", Theme_config.network_manager.form.icon_fg),
+                  image = gcolor.recolor_image(icondir .. 'close.svg', Theme_config.network_manager.form.icon_fg),
                   resize = false,
-                  valign = "center",
-                  halign = "center",
+                  valign = 'center',
+                  halign = 'center',
                 },
                 widget = wibox.container.margin,
                 margins = dpi(5),
               },
               widget = wibox.container.background,
               shape = Theme_config.network_manager.form.close_icon_shape,
-              id = "close_button",
-              bg = Theme_config.network_manager.form.close_bg
+              id = 'close_button',
+              bg = Theme_config.network_manager.form.close_bg,
             },
-            layout = wibox.layout.align.horizontal
+            layout = wibox.layout.align.horizontal,
           },
           widget = wibox.container.background,
           bg = Theme_config.network_manager.form.header_bg,
@@ -73,9 +75,9 @@ function ap_form.new(args)
         { -- Form
           { -- Password
             widget = wibox.widget.textbox,
-            text = "Password",
-            halign = "center",
-            valign = "center"
+            text = 'Password',
+            halign = 'center',
+            valign = 'center',
           },
           {
             widget = wibox.container.margin,
@@ -89,25 +91,25 @@ function ap_form.new(args)
                 password,
                 widget = wibox.container.margin,
                 margins = 5,
-                id = "marg"
+                id = 'marg',
               },
               widget = wibox.container.constraint,
-              strategy = "exact",
+              strategy = 'exact',
               width = 400,
               height = 50,
-              id = "const"
+              id = 'const',
             },
             widget = wibox.container.background,
-            bg = "#212121",
-            fg = "#F0F0F0",
-            border_color = "#414141",
+            bg = '#212121',
+            fg = '#F0F0F0',
+            border_color = '#414141',
             border_width = 2,
             shape = gshape.rounded_rect,
             forced_width = 300,
             forced_height = 50,
-            id = "password_container"
+            id = 'password_container',
           },
-          layout = wibox.layout.align.horizontal
+          layout = wibox.layout.align.horizontal,
         },
         { -- Actions
           { -- Auto connect
@@ -121,26 +123,26 @@ function ap_form.new(args)
                   check_color = Theme_config.network_manager.form.checkbox_bg,
                   border_color = Theme_config.network_manager.form.checkbox_bg,
                   border_width = 2,
-                  id = "checkbox",
-                  widget = wibox.widget.checkbox
+                  id = 'checkbox',
+                  widget = wibox.widget.checkbox,
                 },
                 widget = wibox.container.constraint,
-                strategy = "exact",
+                strategy = 'exact',
                 width = dpi(30),
-                height = dpi(30)
+                height = dpi(30),
               },
               widget = wibox.container.place,
-              halign = "center",
-              valign = "center"
+              halign = 'center',
+              valign = 'center',
             },
             {
               widget = wibox.widget.textbox,
-              text = "Auto connect",
-              halign = "center",
-              valign = "center"
+              text = 'Auto connect',
+              halign = 'center',
+              valign = 'center',
             },
             spacing = dpi(10),
-            layout = wibox.layout.fixed.horizontal
+            layout = wibox.layout.fixed.horizontal,
           },
           nil,
           { -- Connect
@@ -148,9 +150,9 @@ function ap_form.new(args)
               {
                 {
                   widget = wibox.widget.textbox,
-                  text = "Connect",
-                  halign = "center",
-                  valign = "center"
+                  text = 'Connect',
+                  halign = 'center',
+                  valign = 'center',
                 },
                 widget = wibox.container.margin,
                 margins = dpi(10),
@@ -159,18 +161,18 @@ function ap_form.new(args)
               bg = Theme_config.network_manager.form.button_bg,
               fg = Theme_config.network_manager.form.button_fg,
               shape = Theme_config.network_manager.form.button_shape,
-              id = "connect_button",
+              id = 'connect_button',
             },
             widget = wibox.container.margin,
             margins = dpi(10),
           },
-          layout = wibox.layout.align.horizontal
+          layout = wibox.layout.align.horizontal,
         },
         spacing = dpi(20),
-        layout = wibox.layout.fixed.vertical
+        layout = wibox.layout.fixed.vertical,
       },
       widget = wibox.container.margin,
-      margins = dpi(10)
+      margins = dpi(10),
     },
     placement = aplacement.centered,
     ontop = true,
@@ -182,55 +184,55 @@ function ap_form.new(args)
     shape = Theme_config.network_manager.form.shape,
     border_color = Theme_config.network_manager.form.border_color,
     border_width = Theme_config.network_manager.form.border_width,
-    type = "dialog",
+    type = 'dialog',
     screen = args.screen,
   }
 
-  local password_container = ret.widget:get_children_by_id("password_container")[1]
+  local password_container = ret.widget:get_children_by_id('password_container')[1]
+
+  gtable.crush(ret, ap_form, true)
 
   -- Focus the searchbar when its left clicked
   password_container:buttons(gtable.join {
     abutton({}, 1, function()
       password:focus()
-    end)
+    end),
   })
 
   --#region Hover signals to change the cursor to a text cursor
   local old_cursor, old_wibox
-  password_container:connect_signal("mouse::enter", function()
+  password_container:connect_signal('mouse::enter', function()
     local wid = capi.mouse.current_wibox
     if wid then
       old_cursor, old_wibox = wid.cursor, wid
-      wid.cursor = "xterm"
+      wid.cursor = 'xterm'
     end
   end)
-  password_container:connect_signal("mouse::leave", function()
+  password_container:connect_signal('mouse::leave', function()
     old_wibox.cursor = old_cursor
     old_wibox = nil
   end)
   --#endregion
 
-  gtable.crush(ret, ap_form, true)
-
-  local checkbox = ret.widget:get_children_by_id("checkbox")[1]
-  checkbox:connect_signal("button::press", function()
+  local checkbox = ret.widget:get_children_by_id('checkbox')[1]
+  checkbox:connect_signal('button::press', function()
     checkbox.checked = not checkbox.checked
   end)
 
-  local close_button = ret.widget:get_children_by_id("close_button")[1]
-  close_button:connect_signal("button::press", function()
+  local close_button = ret.widget:get_children_by_id('close_button')[1]
+  close_button:connect_signal('button::press', function()
     ret:popup_toggle()
   end)
-  Hover_signal(close_button)
+  hover.bg_hover { widget = close_button }
 
-  local connect_button = ret.widget:get_children_by_id("connect_button")[1]
-  connect_button:connect_signal("button::press", function()
+  local connect_button = ret.widget:get_children_by_id('connect_button')[1]
+  connect_button:connect_signal('button::press', function()
     password:stop()
     args.ap:connect(args.NetworkManagerAccessPoint, password:get_text(),
-      ret.widget:get_children_by_id("checkbox")[1].checked)
+      ret.widget:get_children_by_id('checkbox')[1].checked)
     ret:popup_toggle()
   end)
-  Hover_signal(connect_button)
+  hover.bg_hover { widget = connect_button }
 
   return ret
 end

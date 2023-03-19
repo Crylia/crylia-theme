@@ -1,0 +1,214 @@
+--------------------------------
+-- This is the network widget --
+--------------------------------
+
+-- Awesome Libs
+local abutton = require('awful.button')
+local akey = require('awful.key')
+local akeygrabber = require('awful.keygrabber')
+local aspawn = require('awful.spawn')
+local dpi = require('beautiful').xresources.apply_dpi
+local gfilesystem = require('gears.filesystem')
+local gtable = require('gears.table')
+local wibox = require('wibox')
+
+local hover = require('src.tools.hover')
+
+local capi = {
+  awesome = awesome,
+  screen = screen,
+}
+
+-- Icon directory path
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/powermenu/'
+
+local instance = nil
+local powermenu = {}
+
+local function get_button(type)
+  local icon, name, bg_color, command
+
+  if type == 'shutdown' then
+    icon = icondir .. 'shutdown.svg'
+    name = 'Shutdown'
+    bg_color = Theme_config.powermenu.shutdown_button_bg
+    command = 'shutdown now'
+  elseif type == 'reboot' then
+    icon = icondir .. 'reboot.svg'
+    name = 'Reboot'
+    bg_color = Theme_config.powermenu.reboot_button_bg
+    command = 'reboot'
+  elseif type == 'logout' then
+    icon = icondir .. 'logout.svg'
+    name = 'Logout'
+    bg_color = Theme_config.powermenu.logout_button_bg
+    command = 'awesome-client "awesome.quit()"'
+  elseif type == 'lock' then
+    icon = icondir .. 'lock.svg'
+    name = 'Lock'
+    bg_color = Theme_config.powermenu.lock_button_bg
+    command = 'dm-tool lock'
+  elseif type == 'suspend' then
+    icon = icondir .. 'suspend.svg'
+    name = 'Suspend'
+    bg_color = Theme_config.powermenu.suspend_button_bg
+    command = 'systemctl suspend'
+  end
+
+  local widget = wibox.widget {
+    {
+      {
+        {
+          {
+            {
+              image = icon,
+              resize = true,
+              valign = 'center',
+              halign = 'center',
+              widget = wibox.widget.imagebox,
+            },
+            {
+              text = name,
+              font = 'JetBrains Mono Bold 30',
+              valign = 'center',
+              halign = 'center',
+              widget = wibox.widget.textbox,
+            },
+            widget = wibox.layout.fixed.horizontal,
+          },
+          widget = wibox.container.place,
+        },
+        margins = dpi(10),
+        widget = wibox.container.margin,
+      },
+      fg = Theme_config.powermenu.button_fg,
+      bg = bg_color,
+      shape = Theme_config.powermenu.button_shape,
+      widget = wibox.container.background,
+      id = 'background',
+    },
+    height = dpi(70),
+    strategy = 'exact',
+    widget = wibox.container.constraint,
+  }
+
+  hover.bg_hover { widget = widget.background, overlay = 12, press_overlay = 24 }
+
+  widget:buttons(gtable.join(
+    abutton({}, 1, function()
+      aspawn(command)
+    end)
+  ))
+
+  return widget
+end
+
+function powermenu:toggle()
+  self.keygrabber:start()
+  self.visible = not self.visible
+end
+
+function powermenu.new()
+  local w = wibox {
+    widget = {
+      {
+        {
+          {
+            {
+              image = icondir .. 'defaultpfp.svg',
+              resize = true,
+              clip_shape = Theme_config.powermenu.profile_picture_shape,
+              valign = 'center',
+              halign = 'center',
+              id = 'icon_role',
+              widget = wibox.widget.imagebox,
+            },
+            widget = wibox.container.constraint,
+            width = dpi(200),
+            height = dpi(200),
+            strategy = 'exact',
+          },
+          {
+            halign = 'center',
+            valign = 'center',
+            font = 'JetBrains Mono Bold 30',
+            id = 'text_role',
+            widget = wibox.widget.textbox,
+          },
+          spacing = dpi(50),
+          layout = wibox.layout.fixed.vertical,
+        },
+        {
+          {
+            get_button('shutdown'),
+            get_button('reboot'),
+            get_button('logout'),
+            get_button('lock'),
+            get_button('suspend'),
+            spacing = dpi(30),
+            layout = wibox.layout.fixed.horizontal,
+          },
+          widget = wibox.container.place,
+        },
+        spacing = dpi(50),
+        layout = wibox.layout.fixed.vertical,
+      },
+      widget = wibox.container.place,
+    },
+    screen = capi.screen.primary,
+    type = 'splash',
+    visible = false,
+    ontop = true,
+    bg = Theme_config.powermenu.container_bg,
+    height = capi.screen.primary.geometry.height,
+    width = capi.screen.primary.geometry.width,
+    x = capi.screen.primary.geometry.x,
+    y = capi.screen.primary.geometry.y,
+  }
+
+  gtable.crush(w, powermenu, true)
+
+  w:buttons { gtable.join(
+    abutton({}, 3, function()
+      w:toggle()
+      w.keygrabber:stop()
+    end)
+  ), }
+
+  w.keygrabber = akeygrabber {
+    autostart = false,
+    stop_event = 'release',
+    stop_key = 'Escape',
+    keybindings = {
+      akey {
+        modifiers = {},
+        key = 'Escape',
+        on_press = function()
+          w:toggle()
+        end,
+      },
+    },
+  }
+
+  -- Get the profile script from /var/lib/AccountsService/icons/${USER}
+  -- and copy it to the assets folder
+  -- TODO: If the user doesnt have AccountsService look into $HOME/.faces
+  aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userPfp'", function(stdout)
+    if stdout then
+      w:get_children_by_id('icon_role')[1].image = stdout:gsub('\n', '')
+    else
+      w:get_children_by_id('icon_role')[1].image = icondir .. 'defaultpfp.svg'
+    end
+  end)
+
+  aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userName' '" .. User_config.namestyle .. "'", function(stdout)
+    w:get_children_by_id('text_role')[1].text = stdout:gsub('\n', '')
+  end)
+
+  return w
+end
+
+if instance == nil then
+  instance = powermenu.new()
+end
+return instance

@@ -1,16 +1,19 @@
-local awful = require("awful")
-local watch = awful.widget.watch
+local awatch = require('awful.widget.watch')
+local gobject = require('gears.object')
 
-local capi = {
-  awesome = awesome,
-}
+local instance
 
-watch(
-  [[ bash -c "nvidia-smi -q -d UTILIZATION | grep Gpu | awk '{print $3}'"]],
-  3,
-  function(_, stdout)
-    stdout = stdout:match("%d+")
+local function new()
+  local self = gobject {}
+  awatch([[ bash -c "nvidia-smi -q -d UTILIZATION | grep Gpu | awk '{print $3}'"]], 3, function(_, stdout)
+    stdout = stdout:match('%d+')
     if not stdout then return end
-    capi.awesome.emit_signal("update::gpu_usage", stdout)
-  end
-)
+    self:emit_signal('update::gpu_usage', stdout)
+  end)
+  return self
+end
+
+if not instance then
+  instance = new()
+end
+return instance

@@ -1,32 +1,43 @@
-local awful = require("awful")
-local watch = awful.widget.watch
+local aspawn = require('awful.spawn')
+local gobject = require('gears.object')
+local gtimer = require('gears.timer')
 
-local capi = {
-  awesome = awesome,
-}
-
-local total_prev = 0
-local idle_prev = 0
+local instance = nil
 
 --!Find a better way that doesn't need manual GC since it has a huge performance impact
-watch(
-  [[ cat "/proc/stat" | grep '^cpu ' ]],
-  3,
-  function(_, stdout)
-    local user, nice, system, idle, iowait, irq, softirq, steal =
-    stdout:match("(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s")
+local function new()
 
-    local total = user + nice + system + idle + iowait + irq + softirq + steal
+  local self = gobject {}
 
-    local diff_idle = idle - idle_prev
-    local diff_total = total - total_prev
-    local diff_usage = math.floor(((1000 * (diff_total - diff_idle) / diff_total + 5) / 10) + 0.5)
+  local total_prev = 0
+  local idle_prev = 0
 
-    capi.awesome.emit_signal("update::cpu_usage", diff_usage)
+  gtimer {
+    timeout = 2,
+    autostart = true,
+    call_now = true,
+    callback = function()
+      aspawn.easy_async_with_shell([[ cat "/proc/stat" | grep '^cpu ' ]], function(stdout)
+        local user, nice, system, idle, iowait, irq, softirq, steal =
+        stdout:match('(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s(%d+)%s')
 
-    total_prev = total
-    idle_prev = idle
+        local total = user + nice + system + idle + iowait + irq + softirq + steal
 
-    collectgarbage("collect")
-  end
-)
+        local diff_total = total - total_prev
+        local diff_usage = math.floor(((1000 * (diff_total - (idle - idle_prev)) / diff_total + 5) / 10) + 0.5)
+
+        self:emit_signal('update::cpu_usage', diff_usage)
+
+        total_prev = total
+        idle_prev = idle
+      end)
+    end
+  }
+
+  return self
+end
+
+if not instance then
+  instance = new()
+end
+return instance

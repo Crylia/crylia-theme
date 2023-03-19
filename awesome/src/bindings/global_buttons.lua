@@ -1,12 +1,13 @@
 -- Awesome Libs
-local gears = require("gears")
-local awful = require("awful")
+local gtable = require('gears.table')
+local abutton = require('awful.button')
+local atag = require('awful.tag')
 
 local capi = {
   root = root
 }
 
-capi.root.buttons = gears.table.join(
-  awful.button({}, 4, awful.tag.viewnext),
-  awful.button({}, 5, awful.tag.viewprev)
+capi.root.buttons = gtable.join(
+  abutton({}, 4, atag.viewnext),
+  abutton({}, 5, atag.viewprev)
 )

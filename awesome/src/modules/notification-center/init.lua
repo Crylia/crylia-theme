@@ -3,286 +3,303 @@
 -------------------------------------
 
 -- Awesome Libs
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local gears = require("gears")
-local wibox = require("wibox")
-local dnd_widget = require("awful.widget.toggle_widget")
+local dpi = require('beautiful').xresources.apply_dpi
+local gfilesystem = require('gears.filesystem')
+local base = require('wibox.widget.base')
+local wibox = require('wibox')
+local apopup = require('awful.popup')
+local aplacement = require('awful.placement')
+local gshape = require('gears.shape')
+local gcolor = require('gears.color')
 
-local capi = {
-  awesome = awesome,
-}
+-- Own Libs
+local dnd_widget = require('awful.widget.toggle_widget')
+local notification_list = require('src.modules.notification-center.widgets.notification_list')()
+local weather_widget = require('src.modules.notification-center.widgets.weather')()
+local profile_widget = require('src.modules.notification-center.widgets.profile')()
+local status_bars = require('src.modules.notification-center.widgets.status_bars')()
+local music_widget = require('src.modules.notification-center.widgets.song_info')()
+local hover = require('src.tools.hover')
 
 -- Icon directory path
-local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/notifications/"
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/notifications/'
 
-return function(s)
+local capi = {
+  client = client,
+}
 
-  local dnd = dnd_widget({
-    text = "Do not disturb",
-    color = Theme_config.notification_center.dnd_color,
-    fg = Theme_config.notification_center.dnd_fg,
-    size = dpi(40)
-  })
+local instance = nil
 
-  dnd:get_widget():connect_signal("dnd::toggle", function(enabled)
-    User_config.dnd = enabled
-  end)
+local info_center = {}
 
-  --#region Activation area
+function info_center:toggle()
+  if self.container.visible then
+    self.container.visible = false
+  else
+    self.container.visible = true
+  end
+end
 
-  local activation_area = awful.popup {
-    bg = '#00000000',
-    widget = wibox.container.background,
-    ontop = true,
-    screen = s,
-    type = 'dock',
-    placement = function(c)
-      awful.placement.top(c)
-    end,
-  }
+function info_center.new(args)
+  args = args or {}
 
-  activation_area:setup({
-    widget = wibox.container.background,
-    forced_height = dpi(1),
-    forced_width = dpi(300),
-    bg = '#00000000',
-    layout = wibox.layout.fixed.horizontal
-  })
-
-  capi.awesome.connect_signal(
-    "notification_center_activation::toggle",
-    function(screen, hide)
-      if screen == s then
-        activation_area.visible = hide
-      end
-    end
-  )
-
-  --#endregion
-
-  --#region Widgets
-  local nl = require("src.modules.notification-center.notification_list").notification_list
-  local music_widget = require("src.modules.notification-center.song_info")()
-  local time_date = require("src.modules.notification-center.time_date")()
-  local weather_widget = require("src.modules.notification-center.weather")()
-  local profile_widget = require("src.modules.notification-center.profile")()
-  local status_bars_widget = require("src.modules.notification-center.status_bars")()
-  --#endregion
-
-  --#region Notification buttons
-  local clear_all_widget = wibox.widget { -- Clear all button
+  local w = base.make_widget_from_value {
     {
       {
         {
-          text = "Clear",
-          valign = "center",
-          align = "center",
-          widget = wibox.widget.textbox,
-          id = "clearall"
+          {
+            {
+              { -- Time
+                halign = 'center',
+                valign = 'center',
+                format = "<span foreground='#18FFFF' font='JetBrainsMono Nerd Font, Bold 46'><b>%H:%M</b></span>",
+                widget = wibox.widget.textclock,
+              },
+              { -- Date and Day
+                { -- Date
+                  halign = 'left',
+                  valign = 'bottom',
+                  format = "<span foreground='#69F0AE' font='JetBrainsMono Nerd Font, Regular 18'><b>%d</b></span><span foreground='#18FFFF' font='JetBrainsMono Nerd Font, Regular 18'><b> %b %Y</b></span>",
+                  widget = wibox.widget.textclock,
+                },
+                { -- Day
+                  halign = 'left',
+                  valign = 'top',
+                  format = "<span foreground='#69F0AE' font='JetBrainsMono Nerd Font, Bold 20'><b>%A</b></span>",
+                  widget = wibox.widget.textclock,
+                },
+                layout = wibox.layout.flex.vertical,
+              },
+              spacing = dpi(20),
+              layout = wibox.layout.fixed.horizontal,
+            },
+            widget = wibox.container.place,
+          },
+          margins = dpi(20),
+          widget = wibox.container.margin,
         },
-        id = "background4",
-        fg = Theme_config.notification_center.clear_all_button.fg,
-        bg = Theme_config.notification_center.clear_all_button.bg,
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, 12)
-        end,
-        forced_width = dpi(80),
-        forced_height = dpi(40),
-        widget = wibox.container.background
-      },
-      id = "margin3",
-      margins = dpi(10),
-      widget = wibox.container.margin
-    },
-    widget = wibox.container.place,
-    valign = "bottom",
-    halign = "right",
-  }
-
-  local no_notification_widget = wibox.widget {
-    {
-      {
-        valign = "center",
-        halign = "center",
-        resize = true,
-        forced_height = dpi(200),
-        forced_width = dpi(200),
-        image = icondir .. "megamind.svg",
-        widget = wibox.widget.imagebox,
-        id = "icon"
-      },
-      {
-        id = "txt",
-        markup = "<span color='#414141' font='JetBrainsMono Nerd Font, ExtraBold 20'>No Notifications?</span>",
-        valign = "center",
-        halign = "center",
-        widget = wibox.widget.textbox
-      },
-      id = "lay",
-      layout = wibox.layout.fixed.vertical
-    },
-    valign = "center",
-    halign = "center",
-    widget = wibox.container.place
-  }
-  --#endregion
-
-  --#region Notification center
-  local notification_center = awful.popup {
-    widget = wibox.container.background,
-    bg = Theme_config.notification_center.bg,
-    border_color = Theme_config.notification_center.border_color,
-    border_width = Theme_config.notification_center.border_width,
-    placement = function(c)
-      awful.placement.top(c, { margins = dpi(10) })
-    end,
-    ontop = true,
-    screen = s,
-    visible = false,
-    shape = function(cr, width, height)
-      gears.shape.rounded_rect(cr, width, height, dpi(12))
-    end,
-  }
-
-  local function notification_center_setup()
-    notification_center:setup({
-      widget = notification_center,
-      -- Custom widgets
-      {
-        time_date,
-        require("src.modules.notification-center.spacingline_widget")(),
+        {
+          {
+            {
+              bg = Theme_config.notification_center.spacing_line.color,
+              widget = wibox.container.background,
+            },
+            widget = wibox.container.constraint,
+            height = dpi(2),
+            strategy = 'exact',
+          },
+          left = dpi(60),
+          right = dpi(60),
+          widget = wibox.container.margin,
+        },
         {
           {
             weather_widget,
             {
               profile_widget,
-              layout = wibox.layout.fixed.vertical
+              layout = wibox.layout.fixed.vertical,
             },
-            layout = wibox.layout.fixed.horizontal
+            layout = wibox.layout.fixed.horizontal,
           },
-          layout = wibox.layout.fixed.horizontal
+          layout = wibox.layout.fixed.horizontal,
         },
-        status_bars_widget,
+        status_bars,
         music_widget,
-        layout = wibox.layout.fixed.vertical
+        layout = wibox.layout.fixed.vertical,
       },
       -- Notification list
       {
         {
           {
-            nl,
+            notification_list,
             height = dpi(680),
-            strategy = "max",
-            widget = wibox.container.constraint
-          },
-          {
-            no_notification_widget,
-            strategy = "max",
-            height = dpi(400),
-            widget = wibox.container.constraint
+            strategy = 'max',
+            widget = wibox.container.constraint,
           },
           {
             {
-              dnd,
+              {
+                {
+                  {
+                    valign = 'center',
+                    halign = 'center',
+                    resize = true,
+                    image = icondir .. 'megamind.svg',
+                    widget = wibox.widget.imagebox,
+                    id = 'no_notification_icon',
+                  },
+                  widget = wibox.container.constraint,
+                  height = dpi(200),
+                  width = dpi(200),
+                  strategy = 'exact',
+                },
+                {
+                  markup = "<span color='#414141' font='JetBrainsMono Nerd Font, ExtraBold 20'>No Notifications?</span>",
+                  valign = 'center',
+                  halign = 'center',
+                  widget = wibox.widget.textbox,
+                  id = 'no_notification_text',
+                },
+                layout = wibox.layout.fixed.vertical,
+              },
               widget = wibox.container.place,
-              valign = "center",
-              halign = "center"
+            },
+            strategy = 'max',
+            height = dpi(400),
+            widget = wibox.container.constraint,
+          },
+          {
+            {
+              dnd_widget {
+                text = 'Do not disturb',
+                color = Theme_config.notification_center.dnd_color,
+                fg = Theme_config.notification_center.dnd_fg,
+                size = dpi(40),
+              },
+              id = 'dnd',
+              widget = wibox.container.place,
             },
             nil,
-            clear_all_widget,
-            layout = wibox.layout.align.horizontal
+            { -- Clear all button
+              {
+                {
+                  {
+                    {
+                      text = 'Clear',
+                      valign = 'center',
+                      halign = 'center',
+                      widget = wibox.widget.textbox,
+                      id = 'clear',
+                    },
+                    fg = Theme_config.notification_center.clear_all_button.fg,
+                    bg = Theme_config.notification_center.clear_all_button.bg,
+                    shape = function(cr, width, height)
+                      gshape.rounded_rect(cr, width, height, 12)
+                    end,
+                    id = 'clear_all_bg',
+                    widget = wibox.container.background,
+                  },
+                  widget = wibox.container.constraint,
+                  width = dpi(80),
+                  height = dpi(40),
+                  strategy = 'exact',
+                },
+                margins = dpi(10),
+                widget = wibox.container.margin,
+              },
+              widget = wibox.container.place,
+              valign = 'bottom', --? Needed?
+              halign = 'right', --? Needed?
+            },
+            layout = wibox.layout.align.horizontal,
           },
-          id = "layout5",
-          layout = wibox.layout.align.vertical
+          layout = wibox.layout.align.vertical,
         },
-        id = "margin6",
         margins = dpi(20),
-        widget = wibox.container.margin
+        widget = wibox.container.margin,
       },
-      id = "yes",
       spacing_widget = {
-        {
-          bg = Theme_config.notification_center.spacing_color,
-          widget = wibox.container.background
-        },
-        top = dpi(40),
-        bottom = dpi(40),
-        widget = wibox.container.margin
+        thickness = dpi(2),
+        color = Theme_config.notification_center.spacing_color,
+        span_ratio = 0.9,
+        widget = wibox.widget.separator,
       },
-      spacing = dpi(1),
-      forced_height = dpi(800),
-      forced_width = dpi(1000),
-      layout = wibox.layout.flex.horizontal
-    })
-  end
+      spacing = dpi(2),
+      layout = wibox.layout.flex.horizontal,
+    },
+    widget = wibox.container.constraint,
+    height = dpi(800),
+    width = dpi(1000),
+    strategy = 'exact',
+  }
 
-  --#endregion
+  hover.bg_hover { widget = w:get_children_by_id('clear_all_bg')[1] }
 
-  --#region Signals
-  -- Toggle notification_center visibility when mouse is over activation_area
-  activation_area:connect_signal(
-    "mouse::enter",
-    function()
-      notification_center.visible = true
-      notification_center_setup()
-    end
-  )
+  assert(type(w) == 'table', 'Widget creation failed')
 
-  -- Update the notification center popup and check if there are no notifications
-  capi.awesome.connect_signal(
-    "notification_center:update::needed",
-    function()
-      if #nl == 0 then
-        math.randomseed(os.time())
-        local prob = math.random(1, 10)
+  notification_list:connect_signal('new_children', function()
+    if #notification_list.children == 0 then
+      math.randomseed(os.time())
+      local prob = math.random(1, 10)
 
-        if (prob == 5) or (prob == 6) then
-          no_notification_widget.lay.icon.image = icondir .. "megamind.svg"
-          no_notification_widget.lay.txt.markup = "<span color='#414141' font='JetBrainsMono Nerd Font, ExtraBold 20'>No Notifications?</span>"
-        else
-          no_notification_widget.lay.icon.image = icondir .. "bell-outline.svg"
-          no_notification_widget.lay.txt.markup = "<span color='#414141' font='JetBrainsMono Nerd Font, ExtraBold 20'>No Notification</span>"
-        end
-        no_notification_widget.visible = true
+      if (prob == 5) or (prob == 6) then
+        w:get_children_by_id('no_notification_icon')[1].image = icondir .. 'megamind.svg'
+        w:get_children_by_id('no_notification_text')[1].markup = "<span color='#414141' font='JetBrainsMono Nerd Font, ExtraBold 20'>No Notifications?</span>"
       else
-        no_notification_widget.visible = false
+        w:get_children_by_id('no_notification_icon')[1].image = icondir .. 'bell-outline.svg'
+        w:get_children_by_id('no_notification_text')[1].markup = "<span color='#414141' font='JetBrainsMono Nerd Font, ExtraBold 20'>No Notification</span>"
       end
-      notification_center_setup()
+      w:get_children_by_id('no_notification_icon')[1].visible = true
+      w:get_children_by_id('no_notification_text')[1].visible = true
+    else
+      w:get_children_by_id('no_notification_icon')[1].visible = false
+      w:get_children_by_id('no_notification_text')[1].visible = false
     end
-  )
-
-  local function mouse_leave()
-    notification_center.visible = false
-  end
-
-  capi.awesome.connect_signal("notification_center::block_mouse_events", function()
-    notification_center:disconnect_signal("mouse::leave", mouse_leave)
   end)
 
-  capi.awesome.connect_signal("notification_center::unblock_mouse_events", function()
-    notification_center:connect_signal("mouse::leave", mouse_leave)
+  w:get_children_by_id('clear')[1]:connect_signal('button::press', function()
+    notification_list.children = {}
+    notification_list:emit_signal('new_children')
   end)
 
-  -- Hide notification_center when mouse leaves it
-  notification_center:connect_signal(
-    "mouse::leave",
-    mouse_leave
-  )
+  w:get_children_by_id('dnd')[1]:get_widget():connect_signal('dnd::toggle', function(enabled)
+    User_config.dnd = enabled
+  end)
 
-  -- Clear all notifications on button press
-  clear_all_widget:connect_signal(
-    "button::press",
-    function()
-      local size = #nl
-      for i = 0, size do
-        nl[i] = nil
-      end
-      capi.awesome.emit_signal("notification_center:update::needed")
+  w.container = apopup {
+    widget = w,
+    bg = Theme_config.notification_center.bg,
+    border_color = Theme_config.notification_center.border_color,
+    border_width = Theme_config.notification_center.border_width,
+    placement = function(c)
+      aplacement.top(c, { margins = dpi(10) })
+    end,
+    ontop = true,
+    screen = args.screen,
+    visible = false,
+  }
+
+  local activation_area = apopup {
+    bg = gcolor.transparent,
+    widget = {
+      forced_height = dpi(1),
+      forced_width = dpi(300),
+      bg = gcolor.transparent,
+      layout = wibox.layout.fixed.horizontal,
+    },
+    ontop = true,
+    screen = args.screen,
+    type = 'dock',
+    placement = function(c)
+      aplacement.top(c)
+    end,
+  }
+
+  capi.client.connect_signal('property::fullscreen', function(c)
+    if c.fullscreen then
+      activation_area.visible = false
+    else
+      activation_area.visible = true
     end
-  )
+  end)
 
-  Hover_signal(clear_all_widget.margin3.background4)
-  --#endregion
+  activation_area:connect_signal('mouse::enter', function()
+    w.container.visible = true
+  end)
 
+  w.container:connect_signal('mouse::leave', function()
+    w.container.visible = false
+  end)
+
+  return w
 end
+
+if not instance then
+  instance = setmetatable(info_center, {
+    __call = function(self, ...)
+      self.new(...)
+    end,
+  })
+end
+
+return instance

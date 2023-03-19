@@ -3,56 +3,98 @@
 -------------------------------------------------------------------------------------------------
 
 -- Awesome Libs
-local awful = require("awful")
-local beautiful = require("beautiful")
-local ruled = require("ruled")
+local aclient = require('awful.client')
+local aplacement = require('awful.placement')
+local ascreen = require('awful.screen')
+local ruled = require('ruled')
 
-local json = require("src.lib.json-lua.json-lua")
+local config = require('src.tools.config')
 
-awful.rules.rules = {
-  {
+awesome.register_xproperty('_NET_WM_BYPASS_COMPOSITOR', 'boolean')
+
+ruled.client.connect_signal('request::rules', function()
+  ruled.client.append_rule {
     rule = {},
     properties = {
-      border_width = beautiful.border_width,
-      border_color = beautiful.border_normal,
-      focus        = awful.client.focus.filter,
-      raise        = true,
-      keys         = require("src.bindings.client_keys"),
-      buttons      = require("src.bindings.client_buttons"),
-      screen       = awful.screen.preferred,
-      placement    = awful.placement.under_mouse + awful.placement.no_overlap + awful.placement.no_offscreen +
-          awful.placement.centered
-    }
-  },
-  {
-    id = "titlebar",
+      border_width = Theme.border_width,
+      border_color = Theme.border_normal,
+      maximized = false,
+      maximized_horizontal = false,
+      maximized_vertical = false,
+      focus = aclient.focus.filter,
+      raise = true,
+      keys = require('src.bindings.client_keys'),
+      buttons = require('src.bindings.client_buttons'),
+      screen = ascreen.preferred,
+      placement = aplacement.under_mouse + aplacement.no_overlap + aplacement.no_offscreen + aplacement.centered,
+    },
+  }
+
+  ruled.client.append_rule {
     rule_any = {
       type = {
-        "normal",
-        "dialog",
-        "modal",
-        "utility"
-      }
+        'normal',
+        'dialog',
+      },
     },
     properties = {
-      titlebars_enabled = true
-    }
+      titlebars_enabled = true,
+    },
   }
-}
 
-local handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "r")
-
-if not handler then return end
-local data = json:decode(handler:read("a"))
-handler:close()
-
-if type(data) ~= "table" then return end
-
-for _, c in ipairs(data) do
   ruled.client.append_rule {
-    rule = { class = c.WM_CLASS, instance = c.WM_INSTANCE },
+    rule_any = {
+      class = {
+        'proton-bridge',
+        '1password',
+        'protonvpn',
+        'Steam',
+      },
+    },
     properties = {
-      floating = true
+      minimized = true,
     },
   }
+  ruled.client.append_rule {
+    rule_any = {
+      class = {
+        'discord',
+        'spotify',
+      },
+    },
+    properties = {
+      tag = '1',
+      screen = 2,
+    },
+  }
+
+  ruled.client.append_rule {
+    rule_any = {
+      class = {
+        'steam_app_990080',
+      },
+    },
+    callback = function(c)
+      c:set_xproperty('_NET_WM_BYPASS_COMPOSITOR', true)
+      c:connect_signal('focus', function()
+        c:set_xproperty('_NET_WM_BYPASS_COMPOSITOR', true)
+      end)
+      c:connect_signal('raised', function()
+        c:set_xproperty('_NET_WM_BYPASS_COMPOSITOR', true)
+      end)
+    end,
+  }
+
+end)
+
+do
+  local data = config.read_json('/home/crylia/.config/awesome/src/config/floating.json')
+  for _, c in ipairs(data) do
+    ruled.client.append_rule {
+      rule = { class = c.WM_CLASS, instance = c.WM_INSTANCE },
+      properties = {
+        floating = true,
+      },
+    }
+  end
 end

@@ -2,16 +2,15 @@
 -- This is the statusbar, every widget, module and so on is combined to all the stuff you see on the screen --
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local wibox = require("wibox")
+local awful = require('awful')
+local dpi = require('beautiful').xresources.apply_dpi
+local wibox = require('wibox')
 
 return function(s, w)
-
   local function prepare_widgets(widgets)
     local layout = {
       forced_height = dpi(50),
-      layout = wibox.layout.fixed.horizontal
+      layout = wibox.layout.fixed.horizontal,
     }
     for i, widget in pairs(widgets) do
       if i == 1 then
@@ -22,7 +21,7 @@ return function(s, w)
             right = dpi(3),
             top = dpi(6),
             bottom = dpi(6),
-            widget = wibox.container.margin
+            widget = wibox.container.margin,
           })
       elseif i == #widgets then
         table.insert(layout,
@@ -32,7 +31,7 @@ return function(s, w)
             right = dpi(6),
             top = dpi(6),
             bottom = dpi(6),
-            widget = wibox.container.margin
+            widget = wibox.container.margin,
           })
       else
         table.insert(layout,
@@ -42,7 +41,7 @@ return function(s, w)
             right = dpi(3),
             top = dpi(6),
             bottom = dpi(6),
-            widget = wibox.container.margin
+            widget = wibox.container.margin,
           })
       end
     end
@@ -50,17 +49,17 @@ return function(s, w)
   end
 
   local top_left = awful.popup {
-    screen = s,
-    widget = prepare_widgets(w),
-    ontop = false,
-    bg = Theme_config.left_bar.bg,
-    visible = true,
-    maximum_width = dpi(650),
-    placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end
-  }
+      screen = s,
+      widget = prepare_widgets(w),
+      ontop = false,
+      bg = Theme_config.left_bar.bg,
+      visible = true,
+      maximum_width = dpi(650),
+      placement = function(c) awful.placement.top_left(c, { margins = dpi(10) }) end,
+    }
 
   top_left:struts {
-    top = dpi(55)
+    top = dpi(55),
   }
 
   Global_config.top_struts = dpi(55)

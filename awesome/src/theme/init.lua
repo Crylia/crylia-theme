@@ -6,15 +6,19 @@
 -- ╚██████╗██║  ██║   ██║   ███████╗██║██║  ██║ --
 --  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝╚═╝  ╚═╝ --
 --------------------------------------------------
-local beautiful = require("beautiful")
-local gears = require("gears")
+local beautiful = require('beautiful')
+local gwallpaper = require('gears.wallpaper')
+local gfilesystem = require('gears.filesystem')
 
 local capi = {
+  awesome = awesome,
   screen = screen,
 }
 
-Theme_path = gears.filesystem.get_configuration_dir() .. "/src/theme/"
+Theme_path = gfilesystem.get_configuration_dir() .. '/src/theme/'
 Theme = {}
+
+awesome.set_preferred_icon_size(128)
 
 -- Default font, change it in user_config, not here.
 Theme.font = User_config.font.bold
@@ -51,17 +55,17 @@ Theme.hotkeys_label_fg = Theme_config.hotkeys.label_fg
 
 -- Wallpaper
 beautiful.wallpaper = User_config.wallpaper
-capi.screen.connect_signal(
-  'request::wallpaper',
-  function(s)
-    if beautiful.wallpaper then
-      if type(beautiful.wallpaper) == 'string' then
-        gears.wallpaper.maximized(beautiful.wallpaper, s)
-      else
-        beautiful.wallpaper(s)
-      end
+capi.screen.connect_signal('request::wallpaper', function(s)
+  if beautiful.wallpaper then
+    if type(beautiful.wallpaper) == 'string' then
+      gwallpaper.maximized(beautiful.wallpaper, s)
+    else
+      beautiful.wallpaper(s)
     end
   end
-)
+end)
 
 beautiful.init(Theme)
+
+-- Load titlebar
+require('src.core.titlebar')()

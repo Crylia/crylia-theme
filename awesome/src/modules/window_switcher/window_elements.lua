@@ -3,13 +3,13 @@
 ---------------------------------
 
 -- Awesome Libs
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local gears = require("gears")
-local wibox = require("wibox")
+local awful = require('awful')
+local dpi = require('beautiful').xresources.apply_dpi
+local gears = require('gears')
+local wibox = require('wibox')
 
-local color = require("src.lib.color")
-local rubato = require("src.lib.rubato")
+local color = require('src.lib.color')
+local rubato = require('src.lib.rubato')
 
 local capi = {
   awesome = awesome,
@@ -21,13 +21,13 @@ return function()
   local elements = wibox.widget {
     layout = wibox.layout.fixed.horizontal,
     spacing = dpi(20),
-    id = "switcher"
+    id = 'switcher',
   }
 
   local selected = 0
 
   local function create_elements(fn)
-    fn = fn or ""
+    fn = fn or ''
 
     elements:reset()
 
@@ -53,44 +53,43 @@ return function()
             {
               { -- Icon
                 {
-                  id = "icon",
+                  id = 'icon',
                   --!ADD FALLBACK ICON!--
-                  image = Get_icon(client.class, client.name) or client.icon,
-                  --image = gears.surface(client.content),
-                  valign = "center",
-                  halign = "center",
-                  widget = wibox.widget.imagebox
+                  image = gears.surface(client.icon),
+                  valign = 'center',
+                  halign = 'center',
+                  widget = wibox.widget.imagebox,
                 },
                 width = dpi(100),
                 height = dpi(100),
-                id = "icon_const",
-                strategy = "exact",
-                widget = wibox.container.constraint
+                id = 'icon_const',
+                strategy = 'exact',
+                widget = wibox.container.constraint,
               },
               {
                 {
                   text = client.name,
-                  id = "label",
-                  widget = wibox.widget.textbox
+                  id = 'label',
+                  widget = wibox.widget.textbox,
                 },
-                id = "place",
-                valign = "center",
-                halign = "center",
-                widget = wibox.container.place
+                id = 'place',
+                valign = 'center',
+                halign = 'center',
+                widget = wibox.container.place,
               },
-              id = "layout1",
+              id = 'layout1',
               spacing = dpi(10),
-              layout = wibox.layout.fixed.vertical
+              layout = wibox.layout.fixed.vertical,
             },
-            id = "box",
+            id = 'box',
             width = dpi(150),
             height = dpi(150),
-            strategy = "exact",
-            widget = wibox.container.constraint
+            strategy = 'exact',
+            widget = wibox.container.constraint,
           },
-          id = "margin",
+          id = 'margin',
           margins = dpi(20),
-          widget = wibox.container.margin
+          widget = wibox.container.margin,
         },
         shape = function(cr, width, height)
           gears.shape.rounded_rect(cr, width, height, dpi(12))
@@ -99,13 +98,13 @@ return function()
         border_width = Theme_config.window_switcher.border_width,
         bg = Theme_config.window_switcher.bg,
         fg = Theme_config.window_switcher.element_fg,
-        widget = wibox.container.background
+        widget = wibox.container.background,
       }
 
       elements:add(window_element)
     end
 
-    if fn == "next" then
+    if fn == 'next' then
       if selected >= #clients_sorted then
         selected = 1
       else
@@ -153,15 +152,15 @@ return function()
         end
 
         local function update_bg()
-          element:set_bg("#" .. color.utils.rgba_to_hex { r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos })
+          element:set_bg('#' .. color.utils.rgba_to_hex { r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos })
         end
 
         local function update_fg()
-          element:set_fg("#" .. color.utils.rgba_to_hex { r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos })
+          element:set_fg('#' .. color.utils.rgba_to_hex { r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos })
         end
 
         local function update_border()
-          element.border_color = "#" ..
+          element.border_color = '#' ..
               color.utils.rgba_to_hex { r_timed_border.pos, g_timed_border.pos, b_timed_border.pos }
         end
 
@@ -202,7 +201,7 @@ return function()
           set_bg(Theme_config.window_switcher.bg)
         end
       end
-    elseif fn == "raise" then
+    elseif fn == 'raise' then
       local c = clients_sorted[selected]
       if not c:isvisible() and c.first_tag then
         c.first_tag:view_only()
@@ -219,35 +218,35 @@ return function()
   elements = create_elements()
 
   capi.awesome.connect_signal(
-    "window_switcher::select_next",
+    'window_switcher::select_next',
     function()
-      elements = create_elements("next")
+      elements = create_elements('next')
     end
   )
 
   capi.awesome.connect_signal(
-    "window_switcher::raise",
+    'window_switcher::raise',
     function()
-      elements = create_elements("raise")
+      elements = create_elements('raise')
     end
   )
 
   capi.client.connect_signal(
-    "manage",
+    'manage',
     function()
       elements = create_elements()
     end
   )
 
   capi.client.connect_signal(
-    "unmanage",
+    'unmanage',
     function()
       elements = create_elements()
     end
   )
 
   capi.awesome.connect_signal(
-    "window_switcher::update",
+    'window_switcher::update',
     function()
       elements = create_elements()
     end

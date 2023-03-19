@@ -3,178 +3,135 @@
 --------------------------------
 
 -- Awesome Libs
-local wibox = require("wibox")
-local awful = require("awful")
-local gears = require("gears")
-local dpi = require("beautiful").xresources.apply_dpi
+local abutton = require('awful.button')
+local ascreen = require('awful.screen')
+local atag = require('awful.tag')
+local awidget = require('awful.widget')
+local dpi = require('beautiful').xresources.apply_dpi
+local gtable = require('gears.table')
+local wibox = require('wibox')
 
-local capi = {
-  client = client,
-}
+-- Local Libs
+local hover = require('src.tools.hover')
+
+local capi = { client = client }
 
 local modkey = User_config.modkey
 
-local list_update = function(widget, buttons, _, _, objects)
-  widget:reset()
+local tag_text = {
+  [1] = '一',
+  [2] = '二',
+  [3] = '三',
+  [4] = '四',
+  [5] = '五',
+  [6] = '六',
+  [7] = '七',
+  [8] = '八',
+  [9] = '九',
+  [10] = '十',
+}
 
-  for _, object in ipairs(objects) do
+return setmetatable({}, { __call = function(_, screen)
+  return awidget.taglist {
+    filter = awidget.taglist.filter.noempty,
+    layout = wibox.layout.fixed.horizontal,
+    screen = screen,
+    update_function = function(widget, _, _, _, tags)
+      widget:reset()
+      -- Create a tag widget for each tag
+      for _, tag in ipairs(tags) do
 
-    local tag_widget = wibox.widget {
-      {
-        {
+        local tag_widget = wibox.widget {
           {
-            text = "",
-            align = "center",
-            valign = "center",
-            visible = true,
-            font = User_config.font.extrabold,
-            forced_width = dpi(25),
-            id = "label",
-            widget = wibox.widget.textbox
+            {
+              {
+                text = tag_text[tag.index],
+                halign = 'center',
+                valign = 'center',
+                id = 'text_role',
+                widget = wibox.widget.textbox,
+              },
+              id = 'tag_layout',
+              spacing = dpi(10),
+              layout = wibox.layout.fixed.horizontal,
+            },
+            left = dpi(10),
+            right = dpi(10),
+            widget = wibox.container.margin,
           },
-          id = "margin",
-          left = dpi(5),
-          right = dpi(5),
-          widget = wibox.container.margin
-        },
-        id = "container",
-        layout = wibox.layout.fixed.horizontal
-      },
-      fg = Theme_config.taglist.fg,
-      bg = Theme_config.taglist.bg,
-      shape = function(cr, width, height)
-        gears.shape.rounded_rect(cr, width, height, dpi(6))
-      end,
-      widget = wibox.container.background
-    }
+          fg = Theme_config.taglist.fg,
+          bg = Theme_config.taglist.bg,
+          shape = Theme_config.taglist.shape,
+          widget = wibox.container.background,
+        }
 
-    local function create_buttons(buttons_t, object_t)
-      if buttons_t then
-        local btns = {}
-        for _, b in ipairs(buttons_t) do
-          local btn = awful.button {
-            modifiers = b.modifiers,
-            button = b.button,
-            on_press = function()
-              b:emit_signal('press', object_t)
-            end,
-            on_release = function()
-              b:emit_signal('release', object_t)
+        -- Add the buttons for each tag
+        tag_widget:buttons { gtable.join(
+          abutton({}, 1, function()
+            tag:view_only()
+          end),
+
+          abutton({ modkey }, 1, function()
+            if capi.client.focus then
+              capi.client.focus:move_to_tag(tag)
             end
-          }
-          btns[#btns + 1] = btn
+          end),
+
+          abutton({}, 3, function()
+            if capi.client.focus then
+              capi.client.focus:toggle_tag(tag)
+            end
+          end),
+
+          abutton({ modkey }, 3, function()
+            if capi.client.focus then
+              capi.client.focus:toggle_tag(tag)
+            end
+          end),
+
+          abutton({}, 4, function()
+            atag.viewnext(tag.screen)
+          end),
+
+          abutton({}, 5, function()
+            atag.viewprev(tag.screen)
+          end)
+        ), }
+
+        -- Change the taglist colors depending on the state of the tag
+        if tag == ascreen.focused().selected_tag then
+          tag_widget:set_bg(Theme_config.taglist.bg_focus)
+          tag_widget:set_fg(Theme_config.taglist.fg_focus)
+        elseif tag.urgent == true then
+          tag_widget:set_bg(Theme_config.taglist.bg_urgent)
+          tag_widget:set_fg(Theme_config.taglist.fg_urgent)
+        else
+          tag_widget:set_bg(Theme_config.taglist.bg)
+          tag_widget:set_fg(Theme_config.taglist.fg)
         end
-        return btns
+
+        -- Add the client icons to the tag widget
+        for _, client in ipairs(tag:clients()) do
+          tag_widget:get_children_by_id('tag_layout')[1]:add(wibox.widget {
+            {
+              resize = true,
+              valign = 'center',
+              halign = 'center',
+              image = client.icon or '',
+              widget = wibox.widget.imagebox,
+            },
+            height = dpi(25),
+            width = dpi(25),
+            strategy = 'exact',
+            widget = wibox.container.constraint,
+          })
+        end
+
+        hover.bg_hover { widget = tag_widget }
+
+        widget:add(tag_widget)
+        widget:set_spacing(dpi(5))
       end
-    end
-
-    tag_widget:buttons(create_buttons(buttons, object))
-
-    tag_widget.container.margin.label:set_text(object.index)
-    -- Use the wraper function to call the set_bg and set_fg based on the client state
-    if object == awful.screen.focused().selected_tag then
-      tag_widget:set_bg(Theme_config.taglist.bg_focus)
-      tag_widget:set_fg(Theme_config.taglist.fg_focus)
-    elseif object.urgent == true then
-      tag_widget:set_bg(Theme_config.taglist.bg_urgent)
-      tag_widget:set_fg(Theme_config.taglist.fg_urgent)
-    else
-      tag_widget:set_bg(Theme_config.taglist.bg)
-      tag_widget:set_fg(Theme_config.taglist.fg)
-    end
-    --#endregion
-
-    -- Set the icon for each client
-    for _, client in ipairs(object:clients()) do
-      tag_widget.container.margin:set_right(0)
-      local icon = wibox.widget {
-        {
-          id = "icon_container",
-          {
-            id = "icon",
-            image = Get_icon(client.class, client.name) or client.icon,
-            resize = true,
-            valign = "center",
-            halign = "center",
-            widget = wibox.widget.imagebox
-          },
-          widget = wibox.container.place
-        },
-        forced_width = dpi(33),
-        margins = dpi(6),
-        widget = wibox.container.margin
-      }
-
-      tag_widget.container:setup({
-        icon,
-        strategy = "exact",
-        layout = wibox.container.constraint,
-      })
-    end
-
-    Hover_signal(tag_widget)
-
-    widget:add(tag_widget)
-    widget:set_spacing(dpi(6))
-  end
-end
-
-return function(s)
-  return awful.widget.taglist(
-    s,
-    awful.widget.taglist.filter.noempty,
-    gears.table.join(
-      awful.button(
-        {},
-        1,
-        function(t)
-          t:view_only()
-        end
-      ),
-      awful.button(
-        { modkey },
-        1,
-        function(t)
-          if capi.client.focus then
-            capi.client.focus:move_to_tag(t)
-          end
-        end
-      ),
-      awful.button(
-        {},
-        3,
-        function(t)
-          if capi.client.focus then
-            capi.client.focus:toggle_tag(t)
-          end
-        end
-      ),
-      awful.button(
-        { modkey },
-        3,
-        function(t)
-          if capi.client.focus then
-            capi.client.focus:toggle_tag(t)
-          end
-        end
-      ),
-      awful.button(
-        {},
-        4,
-        function(t)
-          awful.tag.viewnext(t.screen)
-        end
-      ),
-      awful.button(
-        {},
-        5,
-        function(t)
-          awful.tag.viewprev(t.screen)
-        end
-      )
-    ),
-    {},
-    list_update,
-    wibox.layout.fixed.horizontal()
-  )
-end
+    end,
+  }
+end, })

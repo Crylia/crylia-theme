@@ -1,11 +1,11 @@
-local base = require("wibox.widget.base")
-local gtable = require("gears.table")
-local gcolor = require("gears.color")
-local dpi = require("beautiful").xresources.apply_dpi
-local wibox = require("wibox")
-local gshape = require("gears.shape")
-local rubato = require("src.lib.rubato")
-local abutton = require("awful.button")
+local base = require('wibox.widget.base')
+local gtable = require('gears.table')
+local gcolor = require('gears.color')
+local dpi = require('beautiful').xresources.apply_dpi
+local wibox = require('wibox')
+local gshape = require('gears.shape')
+local rubato = require('src.lib.rubato')
+local abutton = require('awful.button')
 
 local toggle_widget = { mt = {} }
 
@@ -52,7 +52,7 @@ function toggle_widget:toggle_animation(pos, color)
     cr:move_to(pos, 0)
     local x = pos
     local y = 5
-    local newwidth = width / 2 - 10
+    local newwidth = width / 2 - 6
     local newheight = height - 10
 
     local radius = height / 6.0
@@ -88,7 +88,7 @@ function toggle_widget.new(args)
         end,
         draw = ret:toggle_animation(0, ret.newcolor),
       },
-      id = "background",
+      id = 'background',
     },
     active = false,
     widget = wibox.container.background,
@@ -106,9 +106,9 @@ function toggle_widget.new(args)
     duration = 0.2,
     pos = 5,
     subscribed = function(pos)
-      ret.toggle_button:get_children_by_id("background")[1].draw = ret:toggle_animation(pos, ret.newcolor)
-      ret.toggle_button:emit_signal("widget::redraw_needed")
-    end
+      ret.toggle_button:get_children_by_id('background')[1].draw = ret:toggle_animation(pos, ret.newcolor)
+      ret.toggle_button:emit_signal('widget::redraw_needed')
+    end,
   }
 
   ret:set_widget(wibox.widget {
@@ -116,27 +116,27 @@ function toggle_widget.new(args)
       {
         args.text and {
           text = args.text,
-          valign = "center",
-          align = "center",
+          valign = 'center',
+          align = 'center',
           widget = wibox.widget.textbox,
-          id = "clearall"
+          id = 'clearall',
         } or nil,
         ret.toggle_button,
         spacing = args.text and dpi(10) or dpi(0),
         layout = wibox.layout.fixed.horizontal,
-        id = "layout12"
+        id = 'layout12',
       },
-      id = "background4",
+      id = 'background4',
       fg = args.fg,
       shape = function(cr, width, height)
         gshape.rounded_rect(cr, width, height, dpi(12))
       end,
-      widget = wibox.container.background
+      widget = wibox.container.background,
     },
-    id = "place",
+    id = 'place',
     widget = wibox.container.place,
-    valign = "bottom",
-    halign = "right",
+    valign = 'bottom',
+    halign = 'right',
   })
 
   ret.toggle_button:buttons(
@@ -147,7 +147,7 @@ function toggle_widget.new(args)
         else
           ret:set_enabled()
         end
-        ret:emit_signal("dnd::toggle", ret.active)
+        ret:emit_signal('dnd::toggle', ret.active)
       end
       )
     )

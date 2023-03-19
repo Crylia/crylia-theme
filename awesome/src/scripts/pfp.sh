@@ -23,8 +23,8 @@ case $1 in
     else
         if [[ -f "$iconPath" ]];
         then
-            cp "$iconPath" "$userIconPath$USER.png"
-            printf "$userIconPath$USER.png"
+            cp "$iconPath" $userIconPath"userpfp.png"
+            printf $userIconPath"userpfp.png"
             exit;
         fi
     fi

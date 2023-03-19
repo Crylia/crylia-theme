@@ -8,13 +8,13 @@
 ---------------------------------------------------------------------------
 
 local setmetatable = setmetatable
-local beautiful = require("beautiful")
-local gtable = require("gears.table")
-local base = require("wibox.widget.base")
-local gstring = require("gears.string")
-local akeygrabber = require("awful.keygrabber")
-local akey = require("awful.key")
-local textbox = require("wibox.widget.textbox")
+local beautiful = require('beautiful')
+local gtable = require('gears.table')
+local base = require('wibox.widget.base')
+local gstring = require('gears.string')
+local akeygrabber = require('awful.keygrabber')
+local akey = require('awful.key')
+local textbox = require('wibox.widget.textbox')
 
 local capi = {
     selection = selection,
@@ -28,15 +28,15 @@ local inputbox = { mt = {} }
 local function text_with_cursor(text, cursor_pos, self)
     local char, spacer, text_start, text_end
 
-    local cursor_fg = beautiful.inputbox_cursor_fg or "#313131"
-    local cursor_bg = beautiful.inputbox_cursor_bg or "#0dccfc"
-    local placeholder_text = self.hint_text or ""
-    local placeholder_fg = beautiful.inputbox_placeholder_fg or "#777777"
-    local highlight_bg = beautiful.inputbox_highlight_bg or "#35ffe4"
-    local highlight_fg = beautiful.inputbox_highlight_fg or "#000000"
+    local cursor_fg = beautiful.inputbox_cursor_fg or '#313131'
+    local cursor_bg = beautiful.inputbox_cursor_bg or '#0dccfc'
+    local placeholder_text = self.hint_text or ''
+    local placeholder_fg = beautiful.inputbox_placeholder_fg or '#777777'
+    local highlight_bg = beautiful.inputbox_highlight_bg or '#35ffe4'
+    local highlight_fg = beautiful.inputbox_highlight_fg or '#000000'
 
-    if text == "" then
-        return "<span foreground='" .. placeholder_fg .. "'>" .. placeholder_text .. "</span>"
+    if text == '' then
+        return "<span foreground='" .. placeholder_fg .. "'>" .. placeholder_text .. '</span>'
     end
 
     local offset = 0
@@ -45,13 +45,13 @@ local function text_with_cursor(text, cursor_pos, self)
     end
 
     if #text < cursor_pos then
-        char = " "
-        spacer = ""
+        char = ' '
+        spacer = ''
         text_start = gstring.xml_escape(text)
-        text_end = ""
+        text_end = ''
     else
         char = gstring.xml_escape(text:sub(cursor_pos, cursor_pos + offset))
-        spacer = " "
+        spacer = ' '
         text_start = gstring.xml_escape(text:sub(1, cursor_pos - 1))
         text_end = gstring.xml_escape(text:sub(cursor_pos + offset + 1))
     end
@@ -65,10 +65,10 @@ local function text_with_cursor(text, cursor_pos, self)
 
         return text_start_highlight ..
             "<span foreground='" .. highlight_fg .. "'  background='" .. highlight_bg .. "'>" ..
-            text_highlighted .. "</span>" .. text_end_highlight
+            text_highlighted .. '</span>' .. text_end_highlight
     else
         return text_start .. "<span background='" .. cursor_bg .. "' foreground='" .. cursor_fg .. "'>" ..
-            char .. "</span>" .. text_end .. spacer
+            char .. '</span>' .. text_end .. spacer
     end
 end
 
@@ -90,23 +90,23 @@ inputbox.set_widget = base.set_widget_common
 
 --- Clears the current text
 function inputbox:clear()
-    self:set_text("")
+    self:set_text('')
 end
 
 function inputbox:get_text()
-    return self._private.text or ""
+    return self._private.text or ''
 end
 
 function inputbox:set_text(text)
     self._private.text = text
     self.markup = text_with_cursor(self:get_text(), #self:get_text(), self)
-    self:emit_signal("property::text", text)
+    self:emit_signal('property::text', text)
 end
 
 --- Stop the keygrabber and mousegrabber
 function inputbox:stop()
     if (not self.akeygrabber) or (not self.akeygrabber.is_running) then return end
-    self:emit_signal("stopped")
+    self:emit_signal('stopped')
     self.akeygrabber.stop()
 end
 
@@ -116,16 +116,16 @@ function inputbox:focus()
         self:run()
     end
 
-    self:connect_signal("button::press", function()
+    self:connect_signal('button::press', function()
         if capi.mouse.current_widget ~= self then
-            self:emit_signal("keygrabber::stop", "")
+            self:emit_signal('keygrabber::stop', '')
         end
     end)
 end
 
 --- Init the inputbox and start the keygrabber
 function inputbox:run()
-    if not self._private.text then self._private.text = "" end
+    if not self._private.text then self._private.text = '' end
 
     -- Init the cursor position, but causes on refocus the cursor to move to the left
     local cursor_pos = #self:get_text() + 1
@@ -136,24 +136,22 @@ function inputbox:run()
     self.akeygrabber = akeygrabber {
         autostart = true,
         start_callback = function()
-            self:emit_signal("started")
+            self:emit_signal('started')
         end,
         stop_callback = function(_, stop_key)
-            if stop_key == "Return" then
-                self:emit_signal("submit", self:get_text(), stop_key)
-                -- Only reset text on enter as on escape you might want to continue later
-                self:set_text("")
+            if stop_key == 'Return' then
+                self:emit_signal('submit', self:get_text(), stop_key)
             else
-                self:emit_signal("stopped", stop_key)
+                self:emit_signal('stopped', stop_key)
             end
         end,
-        stop_key = { "Escape", "Return" },
+        stop_key = { 'Escape', 'Return' },
         keybindings = {
             --lShift, rShift = #50, #62
             --lControl, rControl = #37, #105
             akey {
-                modifiers = { "Shift" },
-                key = "Left", -- left
+                modifiers = { 'Shift' },
+                key = 'Left', -- left
                 on_press = function()
                     if cursor_pos > 1 then
                         local offset = (self._private.text:sub(cursor_pos - 1, cursor_pos - 1):wlen() == -1) and 1 or 0
@@ -178,12 +176,12 @@ function inputbox:run()
                         cursor_pos = #self._private.text + 1
                     end
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", "Shift", "Left")
-                end
+                    self:emit_signal('inputbox::key_pressed', 'Shift', 'Left')
+                end,
             },
             akey {
-                modifiers = { "Shift" },
-                key = "Right", -- right
+                modifiers = { 'Shift' },
+                key = 'Right', -- right
                 on_press = function()
                     if #self._private.text >= cursor_pos then
                         if not self._private.highlight.cur_pos_end then
@@ -209,29 +207,29 @@ function inputbox:run()
                         cursor_pos = #self._private.text + 1
                     end
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", "Shift", "Right")
-                end
+                    self:emit_signal('inputbox::key_pressed', 'Shift', 'Right')
+                end,
             },
             akey {
-                modifiers = { "Control" },
-                key = "a", -- a
+                modifiers = { 'Control' },
+                key = 'a', -- a
                 on_press = function()
                     -- Mark the entire text
                     self._private.highlight = {
                         cur_pos_start = 1,
-                        cur_pos_end = #self._private.text
+                        cur_pos_end = #self._private.text,
                     }
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", "Control", "a")
-                end
+                    self:emit_signal('inputbox::key_pressed', 'Control', 'a')
+                end,
             },
             akey {
-                modifiers = { "Control" },
-                key = "v", -- v
+                modifiers = { 'Control' },
+                key = 'v', -- v
                 on_press = function()
                     local sel = capi.selection()
                     if sel then
-                        sel = sel:gsub("\n", "")
+                        sel = sel:gsub('\n', '')
                         if self._private.highlight and self._private.highlight.cur_pos_start and
                             self._private.highlight.cur_pos_end then
                             -- insert the text into the selected part
@@ -248,35 +246,35 @@ function inputbox:run()
                     end
 
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", "Control", "v")
-                end
+                    self:emit_signal('inputbox::key_pressed', 'Control', 'v')
+                end,
             },
             akey {
-                modifiers = { "Control" },
-                key = "c", -- c
+                modifiers = { 'Control' },
+                key = 'c', -- c
                 on_press = function()
                     --TODO
-                end
+                end,
             },
             akey {
-                modifiers = { "Control" },
-                key = "x", -- x
+                modifiers = { 'Control' },
+                key = 'x', -- x
                 on_press = function()
                     --TODO
-                end
+                end,
             },
             akey {
-                modifiers = { "Control" },
-                key = "Left", -- left
+                modifiers = { 'Control' },
+                key = 'Left', -- left
                 on_press = function()
                     -- Find all spaces
                     local spaces = {}
                     local t, i = self._private.text, 0
 
-                    while t:find("%s") do
-                        i = t:find("%s")
+                    while t:find('%s') do
+                        i = t:find('%s')
                         table.insert(spaces, i)
-                        t = t:sub(1, i - 1) .. "-" .. t:sub(i + 1)
+                        t = t:sub(1, i - 1) .. '-' .. t:sub(i + 1)
                     end
 
                     local cp = 1
@@ -292,14 +290,14 @@ function inputbox:run()
                         cursor_pos = #self._private.text + 1
                     end
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", "Control", "Left")
-                end
+                    self:emit_signal('inputbox::key_pressed', 'Control', 'Left')
+                end,
             },
             akey {
-                modifiers = { "Control" },
-                key = "Right", -- right
+                modifiers = { 'Control' },
+                key = 'Right', -- right
                 on_press = function()
-                    local next_space = self._private.text:sub(cursor_pos):find("%s")
+                    local next_space = self._private.text:sub(cursor_pos):find('%s')
                     if next_space then
                         cursor_pos = cursor_pos + next_space
                     else
@@ -312,12 +310,12 @@ function inputbox:run()
                         cursor_pos = #self._private.text + 1
                     end
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", "Control", "Right")
-                end
+                    self:emit_signal('inputbox::key_pressed', 'Control', 'Right')
+                end,
             },
             akey {
                 modifiers = {},
-                key = "BackSpace", --BackSpace
+                key = 'BackSpace', --BackSpace
                 on_press = function()
                     -- If text is highlighted delete that, else just delete the character to the left
                     if self._private.highlight and self._private.highlight.cur_pos_start and
@@ -337,12 +335,12 @@ function inputbox:run()
                         end
                     end
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", nil, "BackSpace")
-                end
+                    self:emit_signal('inputbox::key_pressed', nil, 'BackSpace')
+                end,
             },
             akey {
                 modifiers = {},
-                key = "Delete", --delete
+                key = 'Delete', --delete
                 on_press = function()
                     -- If text is highlighted delete that, else just delete the character to the right
                     if self._private.highlight and self._private.highlight.cur_pos_start and
@@ -359,41 +357,41 @@ function inputbox:run()
                         end
                     end
                     self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-                    self:emit_signal("inputbox::key_pressed", nil, "Delete")
-                end
+                    self:emit_signal('inputbox::key_pressed', nil, 'Delete')
+                end,
             },
             akey {
                 modifiers = {},
-                key = "Left", --left
+                key = 'Left', --left
                 on_press = function()
                     -- Move cursor ro the left
                     if cursor_pos > 1 then
                         cursor_pos = cursor_pos - 1
                     end
                     self._private.highlight = {}
-                end
+                end,
             },
             akey {
                 modifiers = {},
-                key = "Right", --right
+                key = 'Right', --right
                 on_press = function()
                     -- Move cursor to the right
                     if cursor_pos <= #self._private.text then
                         cursor_pos = cursor_pos + 1
                     end
                     self._private.highlight = {}
-                end
+                end,
             },
             --self.keybindings
         },
         keypressed_callback = function(_, modifiers, key)
-            if modifiers[1] == "Shift" then
+            if modifiers[1] == 'Shift' then
                 if key:wlen() == 1 then
                     self:set_text(self._private.text:sub(1, cursor_pos - 1) ..
                         string.upper(key) .. self._private.text:sub(cursor_pos))
                     cursor_pos = cursor_pos + #key
                 end
-            elseif modifiers[1] == "Mod2" or "" then
+            elseif modifiers[1] == 'Mod2' or '' then
                 if key:wlen() == 1 then
                     self:set_text(self._private.text:sub(1, cursor_pos - 1) ..
                         key .. self._private.text:sub(cursor_pos))
@@ -407,8 +405,8 @@ function inputbox:run()
                 cursor_pos = #self._private.text + 1
             end
             self.markup = text_with_cursor(self:get_text(), cursor_pos, self)
-            self:emit_signal("inputbox::key_pressed", modifiers, key)
-        end
+            self:emit_signal('inputbox::key_pressed', modifiers, key)
+        end,
     }
 end
 
@@ -426,6 +424,7 @@ end
 -- @treturn awful.widget.inputbox The inputbox widget.
 -- @constructorfct awful.widget.inputbox
 function inputbox.new(args)
+    args = args or {}
     -- directly pass a possible default text(this is not meant to be a hint)
     local w = textbox()
 
@@ -437,7 +436,7 @@ function inputbox.new(args)
     w.keybindings = args.keybindings or {}
     w.hint_text = args.hint_text
 
-    w.markup = args.text or text_with_cursor("", 1, w)
+    w.markup = args.text or text_with_cursor('', 1, w)
     return w
 end
 

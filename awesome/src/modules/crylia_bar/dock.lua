@@ -2,518 +2,594 @@
 -- This is the statusbar, every widget, module and so on is combined to all the stuff you see on the screen --
 --------------------------------------------------------------------------------------------------------------
 -- Awesome Libs
-local awful = require("awful")
-local dpi = require("beautiful").xresources.apply_dpi
-local Gio = require("lgi").Gio
-local gears = require("gears")
-local wibox = require("wibox")
+local lgi = require('lgi')
+local Gio = lgi.Gio
+local abutton = require('awful.button')
+local apopup = require('awful.popup')
+local dpi = require('beautiful').xresources.apply_dpi
+local gfilesystem = require('gears.filesystem')
+local gtable = require('gears.table')
+local wibox = require('wibox')
+local gcolor = require('gears.color')
+local awidget = require('awful.widget')
+local aplacement = require('awful.placement')
+local gtimer = require('gears.timer')
+local amenu = require('awful.menu')
+
+-- Local libs
+local config = require('src.tools.config')
+local context_menu = require('src.modules.context_menu.init')
+local hover = require('src.tools.hover')
 
 local capi = {
   awesome = awesome,
   client = client,
   mouse = mouse,
+  screen = screen,
 }
 
-local json = require("src.lib.json-lua.json-lua")
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/'
 
-local icondir = gears.filesystem.get_configuration_dir() .. "src/assets/icons/context_menu/"
+local elements = {
+  ['pinned'] = {},
+  ['applauncher_starter'] = {},
+  ['running'] = {},
+}
 
-local cm = require("src.modules.context_menu.init")
+local instances = {}
 
-return function(screen)
+local dock = { mt = {} }
 
-  local cm_open = false
+--[[ Json format of dock.json, running apps won't be saved
+  [
+    {
+      "applauncher_starter": {
+        {
+          "name": "Application Launcher",
+          "icon": "/usr/share/icons/Papirus/48x48/apps/xfce4-appfinder.svg",
+        }
+      },
+      "pinned": [
+        {
+          "name": "firefox",
+          "icon": "/usr/share/icons/Papirus/48x48/apps/firefox.svg",
+          "exec": "firefox",
+          "desktop_file": "/usr/share/applications/firefox.desktop"
+        },
+        {
+          "name": "discord",
+          "icon": "/usr/share/icons/Papirus/48x48/apps/discord.svg",
+          "exec": "discord",
+          "desktop_file": "/usr/share/applications/discord.desktop"
+        }
+      ],
+    }
+  ]
+]]
 
-  local dock_element_ammount = 0
+function dock:toggle()
+  self.popup.visible = not self.popup.visible
+end
 
-  ---Creates a new program widget for the dock
-  ---@param program string | function The name of the .desktop file
-  ---@param size number The size of the widget
-  ---@return widox.widget | nil The widget or nil if the program is not found
-  local function create_dock_element(program, size)
+function dock:write_elements_to_file_async(callback)
+  --create a local copy of the elements["pinned"] table and only set the desktop_file key from its children
+  local elements_copy = { pinned = {} }
+  for _, element in ipairs(elements['pinned']) do
+    table.insert(elements_copy['pinned'], { desktop_file = element.desktop_file })
+  end
+  config.write_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json', elements_copy['pinned'], callback)
+end
 
-    local dock_element = wibox.widget {
+---Read the content of dock.json and get the content as a table
+---@param callback function Called after the elements have been set, no values are passed
+function dock:read_elements_from_file_async(callback)
+  local data = config.read_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json')
+  -- Make sure to not set the running key to nil on accident
+  for _, v in ipairs(data) do
+    local w = self:get_element_widget(v.desktop_file)
+    table.insert(elements['pinned'], w)
+  end
+  if callback then
+    callback()
+  end
+end
+
+---Creates a pinned widget for the dock and adds it into the elements table
+---@param desktop_file string .desktop file path
+---@return nil
+function dock:get_element_widget(desktop_file)
+  if not desktop_file then return end
+
+  local GDesktopAppInfo = Gio.DesktopAppInfo.new_from_filename(desktop_file)
+
+  local icon = Get_gicon_path(nil, GDesktopAppInfo.get_string(GDesktopAppInfo, 'Icon')) or
+      Get_gicon_path(nil, Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'X-AppImage-Old-Icon')) or ''
+
+  local widget = wibox.widget {
+    {
+      {
+        {
+          {
+            widget = wibox.widget.imagebox,
+            image = icon,
+            valign = 'center',
+            halign = 'center',
+            resize = true,
+            id = 'icon_role',
+          },
+          widget = wibox.container.constraint,
+          width = User_config.dock_icon_size,
+          height = User_config.dock_icon_size,
+        },
+        widget = wibox.container.margin,
+        margins = dpi(5),
+      },
+      widget = wibox.container.constraint,
+      width = User_config.dock_icon_size + dpi(10), -- + margins
+      height = User_config.dock_icon_size + dpi(10),
+      strategy = 'exact',
+    },
+    bg = Theme_config.dock.element.bg,
+    shape = Theme_config.dock.element.shape,
+    widget = wibox.container.background,
+  }
+
+  local action_entries = {}
+  for _, action in ipairs(Gio.DesktopAppInfo.list_actions(GDesktopAppInfo)) do
+    table.insert(action_entries, {
+      name = Gio.DesktopAppInfo.get_action_name(GDesktopAppInfo, action) or '',
+      icon = Get_gicon_path(nil, GDesktopAppInfo.get_string(GDesktopAppInfo, 'Icon')) or
+          Get_gicon_path(nil, Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'X-AppImage-Old-Icon')) or
+          gcolor.recolor_image(icondir .. 'entry.svg', Theme_config.dock.cm_icon),
+      callback = function()
+        Gio.DesktopAppInfo.launch_action(GDesktopAppInfo, action)
+      end,
+    })
+  end
+
+  table.insert(action_entries, {
+    name = 'Remove from Dock',
+    icon = gcolor.recolor_image(icondir .. 'context_menu/entry.svg', Theme_config.dock.cm_icon),
+    callback = function()
+      local data = config.read_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json')
+      for i, v in ipairs(data) do
+        if v.desktop_file == desktop_file then
+          if type(data) == 'table' then
+            table.remove(data, i)
+          end
+          break
+        end
+      end
+      config.write_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json', data)
+      self:remove_element_widget(widget)
+    end,
+  })
+
+  widget.cm = context_menu {
+    widget_template = wibox.widget {
       {
         {
           {
             {
-              resize = true,
               widget = wibox.widget.imagebox,
-              image = program.icon or "",
-              valign = "center",
-              halign = "center",
-              id = "icon",
+              resize = true,
+              valign = 'center',
+              halign = 'center',
+              id = 'icon_role',
             },
-            id = "icon_container",
-            strategy = "exact",
-            width = dpi(size),
-            height = dpi(size),
-            widget = wibox.container.constraint
+            widget = wibox.container.constraint,
+            stragety = 'exact',
+            width = dpi(24),
+            height = dpi(24),
+            id = 'const',
           },
-          margins = dpi(5),
-          widget = wibox.container.margin,
-          id = "margin"
+          {
+            widget = wibox.widget.textbox,
+            valign = 'center',
+            halign = 'left',
+            id = 'text_role',
+          },
+          layout = wibox.layout.fixed.horizontal,
         },
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(10))
-        end,
-        bg = Theme_config.dock.element_bg,
-        fg = "#000000",
-        widget = wibox.container.background,
-        id = "background"
+        widget = wibox.container.margin,
       },
-      top = dpi(5),
-      left = dpi(5),
-      right = dpi(5),
-      widget = wibox.container.margin
-    }
+      widget = wibox.container.background,
+    }, spacing = dpi(10),
+    entries = action_entries,
+  }
 
-    Hover_signal(dock_element.background, Theme_config.dock.element_focused_bg .. "dd")
+  widget.cm:connect_signal('mouse::leave', function()
+    widget.cm.visible = false
+    self.cm_open = widget.cm.visible
+  end)
 
-    local DAI = Gio.DesktopAppInfo.new_from_filename(program.desktop_file)
-    if not DAI then return end
-    local action_entries = {}
-    for _, action in ipairs(program.actions) do
-      table.insert(action_entries, {
-        name = Gio.DesktopAppInfo.get_action_name(DAI, action) or "",
-        icon = gears.color.recolor_image(action.icon or icondir .. "entry.svg", Theme_config.dock.cm_icon),
-        callback = function()
-          Gio.DesktopAppInfo.launch_action(DAI, action)
-        end
-      })
+  hover.bg_hover {
+    widget = widget,
+    overlay = 12,
+    press_overlay = 24,
+  }
+
+  local exec = Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'Exec')
+
+  widget:buttons(gtable.join {
+    abutton({}, 1, function()
+      Gio.AppInfo.launch_uris_async(Gio.AppInfo.create_from_commandline(exec, nil, 0))
+    end),
+    abutton({}, 3, function()
+      widget.cm:toggle()
+      self.cm_open = widget.cm.visible
+    end),
+  })
+
+  table.insert(elements['pinned'], widget)
+  self:emit_signal('dock::element_added', widget)
+end
+
+---Removes a given widget from the dock
+---@param widget wibox.widget The widget to remove
+function dock:remove_element_widget(widget)
+  if not widget then return end
+  for k, v in pairs(elements['pinned']) do
+    if v == widget then
+      table.remove(elements['pinned'], k)
+      self:emit_signal('dock::element_removed', widget)
+      return
     end
+  end
+end
 
-    table.insert(action_entries, {
-      name = "Remove from Dock",
-      icon = gears.color.recolor_image(icondir .. "entry.svg", Theme_config.dock.cm_icon),
-      callback = function()
-        local data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
-        if not data then
-          return
-        end
-        local dock = json:decode(data:read("a"))
-        data:close()
-        for i, v in ipairs(dock) do
-          if v.desktop_file == program.desktop_file then
-            if type(dock) == "table" then
-              table.remove(dock, i)
-            end
-            break
-          end
-        end
-        data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "w")
-        if not data then
-          return
-        end
-        data:write(json:encode(dock))
-        data:close()
-        capi.awesome.emit_signal("dock::changed")
-      end
-    })
+---Pins an element to the dock by adding it to the pinned table, then writes the table to the file
+---emits the signal `dock::pin_element` then successfully added to the table
+---@param args {desktop_file: string} The path to the .desktop file
+function dock:pin_element(args)
+  if not args then return end
 
-    local context_menu = cm {
-      widget_template = wibox.widget {
+  local e = args.desktop_file
+
+  assert(e, 'No desktop file provided')
+
+  self:emit_signal('dock::pin_element', e)
+
+  self:write_elements_to_file_async()
+end
+
+function dock:add_start_element()
+  local widget = wibox.widget {
+    {
+      {
         {
           {
-            {
-              {
-                widget = wibox.widget.imagebox,
-                resize = true,
-                valign = "center",
-                halign = "center",
-                id = "icon_role",
-              },
-              widget = wibox.container.constraint,
-              stragety = "exact",
-              width = dpi(24),
-              height = dpi(24),
-              id = "const"
-            },
-            {
-              widget = wibox.widget.textbox,
-              valign = "center",
-              halign = "left",
-              id = "text_role"
-            },
-            spacing = dpi(10),
-            layout = wibox.layout.fixed.horizontal
+            widget = wibox.widget.imagebox,
+            image = gfilesystem.get_configuration_dir() .. 'src/assets/CT.svg',
+            valign = 'center',
+            halign = 'center',
+            resize = true,
+            id = 'icon_role',
           },
-          margins = dpi(5),
-          widget = wibox.container.margin
+          widget = wibox.container.constraint,
+          width = User_config.dock_icon_size,
+          height = User_config.dock_icon_size,
         },
-        widget = wibox.container.background,
-      },
-      entries = action_entries,
-      spacing = dpi(10),
-    }
-
-    dock_element:buttons(gears.table.join(
-      awful.button({
-        modifiers = {},
-        button = 1,
-        on_release = function()
-          Gio.AppInfo.launch_uris_async(Gio.AppInfo.create_from_commandline(program.exec, nil, 0))
-        end
-      }),
-      awful.button({
-        modifiers = {},
-        button = 3,
-        on_release = function()
-          if not context_menu then
-            return
-          end
-          -- add offset so mouse is above widget, this is so the mouse::leave event triggers always
-          context_menu:toggle()
-        end
-      })
-    ))
-
-    capi.awesome.connect_signal(
-      "context_menu::hide",
-      function()
-        cm_open = false
-        capi.awesome.emit_signal("dock::check_for_dock_hide")
-      end
-    )
-
-    awful.tooltip {
-      objects = { dock_element },
-      text = program.name,
-      mode = "outside",
-      preferred_alignments = "middle",
-      margins = dpi(10)
-    }
-    dock_element_ammount = dock_element_ammount + 1
-
-    return dock_element
-  end
-
-  --- Indicators under the elements to indicate various open states
-  local function create_incicator_widget()
-    local container = { layout = wibox.layout.flex.horizontal }
-
-    local data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
-
-    if not data then
-      return
-    end
-
-    local prog = json:decode(data:read("a"))
-    data:close()
-    for _, pr in ipairs(prog) do
-      local indicators = { layout = wibox.layout.flex.horizontal, spacing = dpi(5) }
-      local col = Theme_config.dock.indicator_bg
-      for _, c in ipairs(capi.client.get()) do
-        local icon_name = string.lower(pr.icon)
-        if not c or not c.valid then return end
-        local cls = c.class or ""
-        local class = string.lower(cls)
-        icon_name = string.match(icon_name, ".*/(.*)%.[svg|png]")
-        if class == icon_name or class:match(icon_name) or icon_name:match(class) then
-          if c == capi.client.focus then
-            col = Theme_config.dock.indicator_focused_bg
-          elseif c.urgent then
-            col = Theme_config.dock.indicator_urgent_bg
-          elseif c.maximized then
-            col = Theme_config.dock.indicator_maximized_bg
-          elseif c.minimized then
-            col = Theme_config.dock.indicator_minimized_bg
-          elseif c.fullscreen then
-            col = Theme_config.dock.indicator_fullscreen_bg
-          else
-            col = Theme_config.dock.indicator_bg
-          end
-          table.insert(indicators, wibox.widget {
-            widget = wibox.container.background,
-            shape = gears.shape.rounded_rect,
-            forced_height = dpi(3),
-            bg = col,
-            forced_width = dpi(5),
-          })
-        end
-      end
-      table.insert(container, wibox.widget {
-        indicators,
-        forced_height = dpi(5),
-        forced_width = dpi(User_config.dock_icon_size),
-        left = dpi(5),
-        right = dpi(5),
         widget = wibox.container.margin,
-      })
-    end
-    return wibox.widget {
-      container,
-      bottom = dpi(5),
-      widget = wibox.container.margin,
-    }
-  end
-
-  --- The container bar where the elements/program widgets sit in
-  local dock = awful.popup {
+        margins = dpi(5),
+      },
+      widget = wibox.container.constraint,
+      width = User_config.dock_icon_size + dpi(10), -- + margins
+      height = User_config.dock_icon_size + dpi(10),
+      strategy = 'exact',
+    },
+    bg = Theme_config.dock.element.bg,
+    shape = Theme_config.dock.element.shape,
     widget = wibox.container.background,
-    ontop = true,
-    bg = Theme_config.dock.bg,
-    visible = true,
-    screen = screen,
-    type = "dock",
-    height = dpi(User_config.dock_icon_size + 10),
-    placement = function(c) awful.placement.bottom(c, { margins = dpi(10) }) end
   }
 
-  --- A fakedock to send a signal when the mouse is over it
-  local fakedock = awful.popup {
-    widget = wibox.container.background,
-    ontop = true,
-    bg = '#00000000',
-    visible = true,
-    screen = screen,
-    type = "dock",
-    id = "fakedock",
-    height = dpi(10),
-    placement = function(c) awful.placement.bottom(c) end,
+  hover.bg_hover {
+    widget = widget,
+    overlay = 12,
+    press_overlay = 24,
   }
 
-  --- List of all elements/program widgets
-  local dock_elements = { layout = wibox.layout.fixed.horizontal }
+  widget:buttons(gtable.join {
+    abutton({}, 1, function()
+      capi.awesome.emit_signal('application_launcher::show')
+    end),
+  })
+  return widget
+end
 
-  --- This function creates a list with all dock elements/program widgets
-  ---@return table|nil string list of widgets
-  local function get_dock_elements()
-    dock_element_ammount = 0
-    dock_elements = { layout = wibox.layout.fixed.horizontal }
+---Unpins an element from the dock by removing it from the pinned table, then writes the table to the file
+---emits the signal `dock::unpin_element` then successfully removed from the table
+---@param args {desktop_file: string} The path to the .desktop file
+function dock:unpin_element(args)
+  if not args then return end
 
-    local data = io.open("/home/crylia/.config/awesome/src/config/dock.json", "r")
-    if not data then
-      return
+  for index, value in ipairs(elements['pinned']) do
+    if value == args.desktop_file then
+      table.remove(elements['pinned'], index)
+      break;
     end
-    local dock_data = json:decode(data:read("a"))
-    data:close()
-    for _, program in ipairs(dock_data) do
-      table.insert(dock_elements, create_dock_element(program, User_config.dock_icon_size))
-    end
-    dock:setup {
-      dock_elements,
-      create_incicator_widget(),
-      layout = wibox.layout.fixed.vertical
-    }
+  end
+  self:emit_signal('dock::unpin_element', args.desktop_file)
+
+  self:write_elements_to_file_async()
+end
+
+function dock:get_all_elements()
+  return elements
+end
+
+function dock:get_applauncher_starter_element()
+  return elements['applauncher_starter']
+end
+
+function dock:get_pinned_elements()
+  return elements['pinned']
+end
+
+function dock:get_running_elements()
+  return elements['running']
+end
+
+function dock:get_dock_for_screen(screen)
+  return instances[screen]
+end
+
+local function check_for_dock_hide(self, a_popup)
+  if self.cm_open then return end
+  local clients_on_tag = self.screen.selected_tag:clients()
+
+  -- If there is no client on the current tag show the dock
+  if #clients_on_tag < 1 then
+    self.visible = true
+    return
   end
 
-  get_dock_elements()
-
-  --- Function to get an empty list with the same ammount as dock_element
-  local function get_fake_elements()
-    local fake_elements = { layout = wibox.layout.fixed.horizontal }
-
-    for i = 0, dock_element_ammount, 1 do
-      fake_elements[i] = wibox.widget {
-        bg = '00000000',
-        forced_width = User_config.dock_icon_size + dpi(20),
-        forced_height = dpi(10),
-        id = "fake",
-        widget = wibox.container.background
-      }
-    end
-    return fake_elements
-  end
-
-  fakedock:setup {
-    get_fake_elements(),
-    type = 'dock',
-    layout = wibox.layout.fixed.vertical
-  }
-
-  ---Check if the dock needs to be hidden, I also put the topbar check here since it shares that logic
-  ---@param s screen The screen to check for hide
-  local function check_for_dock_hide(s)
-    local clients_on_tag = s.selected_tag:clients()
-
-    -- If there is no client on the current tag show the dock
-    if #clients_on_tag < 1 then
-      dock.visible = true
-      return
-    end
-
-    -- If there is a maximized client hide the dock and if fullscreened hide the activation area
-    for _, client in ipairs(clients_on_tag) do
-      if client.maximized or client.fullscreen then
-        dock.visible = false
-        if client.fullscreen then
-          fakedock.visible = false
-          capi.awesome.emit_signal("notification_center_activation::toggle", s, false)
-        end
-      elseif not client.fullscreen then
-        fakedock.visible = true
-        capi.awesome.emit_signal("notification_center_activation::toggle", s, true)
-      end
-    end
-
-
-
-    if s == capi.mouse.screen then
-      local minimized = false
-      for _, c in ipairs(clients_on_tag) do
-        if c.minimized then
-          minimized = true
-        else
-          minimized = false
-          local y = c:geometry().y
-          local h = c.height
-          if (y + h) >= s.geometry.height - User_config.dock_icon_size - 35 then
-            dock.visible = false
-            return
-          else
-            dock.visible = true
-          end
-        end
-      end
-      if minimized then
-        dock.visible = true
-      end
-    else
+  -- If there is a maximized client hide the dock and if fullscreened hide the activation area
+  for _, client in ipairs(clients_on_tag) do
+    if client.maximized or client.fullscreen then
       dock.visible = false
+      if client.fullscreen then
+        a_popup.visible = false
+        capi.awesome.emit_signal('notification_center_activation::toggle', self.screen, false)
+      end
+    elseif not client.fullscreen then
+      a_popup.visible = true
+      capi.awesome.emit_signal('notification_center_activation::toggle', self.screen, true)
     end
   end
+
+  if self.screen == capi.mouse.screen then
+    local minimized = false
+    for _, c in ipairs(clients_on_tag) do
+      if c.minimized then
+        minimized = true
+      else
+        minimized = false
+        local y = c:geometry().y
+        local h = c.height
+        if (y + h) >= self.screen.geometry.height - User_config.dock_icon_size - 35 then
+          self.visible = false
+          return
+        else
+          self.visible = true
+        end
+      end
+    end
+    if minimized then
+      self.visible = true
+    end
+  else
+    self.visible = false
+  end
+end
+
+function dock:activation_area()
+  local activation = apopup {
+    widget = {
+      width = self.screen.geometry.width / 4,
+      height = 1,
+      strategy = 'exact',
+      widget = wibox.container.constraint,
+    },
+    ontop = true,
+    bg = gcolor.transparent,
+    visible = false,
+    screen = self.screen,
+    type = 'dock',
+    placement = function(c) aplacement.bottom(c) end,
+  }
 
   -- Call the function every second to check if the dock needs to be hidden
-  local dock_intelligent_hide = gears.timer {
+  local dock_hide = gtimer {
     timeout = 1,
     autostart = true,
     call_now = true,
     callback = function()
-      check_for_dock_hide(screen)
-    end
+      check_for_dock_hide(self, activation)
+    end,
   }
 
-  --- Hover function to show the dock
-  fakedock:connect_signal(
-    "mouse::enter",
-    function()
-      if #screen.clients < 1 then
-        dock.visible = true
-        dock_intelligent_hide:stop()
+  activation:connect_signal('mouse::enter', function()
+    if #self.screen.clients < 1 then
+      self.visible = true
+      dock_hide:stop()
+      return
+    end
+    for _, c in ipairs(self.screen.clients) do
+      if not c.fullscreen then
+        self.visible = true
+        dock_hide:stop()
+      end
+    end
+  end)
+
+  self:connect_signal('mouse::enter', function()
+    dock_hide:stop()
+  end)
+
+  self:connect_signal('mouse::leave', function()
+    --[[ if cm_open then
         return
-      end
-      for _, c in ipairs(screen.clients) do
-        if not c.fullscreen then
-          dock.visible = true
-          dock_intelligent_hide:stop()
-        end
-      end
-    end
-  )
-
-  capi.client.connect_signal(
-    "manage",
-    function()
-      check_for_dock_hide(screen)
-      dock:setup {
-        dock_elements,
-        create_incicator_widget(),
-        layout = wibox.layout.fixed.vertical
-      }
-      fakedock:setup {
-        get_fake_elements(),
-        type = 'dock',
-        layout = wibox.layout.fixed.vertical
-      }
-    end
-  )
-
-  capi.client.connect_signal(
-    "property::minimized",
-    function()
-      check_for_dock_hide(screen)
-      dock:setup {
-        dock_elements,
-        create_incicator_widget(),
-        layout = wibox.layout.fixed.vertical
-      }
-      fakedock:setup {
-        get_fake_elements(),
-        type = 'dock',
-        layout = wibox.layout.fixed.vertical
-      }
-    end
-  )
-
-  capi.client.connect_signal(
-    "unmanage",
-    function()
-      check_for_dock_hide(screen)
-      dock:setup {
-        dock_elements,
-        create_incicator_widget(),
-        layout = wibox.layout.fixed.vertical
-      }
-      fakedock:setup {
-        get_fake_elements(),
-        type = 'dock',
-        layout = wibox.layout.fixed.vertical
-      }
-    end
-  )
-
-  capi.client.connect_signal(
-    "focus",
-    function()
-      check_for_dock_hide(screen)
-      dock:setup {
-        dock_elements,
-        create_incicator_widget(),
-        layout = wibox.layout.fixed.vertical
-      }
-      fakedock:setup {
-        get_fake_elements(),
-        type = 'dock',
-        layout = wibox.layout.fixed.vertical
-      }
-    end
-  )
-
-  capi.awesome.connect_signal(
-    "dock::changed",
-    function()
-      get_dock_elements()
-      dock:setup {
-        dock_elements,
-        create_incicator_widget(),
-        layout = wibox.layout.fixed.vertical
-      }
-      fakedock:setup {
-        get_fake_elements(),
-        type = 'dock',
-        layout = wibox.layout.fixed.vertical
-      }
-    end
-  )
-
-  capi.awesome.connect_signal(
-    "dock::check_for_dock_hide",
-    function()
-      dock_intelligent_hide:again()
-    end
-  )
-
-  dock:connect_signal(
-    "mouse::enter",
-    function()
-      dock_intelligent_hide:stop()
-    end
-  )
-
-  dock:connect_signal(
-    "mouse::leave",
-    function()
-      if cm_open then
-        return
-      end
-      check_for_dock_hide(screen)
-      dock_intelligent_hide:again()
-    end
-  )
-  dock:setup {
-    dock_elements,
-    create_incicator_widget(),
-    layout = wibox.layout.fixed.vertical
-  }
+      end ]]
+    check_for_dock_hide(self, activation)
+    dock_hide:again()
+  end)
 end
+
+function dock.new(args)
+  args = args or {}
+
+  local w = apopup {
+    widget = {
+      {
+        {
+          spacing = dpi(5),
+          id = 'applauncher_starter',
+          layout = wibox.layout.fixed.horizontal,
+        },
+        wibox.widget.separator {
+          forced_width = dpi(2),
+          forced_height = dpi(20),
+          thickness = dpi(2),
+          color = Theme_config.dock.element.border,
+        },
+        {
+          spacing = dpi(5),
+          id = 'pinned',
+          layout = wibox.layout.fixed.horizontal,
+        },
+        {
+          id = 'running',
+          spacing = dpi(5),
+          layout = wibox.layout.fixed.horizontal,
+        },
+        spacing = dpi(10),
+        id = 'elements',
+        layout = wibox.layout.fixed.horizontal,
+      },
+      widget = wibox.container.margin,
+      margins = dpi(5),
+    },
+    ontop = true,
+    visible = true,
+    placement = function(c) aplacement.bottom(c, { margins = dpi(10) }) end,
+    bg = Theme_config.dock.bg,
+    screen = args.screen,
+  }
+
+  gtable.crush(w, dock)
+
+  instances[args.screen] = w
+
+  w:activation_area()
+
+  w.task_list = awidget.tasklist {
+    screen = args.screen,
+    layout = wibox.layout.fixed.horizontal,
+    filter = awidget.tasklist.filter.alltags,
+    update_function = function(widget, _, _, _, clients)
+      widget:reset()
+
+      if #clients == 0 then
+        return widget
+      end
+
+      widget:add {
+        {
+          widget = wibox.widget.separator,
+          forced_height = dpi(20),
+          forced_width = dpi(2),
+          thickness = dpi(2),
+          color = Theme_config.dock.element.border,
+        },
+        widget = wibox.container.margin,
+        right = dpi(5),
+      }
+
+      for _, client in ipairs(clients) do
+        local element = wibox.widget {
+          {
+            {
+              {
+                {
+                  widget = wibox.widget.imagebox,
+                  image = client.icon,
+                  valign = 'center',
+                  halign = 'center',
+                  resize = true,
+                  id = 'icon_role',
+                },
+                widget = wibox.container.constraint,
+                width = User_config.dock_icon_size,
+                height = User_config.dock_icon_size,
+              },
+              widget = wibox.container.margin,
+              margins = dpi(5),
+            },
+            widget = wibox.container.constraint,
+            width = User_config.dock_icon_size + dpi(10), -- + margins
+            height = User_config.dock_icon_size + dpi(10),
+            strategy = 'exact',
+          },
+          bg = Theme_config.dock.element.bg,
+          shape = Theme_config.dock.element.shape,
+          widget = wibox.container.background,
+        }
+
+        hover.bg_hover {
+          widget = element,
+          overlay = 12,
+          press_overlay = 24,
+        }
+
+        element:buttons(gtable.join(
+          abutton({}, 1, function(c)
+            if c == client.focus then
+              c.minimized = true
+            else
+              c:emit_signal('request::activate', 'tasklist', { raise = true })
+            end
+          end),
+          abutton({}, 3, function()
+            amenu.client_list { theme = { width = dpi(250) } }
+          end)
+        ))
+
+        widget:add(element)
+        widget:set_spacing(dpi(5))
+      end
+
+      return widget
+    end,
+  }
+
+  w.widget.elements.applauncher_starter:add(w:add_start_element())
+
+  w.widget.elements.running:add(w.task_list)
+
+  w:connect_signal('dock::element_added', function(_, widget)
+    w.widget.elements.pinned:add(widget)
+  end)
+
+  w:connect_signal('dock::element_removed', function(_, widget)
+    w.widget.elements.pinned:remove_widgets(widget)
+  end)
+
+  w:connect_signal('dock::pin_element', function(_, element)
+    w:get_element_widget(element)
+  end)
+
+  capi.awesome.connect_signal('dock::pin_element', function(args)
+    w:pin_element(args)
+  end)
+
+  w:connect_signal('dock::unpin_element', function(_, widget)
+    w:remove_element_widget(widget)
+  end)
+
+  w:read_elements_from_file_async()
+
+  return w
+end
+
+return setmetatable(dock, { __call = function(_, ...) return dock.new(...) end })

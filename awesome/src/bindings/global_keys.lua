@@ -1,11 +1,21 @@
 -- Awesome libs
-local gears = require("gears")
-local awful = require("awful")
-local hotkeys_popup = require("awful.hotkeys_popup")
-local ruled = require("ruled")
+local akeygrabber = require('awful.keygrabber')
+local akey = require('awful.key')
+local gtable = require('gears.table')
+local atag = require('awful.tag')
+local aclient = require('awful.client')
+local aspawn = require('awful.spawn')
+local alayout = require('awful.layout')
+local ascreen = require('awful.screen')
+local hotkeys_popup = require('awful.hotkeys_popup')
+local ruled = require('ruled')
 
--- Third party libs
-local json = require("src.lib.json-lua.json-lua")
+-- Local libs
+local config = require('src.tools.config')
+local audio_helper = require('src.tools.helpers.audio')
+local backlight_helper = require('src.tools.helpers.backlight')
+local powermenu = require('src.modules.powermenu.init')
+local kb_helper = require('src.tools.helpers.kb_helper')
 
 local capi = {
   awesome = awesome,
@@ -15,301 +25,290 @@ local capi = {
 
 local modkey = User_config.modkey
 
-awful.keygrabber {
-  keybindings        = {
-    awful.key {
-      modifiers = { "Mod1" },
-      key = "Tab",
+akeygrabber {
+  keybindings = {
+    akey {
+      modifiers = { 'Mod1' },
+      key = 'Tab',
       on_press = function()
-        capi.awesome.emit_signal("window_switcher::select_next")
-      end
-    }
+        capi.awesome.emit_signal('window_switcher::select_next')
+      end,
+    },
   },
-  root_keybindings   = {
-    awful.key {
-      modifiers = { "Mod1" },
-      key = "Tab",
+  root_keybindings = {
+    akey {
+      modifiers = { 'Mod1' },
+      key = 'Tab',
       on_press = function()
-      end
-    }
+      end,
+    },
   },
-  stop_key           = "Mod1",
-  stop_event         = "release",
-  start_callback     = function()
-    capi.awesome.emit_signal("toggle_window_switcher")
+  stop_key = 'Mod1',
+  stop_event = 'release',
+  start_callback = function()
+    capi.awesome.emit_signal('toggle_window_switcher')
   end,
-  stop_callback      = function()
-    capi.awesome.emit_signal("window_switcher::raise")
-    capi.awesome.emit_signal("toggle_window_switcher")
+  stop_callback = function()
+    capi.awesome.emit_signal('window_switcher::raise')
+    capi.awesome.emit_signal('toggle_window_switcher')
   end,
   export_keybindings = true,
 }
 
-return gears.table.join(
-  awful.key(
+return gtable.join(
+  akey(
     { modkey },
-    "#39",
+    '#39',
     hotkeys_popup.show_help,
-    { description = "Cheat sheet", group = "Awesome" }
+    { description = 'Cheat sheet', group = 'Awesome' }
   ),
-  -- Tag browsing
-  awful.key(
+  --[[   akey(
     { modkey },
-    "#113",
-    awful.tag.viewprev,
-    { description = "View previous tag", group = "Tag" }
+    '#113',
+    atag.viewprev,
+    { description = 'View previous tag', group = 'Tag' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#114",
-    awful.tag.viewnext,
-    { description = "View next tag", group = "Tag" }
-  ),
-  awful.key(
+    '#114',
+    atag.viewnext,
+    { description = 'View next tag', group = 'Tag' }
+  ), ]]
+  akey(
     { modkey },
-    "#66",
-    awful.tag.history.restore,
-    { description = "Go back to last tag", group = "Tag" }
+    '#66',
+    atag.history.restore,
+    { description = 'Go back to last tag', group = 'Tag' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#44",
+    '#44',
     function()
-      awful.client.focus.byidx(1)
+      aclient.focus.byidx(1)
     end,
-    { description = "Focus next client by index", group = "Client" }
+    { description = 'Focus next client by index', group = 'Client' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#45",
+    '#45',
     function()
-      awful.client.focus.byidx(-1)
+      aclient.focus.byidx(-1)
     end,
-    { description = "Focus previous client by index", group = "Client" }
+    { description = 'Focus previous client by index', group = 'Client' }
   ),
-  awful.key(
-    { modkey, "Shift" },
-    "#44",
+  akey(
+    { modkey, 'Shift' },
+    '#44',
     function()
-      awful.client.swap.byidx(1)
+      aclient.swap.byidx(1)
     end,
-    { description = "Swap with next client by index", group = "Client" }
+    { description = 'Swap with next client by index', group = 'Client' }
   ),
-  awful.key(
-    { modkey, "Shift" },
-    "#45",
+  akey(
+    { modkey, 'Shift' },
+    '#45',
     function()
-      awful.client.swap.byidx(-1)
+      aclient.swap.byidx(-1)
     end,
-    { description = "Swap with previous client by index", group = "Client" }
+    { description = 'Swap with previous client by index', group = 'Client' }
   ),
-  awful.key(
-    { modkey, "Control" },
-    "#44",
+  akey(
+    { modkey, 'Control' },
+    '#44',
     function()
-      awful.screen.focus_relative(1)
+      ascreen.focus_relative(1)
     end,
-    { description = "Focus the next screen", group = "Screen" }
+    { description = 'Focus the next screen', group = 'Screen' }
   ),
-  awful.key(
-    { modkey, "Control" },
-    "#45",
+  akey(
+    { modkey, 'Control' },
+    '#45',
     function()
-      awful.screen.focus_relative(-1)
+      ascreen.focus_relative(-1)
     end,
-    { description = "Focus the previous screen", group = "Screen" }
+    { description = 'Focus the previous screen', group = 'Screen' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#30",
-    awful.client.urgent.jumpto,
-    { description = "Jump to urgent client", group = "Client" }
+    '#30',
+    aclient.urgent.jumpto,
+    { description = 'Jump to urgent client', group = 'Client' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#36",
+    '#36',
     function()
-      awful.spawn(User_config.terminal)
+      aspawn(User_config.terminal)
     end,
-    { description = "Open terminal", group = "Applications" }
+    { description = 'Open terminal', group = 'Applications' }
   ),
-  awful.key(
-    { modkey, "Control" },
-    "#27",
+  akey(
+    { modkey, 'Control' },
+    '#27',
     capi.awesome.restart,
-    { description = "Reload awesome", group = "Awesome" }
+    { description = 'Reload awesome', group = 'Awesome' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#46",
+    '#46',
     function()
-      awful.tag.incmwfact(0.05)
+      atag.incmwfact(0.05)
     end,
-    { description = "Increase client width", group = "Layout" }
+    { description = 'Increase client width', group = 'Layout' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#43",
+    '#43',
     function()
-      awful.tag.incmwfact(-0.05)
+      atag.incmwfact(-0.05)
     end,
-    { description = "Decrease client width", group = "Layout" }
+    { description = 'Decrease client width', group = 'Layout' }
   ),
-  awful.key(
-    { modkey, "Control" },
-    "#43",
+  akey(
+    { modkey, 'Control' },
+    '#43',
     function()
-      awful.tag.incncol(1, nil, true)
+      atag.incncol(1, nil, true)
     end,
-    { description = "Increase the number of columns", group = "Layout" }
+    { description = 'Increase the number of columns', group = 'Layout' }
   ),
-  awful.key(
-    { modkey, "Control" },
-    "#46",
+  akey(
+    { modkey, 'Control' },
+    '#46',
     function()
-      awful.tag.incncol(-1, nil, true)
+      atag.incncol(-1, nil, true)
     end,
-    { description = "Decrease the number of columns", group = "Layout" }
+    { description = 'Decrease the number of columns', group = 'Layout' }
   ),
-  awful.key(
-    { modkey, "Shift" },
-    "#65",
+  akey(
+    { modkey, 'Shift' },
+    '#65',
     function()
-      awful.layout.inc(-1)
+      alayout.inc(-1)
     end,
-    { description = "Select previous layout", group = "Layout" }
+    { description = 'Select previous layout', group = 'Layout' }
   ),
-  awful.key(
-    { modkey, "Shift" },
-    "#36",
+  akey(
+    { modkey, 'Shift' },
+    '#36',
     function()
-      awful.layout.inc(1)
+      alayout.inc(1)
     end,
-    { description = "Select next layout", group = "Layout" }
+    { description = 'Select next layout', group = 'Layout' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#40",
+    '#40',
     function()
-      capi.awesome.emit_signal("application_launcher::show")
+      capi.awesome.emit_signal('application_launcher::show')
     end,
-    { descripton = "Application launcher", group = "Application" }
+    { descripton = 'Application launcher', group = 'Application' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#26",
+    '#26',
     function()
-      awful.spawn(User_config.file_manager)
+      aspawn(User_config.file_manager)
     end,
-    { descripton = "Open file manager", group = "System" }
+    { descripton = 'Open file manager', group = 'System' }
   ),
-  awful.key(
-    { modkey, "Shift" },
-    "#26",
+  akey(
+    { modkey, 'Shift' },
+    '#26',
     function()
-      capi.awesome.emit_signal("module::powermenu:show")
+      powermenu:toggle()
     end,
-    { descripton = "Session options", group = "System" }
+    { descripton = 'Session options', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "#107",
+    '#107',
     function()
-      awful.spawn(User_config.screenshot_program)
+      aspawn(User_config.screenshot_program)
     end,
-    { description = "Screenshot", group = "Applications" }
+    { description = 'Screenshot', group = 'Applications' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86AudioLowerVolume",
+    'XF86AudioLowerVolume',
     function(c)
-      awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ -2%", function()
-        capi.awesome.emit_signal("widget::volume_osd:rerun")
-      end)
+      audio_helper.sink_volume_down()
     end,
-    { description = "Lower volume", group = "System" }
+    { description = 'Lower volume', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86AudioRaiseVolume",
+    'XF86AudioRaiseVolume',
     function(c)
-      awful.spawn.easy_async_with_shell("pactl set-sink-volume @DEFAULT_SINK@ +2%", function()
-        capi.awesome.emit_signal("widget::volume_osd:rerun")
-      end)
+      audio_helper.sink_volume_up()
     end,
-    { description = "Increase volume", group = "System" }
+    { description = 'Increase volume', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86AudioMute",
+    'XF86AudioMute',
     function(c)
-      awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
-      capi.awesome.emit_signal("widget::volume_osd:rerun")
+      audio_helper.sink_toggle_mute()
     end,
-    { description = "Mute volume", group = "System" }
+    { description = 'Mute volume', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86MonBrightnessUp",
+    'XF86MonBrightnessUp',
     function(c)
       backlight_helper.brightness_increase()
     end,
-    { description = "Raise backlight brightness", group = "System" }
+    { description = 'Raise backlight brightness', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86MonBrightnessDown",
+    'XF86MonBrightnessDown',
     function(c)
       backlight_helper.brightness_decrease()
     end,
-    { description = "Lower backlight brightness", group = "System" }
+    { description = 'Lower backlight brightness', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86AudioPlay",
+    'XF86AudioPlay',
     function(c)
-      awful.spawn("playerctl play-pause")
+      aspawn('playerctl play-pause')
     end,
-    { description = "Play / Pause audio", group = "System" }
+    { description = 'Play / Pause audio', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86AudioNext",
+    'XF86AudioNext',
     function(c)
-      awful.spawn("playerctl next")
+      aspawn('playerctl next')
     end,
-    { description = "Play / Pause audio", group = "System" }
+    { description = 'Play / Pause audio', group = 'System' }
   ),
-  awful.key(
+  akey(
     {},
-    "XF86AudioPrev",
+    'XF86AudioPrev',
     function(c)
-      awful.spawn("playerctl previous")
+      aspawn('playerctl previous')
     end,
-    { description = "Play / Pause audio", group = "System" }
+    { description = 'Play / Pause audio', group = 'System' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#65",
+    '#65',
     function()
-      capi.awesome.emit_signal("kblayout::toggle")
+      kb_helper:cycle_layout()
     end,
-    { description = "Toggle keyboard layout", group = "System" }
+    { description = 'Cycle keyboard layout', group = 'System' }
   ),
-  awful.key(
+  akey(
     { modkey },
-    "#22",
+    '#22',
     function()
       capi.mousegrabber.run(
         function(m)
           if m.buttons[1] then
-
-            local handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "r")
-            if not handler then return end
-            local data_table = json:decode(handler:read("a")) or {}
-            handler:close()
-
-            if type(data_table) ~= "table" then return end
+            local data = config.read_json('/home/crylia/.config/awesome/src/config/floating.json')
+            if type(data) ~= 'table' then return end
 
             local c = capi.mouse.current_client
             if not c then return end
@@ -320,8 +319,8 @@ return gears.table.join(
               WM_INSTANCE = c.instance,
             }
 
-            -- Check if data_table already had the client then return
-            for _, v in ipairs(data_table) do
+            -- Check if data already had the client then return
+            for _, v in ipairs(data) do
               if v.WM_NAME == client_data.WM_NAME and
                   v.WM_CLASS == client_data.WM_CLASS and
                   v.WM_INSTANCE == client_data.WM_INSTANCE then
@@ -329,43 +328,33 @@ return gears.table.join(
               end
             end
 
-            table.insert(data_table, client_data)
+            table.insert(data, client_data)
 
             ruled.client.append_rule {
               rule = { class = c.class, instance = c.instance },
               properties = {
-                floating = true
+                floating = true,
               },
             }
             c.floating = true
 
-            handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "w")
-            if not handler then return end
-            handler:write(json:encode(data_table))
-            handler:close()
+            config.write_json('/home/crylia/.config/awesome/src/config/floating.json', data)
             capi.mousegrabber.stop()
           end
           return true
         end,
-        "crosshair"
+        'crosshair'
       )
     end
   ),
-  awful.key(
-    { modkey, "Shift" },
-    "#22",
+  akey(
+    { modkey, 'Shift' },
+    '#22',
     function()
       capi.mousegrabber.run(
         function(m)
           if m.buttons[1] then
-
-            local handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "r")
-            if not handler then return end
-            local data_table = json:decode(handler:read("a")) or {}
-            handler:close()
-
-            if type(data_table) ~= "table" then return end
-
+            local data = config.read_json('/home/crylia/.config/awesome/src/config/floating.json')
             local c = capi.mouse.current_client
             if not c then return end
 
@@ -376,14 +365,14 @@ return gears.table.join(
             }
 
             -- Remove client_data from data_table
-            for k, v in ipairs(data_table) do
+            for k, v in ipairs(data) do
               if v.WM_CLASS == client_data.WM_CLASS and
                   v.WM_INSTANCE == client_data.WM_INSTANCE then
-                table.remove(data_table, k)
+                table.remove(data, k)
                 ruled.client.remove_rule {
                   rule = { class = c.class, instance = c.instance },
                   properties = {
-                    floating = true
+                    floating = true,
                   },
                 }
                 c.floating = false
@@ -391,15 +380,12 @@ return gears.table.join(
               end
             end
 
-            handler = io.open("/home/crylia/.config/awesome/src/config/floating.json", "w")
-            if not handler then return end
-            handler:write(json:encode(data_table))
-            handler:close()
+            config.write_json('/home/crylia/.config/awesome/src/config/floating.json', data)
             capi.mousegrabber.stop()
           end
           return true
         end,
-        "crosshair"
+        'crosshair'
       )
     end
   )
