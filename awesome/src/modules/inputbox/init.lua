@@ -1,27 +1,23 @@
----------------------------------------------------------------------------
--- This widget can be used to type text and get the text from it.
---@DOC_wibox_widget_defaults_inputbox_EXAMPLE@
---
--- @author Rene Kievits
--- @copyright 2022, Rene Kievits
--- @module awful.widget.inputbox
----------------------------------------------------------------------------
-
-local setmetatable = setmetatable
-local beautiful = require('beautiful')
-local gtable = require('gears.table')
-local base = require('wibox.widget.base')
-local gstring = require('gears.string')
-local akeygrabber = require('awful.keygrabber')
-local akey = require('awful.key')
-local textbox = require('wibox.widget.textbox')
-local imagebox = require('wibox.widget.imagebox')
-local cairo = require('lgi').cairo
-local apopup = require('awful.popup')
-local aplacement = require('awful.placement')
-local gsurface = require('gears.surface')
-local wibox = require('wibox')
+local Pango = require('lgi').Pango
+local PangoCairo = require('lgi').PangoCairo
 local abutton = require('awful.button')
+local akey = require('awful.key')
+local akeygrabber = require('awful.keygrabber')
+local aplacement = require('awful.placement')
+local apopup = require('awful.popup')
+local base = require('wibox.widget.base')
+local beautiful = require('beautiful')
+local cairo = require('lgi').cairo
+local gobject = require('gears.object')
+local gstring = require('gears.string')
+local gsurface = require('gears.surface')
+local gtable = require('gears.table')
+local gtimer = require('gears.timer')
+local imagebox = require('wibox.widget.imagebox')
+local setmetatable = setmetatable
+local textbox = require('wibox.widget.textbox')
+local wibox = require('wibox')
+local dpi = beautiful.xresources.apply_dpi
 
 local capi = {
   selection = selection,
@@ -29,768 +25,482 @@ local capi = {
   mouse = mouse,
 }
 
-local inputbox = { mt = {} }
+local inputbox = {}
 
---- Formats the text with a cursor and highlights if set.
---[[ local function text_with_cursor(text, cursor_pos, self)
-  local char, spacer, text_start, text_end
+local function get_subtext_layout(layout, starti, endi)
+  local text = layout:get_text()
 
-  local cursor_fg = beautiful.inputbox_cursor_fg or '#313131'
-  local cursor_bg = beautiful.inputbox_cursor_bg or '#0dccfc'
-  local placeholder_text = self.hint_text or ''
-  local placeholder_fg = beautiful.inputbox_placeholder_fg or '#777777'
-  local highlight_bg = beautiful.inputbox_highlight_bg or '#35ffe4'
-  local highlight_fg = beautiful.inputbox_highlight_fg or '#000000'
+  local subtext = text:sub(starti, endi)
 
-  if text == '' then
-    return "<span foreground='" .. placeholder_fg .. "'>" .. placeholder_text .. '</span>'
-  end
+  local ctx = layout:get_context()
 
-  local offset = 0
-  if text:sub(cursor_pos - 1, cursor_pos - 1) == -1 then
-    offset = 1
-  end
+  local sublayout = Pango.Layout.new(ctx)
+  sublayout:set_font_description(layout:get_font_description())
+  sublayout:set_text(subtext)
 
-  if #text < cursor_pos then
-    char = ' '
-    spacer = ''
-    text_start = gstring.xml_escape(text)
-    text_end = ''
-  else
-    char = gstring.xml_escape(text:sub(cursor_pos, cursor_pos + offset))
-    spacer = ' '
-    text_start = gstring.xml_escape(text:sub(1, cursor_pos - 1))
-    text_end = gstring.xml_escape(text:sub(cursor_pos + offset + 1))
-  end
-
-  if self._private.highlight and self._private.highlight.start_pos and self._private.highlight.end_pos then
-    -- split the text into 3 parts based on the highlight and cursor position
-    local text_start_highlight = gstring.xml_escape(text:sub(1, self._private.highlight.start_pos - 1))
-    local text_highlighted = gstring.xml_escape(text:sub(self._private.highlight.start_pos,
-      self._private.highlight.end_pos))
-    local text_end_highlight = gstring.xml_escape(text:sub(self._private.highlight.end_pos + 1))
-
-    return text_start_highlight ..
-        "<span foreground='" .. highlight_fg .. "'  background='" .. highlight_bg .. "'>" ..
-        text_highlighted .. '</span>' .. text_end_highlight
-  else
-    return text_start .. "<span background='" .. cursor_bg .. "' foreground='" .. cursor_fg .. "'>" ..
-        char .. '</span>' .. text_end .. spacer
-  end
-end ]]
-
-local function text_extents(text, font, font_size, args)
-  local surface = cairo.ImageSurface(cairo.Format.ARGB32, 0, 0)
-  local cr = cairo.Context(surface)
-  cr:select_font_face(font, args)
-  cr:set_font_size(font_size)
-  return cr:text_extents(text)
+  local _, sub_extent = sublayout:get_extents()
+  return sub_extent
 end
 
---[[
-  calculate width/height of the text
-  create new surface with the calculated width/height
-  draw a vertical line on the surface as the cursor
-  the position of the vertical line will be the cursor_pos - text length and the text extend
-  draw the "text" .. "cursor" .. "rest of the text"
-  return the surface
+function inputbox.draw_text(self)
+  local text = self:get_text()
+  local highlight = self:get_highlight()
+  local fg_color = { 1, 1, 1, 1 }
+  local cursor_color = { 1, 1, 1, 1 }
 
-  mouse_coord holds the coordinates where the user clicked
-  if its not empty then draw the cursor where the user clicked,
-    if its on a character then set the cursor to the closest space
+  if text == '' then
+    fg_color = { 0.2, 0.2, 0.2, 1 }
+    --self._private.layout:set_text(self._private.text_hint)
+    --local cairo_text = self._private.text_hint
+    -- Get the text extents from Pango so we don't need to use cairo to get a possibly wrong extent
+    -- Then draw the text with cairo
+  end
 
-  if some text is highlighted then draw the text with the highlights
-]]
---inputbox.text
---inputbox.cursor_pos <<-- 1 = before the text, 2 = after the first character, 3 = after the second character, etc
---inputbox.highlight <<-- { start_pos, end_pos }
---inputbox.mouse_coord <<-- { x, y } (Will be saved after the user clicked, it will only be overwritten when the user clicks again)
-function inputbox:draw_text_surface(x, override_cursor)
-  -- x can be 0 for the first time its drawn with a default cursor position
-  x = x or 0
+  local _, pango_extent = self._private.layout:get_extents()
 
-  --Colors need to be in rgba 0-1 format, table.unpack is used to unpack the table into function arguments
-  local fg, fg_highlight, bg_highlight, fg_cursor = { 1, 1, 1 }, { 1, 1, 1 }, { 0.1, 1, 1, 0.5 }, { 1, 1, 1 }
-
-  -- Main text_entent mainly to align everything to this one (it knows the highest and lowest point of the text)
-  local text_extent = text_extents(self:get_text(), self.font, self.font_size, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
-
-  --The offset if so the user has some space to click on the left and right side of the text
-  local start_offset = 4
-  local end_offset = 4
-  local surface = cairo.ImageSurface(cairo.Format.ARGB32, text_extent.width + start_offset + end_offset, text_extent.height)
+  local surface = cairo.ImageSurface(cairo.Format.ARGB32, (pango_extent.width / Pango.SCALE) + pango_extent.x + 2, (pango_extent.height / Pango.SCALE) + pango_extent.y)
   local cr = cairo.Context(surface)
 
-  --Split the text initially into 2 or 3 parts (most likely split again later)
-  local text = self:get_text()
-  local text_start, text_end, text_highlight
-  if self._private.highlight.start_pos ~= self._private.highlight.end_pos then
-    text_start = text:sub(1, self._private.highlight.start_pos - 1)
-    text_highlight = text:sub(self._private.highlight.start_pos, self._private.highlight.end_pos)
-    text_end = text:sub(self._private.highlight.end_pos + 1)
+  -- Draw highlight
+  if highlight.start_pos ~= highlight.end_pos then
+    cr:set_source_rgb(0, 0, 1)
+    local sub_extent = get_subtext_layout(self._private.layout, self:get_highlight().start_pos, self:get_highlight().end_pos)
+    local _, x_offset = self._private.layout:index_to_line_x(self:get_highlight().start_pos, false)
+    cr:rectangle(
+      x_offset / Pango.SCALE,
+      pango_extent.y / Pango.SCALE,
+      sub_extent.width / Pango.SCALE,
+      pango_extent.height / Pango.SCALE
+    )
+    cr:fill()
+  end
+
+  -- Draw text
+  if not self.password_mode then
+    PangoCairo.update_layout(cr, self._private.layout)
+    cr:set_source_rgba(table.unpack(fg_color))
+    cr:move_to(0, 0)
+    PangoCairo.show_layout(cr, self._private.layout)
   else
-    text_start = text:sub(1, self._private.cursor_pos - 1)
-    text_end = text:sub(self._private.cursor_pos)
-  end
-
-  --Figure out the cursor position based on the mouse coordinates
-  if override_cursor then
-    local cursor_pos = 1
-    for i = 1, #text, 1 do
-      -- Not sure if I need new context's to check the character width but I got inconsistent results without it
-      local ccr = cairo.Context(surface)
-      ccr:select_font_face(self.font, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
-      ccr:set_font_size(self.font_size)
-      local ext_c = ccr:text_extents(text:sub(1, i))
-      if ext_c.width >= x then
-        local cccr = cairo.Context(surface)
-        cccr:select_font_face(self.font, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
-        cccr:set_font_size(self.font_size)
-        if math.abs(cccr:text_extents(text:sub(1, i - 1)).width - x) <= math.abs(ext_c.width - x) then
-          cursor_pos = i
-        else
-          cursor_pos = i + 1
-        end
-        break
-      else
-        cursor_pos = #text + 1
-      end
+    local count = self._private.layout:get_glyph_count()
+    local passwd_string
+    for i = 1, count, 1 do
+      passwd_string = passwd_string .. '🞄'
     end
-    self._private.cursor_pos = cursor_pos
+    self._private.layout:set_text(passwd_string)
+    PangoCairo.update_layout(cr, self._private.layout)
+    cr:set_source_rgba(table.unpack(fg_color))
+    cr:move_to(0, 0)
+    PangoCairo.show_layout(cr, self._private.layout)
   end
-  -- Text extents for the start and highlight without any splitting (less calculating, text_end is not needed)
-  local text_start_extents = text_extents(text_start, self.font, self.font_size, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
-  local text_highlight_extents = text_extents(text_highlight, self.font, self.font_size, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
+  -- Draw cursor
+  cr:set_source_rgba(table.unpack(cursor_color))
+  local cursor = self:get_cursor_pos()
+  cr:rectangle(
+    cursor.x / Pango.SCALE,
+    cursor.y / Pango.SCALE,
+    2,
+    cursor.height / Pango.SCALE)
+  cr:fill()
 
-  cr:select_font_face(self.font, cairo.FontSlant.NORMAL, cairo.FontWeight.REGULAR)
-  cr:set_font_size(self.font_size)
-  --[[
-    The following code is a bit of a mess because I have to check if the cursor is inside the highlighted text,
-    the text_start or text_end and then split either of them again to draw the cursor between.
-  ]]
-  if (self._private.cursor_pos > 1) and text_highlight then
-    -- If the cursor is inside the highlighted text
-    if (self._private.highlight.start_pos <= self._private.cursor_pos) and (self._private.highlight.end_pos >= self._private.cursor_pos) then
-      -- Draw the text_start
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset, -text_extent.y_bearing)
-      cr:show_text(text_start)
-
-      -- split the text_highlight at the cursor_pos
-      local text_highlight_start = text_highlight:sub(1, self._private.cursor_pos - self._private.highlight.start_pos)
-      local text_highlight_end = text_highlight:sub(self._private.cursor_pos - self._private.highlight.start_pos + 1)
-      -- The text_highlight_start extents are needed for the cursor position and the text_highlight_end position
-      local text_highlight_start_extents = text_extents(text_highlight_start, self.font, self.font_size, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
-
-      -- Draw the first highlighted part(text_highlight_start)
-      cr:set_source_rgb(table.unpack(fg_highlight))
-      cr:move_to(start_offset + text_start_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_highlight_start)
-
-      -- Draw the cursor
-      cr:set_source_rgb(table.unpack(fg_cursor))
-      cr:move_to(start_offset + text_start_extents.x_advance + text_highlight_start_extents.x_advance, text_extent.y_bearing)
-      cr:line_to(start_offset + text_start_extents.x_advance + text_highlight_start_extents.x_advance, text_extent.height)
-      cr:stroke()
-
-      -- Draw the second highlighted part(text_highlight_end)
-      cr:set_source_rgb(table.unpack(fg_highlight))
-      cr:move_to(start_offset + text_start_extents.x_advance + text_highlight_start_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_highlight_end)
-
-      -- Draw the text_end
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset + text_start_extents.x_advance + text_highlight_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_end)
-
-      -- Draw the background highlight
-      cr:set_source_rgba(table.unpack(bg_highlight))
-      cr:rectangle(start_offset + text_start_extents.x_advance, text_extent.y_advance, text_highlight_extents.width, text_extent.height)
-      cr:fill()
-    elseif self._private.cursor_pos < self._private.highlight.start_pos then -- If its inside the text_start
-      -- Split the text_start at the cursor_pos
-      local text_start_start = text_start:sub(1, self._private.cursor_pos - 1)
-      local text_start_end = text_start:sub(self._private.cursor_pos)
-      -- The text_start_start extents is needed for the cursor position and the text_start_end position
-      local text_start_start_extents = text_extents(text_start_start, self.font, self.font_size, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
-
-      -- Draw the first part of the text_start(text_start_start)
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset, -text_extent.y_bearing)
-      cr:show_text(text_start_start)
-
-      -- Draw the cursor
-      cr:set_source_rgb(table.unpack(fg_cursor))
-      cr:move_to(start_offset + text_start_start_extents.x_advance, text_extent.y_bearing)
-      cr:line_to(start_offset + text_start_start_extents.x_advance, text_extent.height)
-      cr:stroke()
-
-      -- Draw the second part of the text_start(text_start_end)
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset + text_start_start_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_start_end)
-
-      -- Draw the text_highlight
-      cr:set_source_rgb(table.unpack(fg_highlight))
-      cr:move_to(start_offset + text_start_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_highlight)
-
-      -- Draw the text_end
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset + text_start_extents.x_advance + text_highlight_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_end)
-
-      -- Draw the highlight background
-      cr:set_source_rgba(table.unpack(bg_highlight))
-      cr:rectangle(start_offset + text_start_extents.x_advance, text_extent.y_advance, text_highlight_extents.width, text_extent.height)
-      cr:fill()
-    elseif self._private.cursor_pos > self._private.highlight.end_pos then -- If its inside the text_end
-      -- Draw the text start
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset, -text_extent.y_bearing)
-      cr:show_text(text_start)
-
-      -- Draw the text highlight
-      cr:set_source_rgb(table.unpack(fg_highlight))
-      cr:move_to(start_offset + text_start_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_highlight)
-
-      --split the text_end at the cursor_pos
-      local text_end_start = text_end:sub(1, self._private.cursor_pos - self._private.highlight.end_pos - 1)
-      local text_end_end = text_end:sub(self._private.cursor_pos - self._private.highlight.end_pos)
-      -- Text end_start extents needed for the cursor position and the text_end_end
-      local text_end_start_extents = text_extents(text_end_start, self.font, self.font_size, { cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL })
-
-      -- Draw the first part of the text_end (text_end_start)
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset + text_start_extents.x_advance + text_highlight_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_end_start)
-
-      -- Draw the cursor
-      cr:set_source_rgb(table.unpack(fg_cursor))
-      cr:move_to(start_offset + text_start_extents.x_advance + text_highlight_extents.x_advance + text_end_start_extents.x_advance, text_extent.y_bearing)
-      cr:line_to(start_offset + text_start_extents.x_advance + text_highlight_extents.x_advance + text_end_start_extents.x_advance, text_extent.height)
-      cr:stroke()
-
-      -- Draw the second part of the text_end (text_end_end)
-      cr:set_source_rgb(table.unpack(fg))
-      cr:move_to(start_offset + text_start_extents.x_advance + text_highlight_extents.x_advance + text_end_start_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_end_end)
-
-      -- Draw the highlight background
-      cr:set_source_rgba(table.unpack(bg_highlight))
-      cr:rectangle(start_offset + text_start_extents.x_advance, text_extent.y_advance, text_highlight_extents.width, text_extent.height)
-      cr:fill()
-    end
-  else -- If the cursor is all the way to the left no split is needed
-    -- text_start
-    cr:set_source_rgb(table.unpack(fg))
-    cr:move_to(start_offset, -text_extent.y_bearing)
-    cr:show_text(text_start)
-
-    -- Cursor
-    cr:set_source_rgb(table.unpack(fg_cursor))
-    cr:move_to(start_offset + text_start_extents.x_advance, text_extent.y_bearing)
-    cr:line_to(start_offset + text_start_extents.x_advance, text_extent.height)
-    cr:stroke()
-
-    -- text_highlight
-    if text_highlight then
-      cr:set_source_rgb(table.unpack(fg_highlight))
-      cr:move_to(start_offset + text_start_extents.x_advance, -text_extent.y_bearing)
-      cr:show_text(text_highlight)
-      cr:set_source_rgba(table.unpack(bg_highlight))
-      cr:rectangle(start_offset + text_start_extents.x_advance, text_extent.y_advance, text_highlight_extents.width, text_extent.height)
-      cr:fill()
-    end
-
-    -- text_end
-    cr:set_source_rgb(table.unpack(fg))
-    cr:move_to(start_offset + text_highlight_extents.x_advance + text_start_extents.x_advance, -text_extent.y_bearing)
-    cr:show_text(text_end)
-  end
+  self.widget:set_image(surface)
   return surface
 end
 
-function inputbox:layout(_, width, height)
-  if self._private.widget then
-    return { base.place_widget_at(self._private.widget, 0, 0, width, height) }
+function inputbox:start_keygrabber()
+  self._private.akeygrabber = akeygrabber {
+    autostart = true,
+    stop_key = { 'Escape', 'Return' },
+    start_callback = function()
+    end,
+    stop_callback = function()
+    end,
+    keybindings = {
+      akey { -- Delete highlight or left to cursor
+        modifiers = {},
+        key = 'BackSpace',
+        on_press = function()
+          local hl = self:get_highlight()
+          local text = self:get_text()
+          local cursor_pos = self:get_cursor_index()
+          if hl.end_pos ~= hl.start_pos then
+            self:set_text(text:sub(0, hl.start_pos) .. text:sub(hl.end_pos + 1, #text))
+            self:set_cursor_pos(hl.start_pos)
+            self:set_highlight { start_pos = 0, end_pos = 0 }
+          else
+            self:set_text(text:sub(1, cursor_pos - 1) .. text:sub(cursor_pos + 1))
+            self:set_cursor_pos(cursor_pos - 1)
+          end
+        end,
+      },
+      akey { -- Delete highlight or right of cursor
+        modifiers = {},
+        key = 'Delete',
+        on_press = function()
+          local hl = self:get_highlight()
+          local text = self:get_text()
+          local cursor_pos = self:get_cursor_index()
+          if hl.end_pos ~= hl.start_pos then
+            self:set_text(text:sub(0, hl.start_pos) .. text:sub(hl.end_pos + 1, #text))
+            self:set_cursor_pos(hl.start_pos)
+            self:set_highlight { start_pos = 0, end_pos = 0 }
+          else
+            self:set_text(text:sub(1, cursor_pos) .. text:sub(cursor_pos + 2, #text))
+          end
+        end,
+      },
+      akey { -- Move cursor to left
+        modifiers = {},
+        key = 'Left',
+        on_press = function()
+          self:set_cursor_pos(self:get_cursor_index() - 1)
+          self:set_highlight { start_pos = 0, end_pos = 0 }
+        end,
+      },
+      akey { -- Move cursor to right
+        modifiers = {},
+        key = 'Right',
+        on_press = function()
+          self:set_cursor_pos(self:get_cursor_index() + 1)
+          self:set_highlight { start_pos = 0, end_pos = 0 }
+        end,
+      },
+      akey { -- Jump cursor to text beginning
+        modifiers = {},
+        key = 'Home',
+        on_press = function()
+          self:set_cursor_pos(0)
+          self:set_highlight { start_pos = 0, end_pos = 0 }
+        end,
+      },
+      akey { -- Jump cursor to text end
+        modifiers = {},
+        key = 'End',
+        on_press = function()
+          self:set_cursor_pos(#self:get_text())
+          self:set_highlight { start_pos = 0, end_pos = 0 }
+        end,
+      },
+      akey { -- Highlight to the left
+        modifiers = { 'Shift' },
+        key = 'Left',
+        on_press = function()
+          local cursor_pos = self:get_cursor_index()
+          local hl = self:get_highlight()
+          if cursor_pos == hl.start_pos then
+            self:set_cursor_pos(cursor_pos - 1)
+            self:set_highlight { start_pos = self:get_cursor_index(), end_pos = hl.end_pos }
+          elseif cursor_pos == hl.end_pos then
+            self:set_cursor_pos(cursor_pos - 1)
+            self:set_highlight { start_pos = hl.start_pos, end_pos = self:get_cursor_index() }
+          else
+            if (hl.start_pos ~= cursor_pos) and (hl.end_pos ~= cursor_pos) then
+              self:set_highlight { start_pos = cursor_pos, end_pos = cursor_pos }
+              hl = self:get_highlight()
+              self:set_cursor_pos(cursor_pos - 1)
+              self:set_highlight { start_pos = self:get_cursor_index(), end_pos = hl.end_pos }
+            end
+          end
+        end,
+      },
+      akey { -- Highlight to the right
+        modifiers = { 'Shift' },
+        key = 'Right',
+        on_press = function()
+          local cursor_pos = self:get_cursor_index()
+          local hl = self:get_highlight()
+          if cursor_pos == hl.end_pos then
+            self:set_cursor_pos(cursor_pos + 1)
+            self:set_highlight { start_pos = hl.start_pos, end_pos = self:get_cursor_index() }
+          elseif cursor_pos == hl.start_pos then
+            self:set_cursor_pos(cursor_pos + 1)
+            self:set_highlight { start_pos = self:get_cursor_index(), end_pos = hl.end_pos }
+          else
+            if (hl.start_pos ~= cursor_pos) and (hl.end_pos ~= cursor_pos) then
+              self:set_highlight { start_pos = cursor_pos, end_pos = cursor_pos }
+              hl = self:get_highlight()
+              self:set_cursor_pos(cursor_pos + 1)
+              self:set_highlight { start_pos = hl.start_pos, end_pos = self:get_cursor_index() }
+            end
+          end
+        end,
+      },
+      akey { -- Highlight all
+        modifiers = { 'Control' },
+        key = 'a',
+        on_press = function()
+          self:set_highlight { start_pos = 0, end_pos = #self:get_text() }
+          self:set_cursor_pos(#self:get_text() - 1)
+        end,
+      },
+      akey { -- Copy highlight
+        modifiers = { 'Control' },
+        key = 'c',
+        on_press = function()
+          local hl = self:get_highlight()
+          if hl.start_pos ~= hl.end_pos then
+            local text = self:get_text():sub(hl.start_pos, hl.end_pos)
+            --TODO:self:copy_to_clipboard(text)
+          end
+        end,
+      },
+      akey { -- Paste text into cursor/highlight
+        modifiers = { 'Control' },
+        key = 'v',
+        on_press = function()
+          local hl = self:get_highlight()
+          local selection = capi.selection()
+          if hl.start_pos ~= hl.end_pos then
+            self:set_text(self:get_text():sub(1, hl.start_pos) .. selection .. self:get_text():sub(hl.end_pos + 1, #self:get_text()))
+            self:set_cursor_pos(hl.start_pos + #selection)
+            self:set_highlight { start_pos = 0, end_pos = 0 }
+          else
+            self:set_text(self:get_text():sub(1, self:get_cursor_pos()) .. selection .. self:get_text():sub(self:get_cursor_pos() + 1, #self:get_text()))
+            self:set_cursor_pos(self:get_cursor_pos() + #selection)
+          end
+        end,
+      },
+      akey { -- Cut highlighted text
+        modifiers = { 'Control' },
+        key = 'x',
+        on_press = function()
+          --TODO
+        end,
+      },
+      akey { -- Word jump right
+        modifiers = { 'Control' },
+        key = 'Right',
+        on_press = function()
+
+        end,
+      },
+      akey { -- Word jump left
+        modifiers = { 'Control' },
+        key = 'Left',
+        on_press = function()
+
+        end,
+      },
+      akey { -- Word jump highlight right
+        modifiers = { 'Control', 'Shift' },
+        key = 'Right',
+        on_press = function()
+
+        end,
+      },
+      akey { -- Word jump highlight left
+        modifiers = { 'Control', 'Shift' },
+        key = 'Left',
+        on_press = function()
+
+        end,
+      },
+    },
+    keypressed_callback = function(_, mod, key)
+      local text = self:get_text()
+      local cursor_pos = self:get_cursor_index()
+      if (mod[1] == 'Mod2' or '') and (key:wlen() == 1) then
+        self:set_text(text:sub(1, cursor_pos) .. key .. text:sub(cursor_pos + 1, #text))
+        self:set_cursor_pos(cursor_pos + #key)
+      elseif (mod[1] == 'Shift') and (key:wlen() == 1) then
+        self:set_text(text:sub(1, cursor_pos) .. key:upper() .. text:sub(cursor_pos + 1, #text))
+        self:set_cursor_pos(cursor_pos + #key)
+      end
+      self:emit_signal('inputbox::keypressed', mod, key)
+    end,
+  }
+end
+
+function inputbox:start_mousegrabber(x, y)
+  --[[ if not mousegrabber.isrunning() then
+    local last_x, advanced, cursor_pos, mx = x, nil, self:get_cursor_pos(), nil
+    local hl = self:get_highlight()
+    self:set_highlight { start_pos = cursor_pos, end_pos = cursor_pos }
+    local text = self:get_text()
+    mousegrabber.run(function(m)
+      mx = m.x
+      if (math.abs(mx - x) > 5) then
+        advanced, last_x = self:advanced_by_character(mx, last_x)
+        if advanced == 1 then
+          if cursor_pos <= hl.start_pos then
+            if hl.end_pos < #text then
+              self:set_highlight { start_pos = hl.start_pos, end_pos = hl.end_pos + 1 }
+            end
+          else
+            self:set_highlight { start_pos = hl.start_pos + 1, end_pos = hl.end_pos }
+          end
+        elseif advanced == -1 then
+          if cursor_pos >= hl.end_pos then
+            if hl.start_pos > 1 then
+              self:set_highlight { start_pos = hl.start_pos - 1, end_pos = hl.end_pos }
+            end
+          else
+            self:set_highlight { start_pos = hl.start_pos, end_pos = hl.end_pos - 1 }
+          end
+        end
+      end
+      hl = self:get_highlight()
+      return m.buttons[1]
+    end, 'xterm')
+  end ]]
+  if not mousegrabber.isrunning() then
+    local index, _ = self._private.layout:xy_to_index(x * Pango.SCALE, y * Pango.SCALE)
+
+    if not index then index = #self:get_text() end
+
+    self:set_cursor_pos(index)
+    -- Remove highlight, but also prepare its position (same pos = no highlight)
+    self:set_highlight { start_pos = index, end_pos = index }
+
+    local text = self:get_text()
+    local hl = self:get_highlight()
+
+    local mb_start = index
+    local m_start_x = capi.mouse.coords().x
+
+    mousegrabber.run(function(m)
+      index, _ = self._private.layout:xy_to_index((m.x - m_start_x + x) * Pango.SCALE, y * Pango.SCALE)
+
+      if not index then index = #text end
+
+      if mb_start - index == 1 then
+        if index <= hl.start_pos then
+          if hl.end_pos < #text then
+            self:set_highlight { start_pos = hl.start_pos, end_pos = hl.end_pos + 1 }
+          end
+        else
+          self:set_highlight { start_pos = hl.start_pos + 1, end_pos = hl.end_pos }
+        end
+      elseif mb_start - index == -1 then
+        if index >= hl.end_pos then
+          if hl.start_pos > 1 then
+            self:set_highlight { start_pos = hl.start_pos - 1, end_pos = hl.end_pos }
+          end
+        else
+          self:set_highlight { start_pos = hl.start_pos, end_pos = hl.end_pos - 1 }
+        end
+      end
+
+      if index ~= mb_start then
+        self:set_cursor_pos(index)
+        mb_start = index
+      end
+      print(self:get_highlight().start_pos, self:get_highlight().end_pos)
+      hl = self:get_highlight()
+      return m.buttons[1]
+    end, 'xterm')
   end
 end
 
-function inputbox:fit(context, width, height)
-  local w, h = 0, 0
-  if self._private.widget then
-    w, h = base.fit_widget(self, context, self._private.widget, width, height)
-  end
-  return w, h
-end
+function inputbox:set_cursor_pos_from_mouse(x, y)
+  -- When setting the cursor position, trailing is not needed as its handled by the setter
+  local index = self._private.layout:xy_to_index(x * Pango.SCALE, y * Pango.SCALE)
+  if not index then index = #self:get_text() end
 
-inputbox.set_widget = base.set_widget_common
-
---- Clears the current text
-function inputbox:clear()
-  self:set_text('')
+  self:set_highlight { start_pos = 0, end_pos = 0 }
+  self:set_cursor_pos(index)
 end
 
 function inputbox:get_text()
-  return self._private.text or ''
+  return self._private.layout:get_text()
 end
 
 function inputbox:set_text(text)
-  self._private.text = text
-  --self.markup = text_with_cursor(self:get_text(), #self:get_text(), self)
-  self:emit_signal('property::text', text)
+  if self:get_text() == text then return end
+
+  local attributes, parsed = Pango.parse_markup(text, -1, 0)
+
+  if not attributes then return parsed.message or tostring(parsed) end
+
+  self._private.layout:set_text(parsed, string.len(parsed))
+  self._private.layout:set_attributes(attributes)
+
+  self.draw_text(self)
 end
 
---- Stop the keygrabber and mousegrabber
-function inputbox:stop()
-  if (not self.akeygrabber) or (not self.akeygrabber.is_running) then return end
-  self:emit_signal('stopped')
-  self.akeygrabber.stop()
+function inputbox:get_cursor_pos()
+  return self._private.layout:get_cursor_pos(self._private.cursor_pos.index)
+end
+
+function inputbox:get_cursor_index()
+  return self._private.cursor_pos.index
+end
+
+function inputbox:set_cursor_pos(cursor_pos)
+  -- moving only moved one character set, to move it multiple times we need to loop as long as the difference to the new cursor isn't 0
+  if not cursor_pos or (cursor_pos < 0) or (cursor_pos > #self:get_text()) then return end
+  --while (cursor_pos - self._private.cursor_pos.index) ~= 0 do
+  --[[ self._private.cursor_pos.index, self._private.cursor_pos.trailing = self._private.layout:move_cursor_visually(
+    true, self._private.cursor_pos.index,
+    self._private.cursor_pos.trailing,
+    cursor_pos - self._private.cursor_pos.index
+  ) ]]
+  self._private.cursor_pos.index = cursor_pos
+  --end
+
+  self.draw_text(self)
+end
+
+function inputbox:get_highlight()
+  return self._private.highlight
+end
+
+function inputbox:set_highlight(highlight)
+  self._private.highlight = highlight
+  self.draw_text(self)
 end
 
 function inputbox:focus()
-  if (not self.akeygrabber) or (not self.akeygrabber.is_running) then
-    akeygrabber.stop()
-    self:run()
-  end
-
-  self:connect_signal('button::press', function()
-    if capi.mouse.current_widget ~= self then
-      self:emit_signal('keygrabber::stop', '')
-    end
-  end)
+  self:start_keygrabber()
 end
 
---- Init the inputbox and start the keygrabber
-function inputbox:run()
-  if not self._private.text then self._private.text = '' end
-
-  -- Init the cursor position, but causes on refocus the cursor to move to the left
-  local cursor_pos = self._private.cursor_pos or #self:get_text() + 1
-
-  -- Init and reset(when refocused) the highlight
-  self._private.highlight = {}
-
-  self.akeygrabber = akeygrabber {
-    autostart = true,
-    start_callback = function()
-      self:emit_signal('started')
-    end,
-    stop_callback = function(_, stop_key)
-      if stop_key == 'Return' then
-        self:emit_signal('submit', self:get_text(), stop_key)
-      else
-        self:emit_signal('stopped', stop_key)
-      end
-    end,
-    stop_key = { 'Escape', 'Return' },
-    keybindings = {
-      --lShift, rShift = #50, #62
-      --lControl, rControl = #37, #105
-      akey {
-        modifiers = { 'Shift' },
-        key = 'Left', -- left
-        on_press = function()
-          if cursor_pos > 1 then
-            local offset = (self._private.text:sub(cursor_pos - 1, cursor_pos - 1):wlen() == -1) and 1 or 0
-            if not self._private.highlight.start_pos then
-              self._private.highlight.start_pos = cursor_pos - 1
-            end
-            if not self._private.highlight.end_pos then
-              self._private.highlight.end_pos = cursor_pos
-            end
-
-            if self._private.highlight.start_pos < cursor_pos then
-              self._private.highlight.end_pos = self._private.highlight.end_pos - 1
-            else
-              self._private.highlight.start_pos = self._private.highlight.start_pos
-            end
-
-            cursor_pos = cursor_pos - 1
-          end
-          if cursor_pos < 1 then
-            cursor_pos = 1
-          elseif cursor_pos > #self._private.text + 1 then
-            cursor_pos = #self._private.text + 1
-          end
-          self._private.cursor_pos = cursor_pos
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', 'Shift', 'Left')
-        end,
-      },
-      akey {
-        modifiers = { 'Shift' },
-        key = 'Right', -- right
-        on_press = function()
-          if #self._private.text >= cursor_pos then
-            if not self._private.highlight.end_pos then
-              self._private.highlight.end_pos = cursor_pos - 1
-            end
-            if not self._private.highlight.start_pos then
-              self._private.highlight.start_pos = cursor_pos
-            end
-
-            if self._private.highlight.end_pos <= cursor_pos then
-              self._private.highlight.end_pos = self._private.highlight.end_pos + 1
-            else
-              self._private.highlight.start_pos = self._private.highlight.start_pos + 1
-            end
-            cursor_pos = cursor_pos + 1
-            if cursor_pos > #self._private.text + 1 then
-              self._private.highlight = {}
-            end
-          end
-          if cursor_pos < 1 then
-            cursor_pos = 1
-          elseif cursor_pos > #self._private.text + 1 then
-            cursor_pos = #self._private.text + 1
-          end
-          self._private.cursor_pos = cursor_pos
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', 'Shift', 'Right')
-        end,
-      },
-      akey {
-        modifiers = { 'Control' },
-        key = 'a', -- a
-        on_press = function()
-          -- Mark the entire text
-          self._private.highlight = {
-            start_pos = 1,
-            end_pos = #self._private.text,
-          }
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', 'Control', 'a')
-        end,
-      },
-      akey {
-        modifiers = { 'Control' },
-        key = 'v', -- v
-        on_press = function()
-          local sel = capi.selection()
-          if sel then
-            sel = sel:gsub('\n', '')
-            if self._private.highlight and self._private.highlight.start_pos and
-                self._private.highlight.end_pos then
-              -- insert the text into the selected part
-              local text_start = self._private.text:sub(1, self._private.highlight.start_pos - 1)
-              local text_end = self._private.text:sub(self._private.highlight.end_pos + 1)
-              self:set_text(text_start .. sel .. text_end)
-              self._private.highlight = {}
-              cursor_pos = #text_start + #sel + 1
-            else
-              self:set_text(self._private.text:sub(1, cursor_pos - 1) ..
-                sel .. self._private.text:sub(cursor_pos))
-              cursor_pos = cursor_pos + #sel
-            end
-          end
-
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', 'Control', 'v')
-        end,
-      },
-      akey {
-        modifiers = { 'Control' },
-        key = 'c', -- c
-        on_press = function()
-          --TODO
-        end,
-      },
-      akey {
-        modifiers = { 'Control' },
-        key = 'x', -- x
-        on_press = function()
-          --TODO
-        end,
-      },
-      akey {
-        modifiers = { 'Control' },
-        key = 'Left', -- left
-        on_press = function()
-          -- Find all spaces
-          local spaces = {}
-          local t, i = self._private.text, 0
-
-          while t:find('%s') do
-            i = t:find('%s')
-            table.insert(spaces, i)
-            t = t:sub(1, i - 1) .. '-' .. t:sub(i + 1)
-          end
-
-          local cp = 1
-          for _, v in ipairs(spaces) do
-            if (v < cursor_pos) then
-              cp = v
-            end
-          end
-          cursor_pos = cp
-          if cursor_pos < 1 then
-            cursor_pos = 1
-          elseif cursor_pos > #self._private.text + 1 then
-            cursor_pos = #self._private.text + 1
-          end
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', 'Control', 'Left')
-        end,
-      },
-      akey {
-        modifiers = { 'Control' },
-        key = 'Right', -- right
-        on_press = function()
-          local next_space = self._private.text:sub(cursor_pos):find('%s')
-          if next_space then
-            cursor_pos = cursor_pos + next_space
-          else
-            cursor_pos = #self._private.text + 1
-          end
-
-          if cursor_pos < 1 then
-            cursor_pos = 1
-          elseif cursor_pos > #self._private.text + 1 then
-            cursor_pos = #self._private.text + 1
-          end
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', 'Control', 'Right')
-        end,
-      },
-      akey {
-        modifiers = {},
-        key = 'BackSpace', --BackSpace
-        on_press = function()
-          -- If text is highlighted delete that, else just delete the character to the left
-          if self._private.highlight and self._private.highlight.start_pos and
-              self._private.highlight.end_pos then
-            local text_start = self._private.text:sub(1, self._private.highlight.start_pos - 1)
-            local text_end = self._private.text:sub(self._private.highlight.end_pos + 1)
-            self:set_text(text_start .. text_end)
-            self._private.highlight = {}
-            cursor_pos = #text_start + 1
-          else
-            if cursor_pos > 1 then
-              local offset = (self._private.text:sub(cursor_pos - 1, cursor_pos - 1):wlen() == -1) and 1 or
-                  0
-              self:set_text(self._private.text:sub(1, cursor_pos - 2 - offset) ..
-                self._private.text:sub(cursor_pos))
-              cursor_pos = cursor_pos - 1 - offset
-            end
-          end
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', nil, 'BackSpace')
-        end,
-      },
-      akey {
-        modifiers = {},
-        key = 'Delete', --delete
-        on_press = function()
-          -- If text is highlighted delete that, else just delete the character to the right
-          if self._private.highlight and self._private.highlight.start_pos and
-              self._private.highlight.end_pos then
-            local text_start = self._private.text:sub(1, self._private.highlight.start_pos - 1)
-            local text_end = self._private.text:sub(self._private.highlight.end_pos + 1)
-            self:set_text(text_start .. text_end)
-            self._private.highlight = {}
-            cursor_pos = #text_start + 1
-          else
-            if cursor_pos <= #self._private.text then
-              self:set_text(self._private.text:sub(1, cursor_pos - 1) ..
-                self._private.text:sub(cursor_pos + 1))
-            end
-          end
-          self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-          self:emit_signal('inputbox::key_pressed', nil, 'Delete')
-        end,
-      },
-      akey {
-        modifiers = {},
-        key = 'Left', --left
-        on_press = function()
-          -- Move cursor ro the left
-          if cursor_pos > 1 then
-            cursor_pos = cursor_pos - 1
-          end
-          self._private.highlight = {}
-        end,
-      },
-      akey {
-        modifiers = {},
-        key = 'Right', --right
-        on_press = function()
-          -- Move cursor to the right
-          if cursor_pos <= #self._private.text then
-            cursor_pos = cursor_pos + 1
-          end
-          self._private.highlight = {}
-        end,
-      },
-      --self.keybindings
-    },
-    keypressed_callback = function(_, modifiers, key)
-      if modifiers[1] == 'Shift' then
-        if key:wlen() == 1 then
-          self:set_text(self._private.text:sub(1, cursor_pos - 1) ..
-            string.upper(key) .. self._private.text:sub(cursor_pos))
-          cursor_pos = cursor_pos + #key
-        end
-      elseif modifiers[1] == 'Mod2' or '' then
-        if key:wlen() == 1 then
-          self:set_text(self._private.text:sub(1, cursor_pos - 1) ..
-            key .. self._private.text:sub(cursor_pos))
-          cursor_pos = cursor_pos + #key
-        end
-      end
-
-      if cursor_pos < 1 then
-        cursor_pos = 1
-      elseif cursor_pos > #self._private.text + 1 then
-        cursor_pos = #self._private.text + 1
-      end
-      self.p.widget:get_children_by_id('text_image')[1].image = self:draw_text_surface()
-      self:emit_signal('inputbox::key_pressed', modifiers, key)
-    end,
-  }
-end
-
---[[
-  take the text and cursor position and figure out which character is next
-  if mx is greater than lx then the right character is the next character
-  if mx is less than lx then the left character is the next character
-
-  calculate the delta between mx and lx, if the delta is greater than the next
-  character increase or decrease the cursor position by 1 (depends if the delta is positive or negative)
-  and set the lx = mx
-
-  return 1 if advanced to the right, -1 if advanced to the left, 0 if not advanced; and the new lx
-]]
-function inputbox:advanced_by_character(mx, lx)
-  local delta = mx - lx
-  local character
-  if delta < 0 then
-    character = self._private.text:sub(self._private.cursor_pos + 1, self._private.cursor_pos + 1)
-  else
-    character = self._private.text:sub(self._private.cursor_pos - 1, self._private.cursor_pos - 1)
-  end
-
-  --local character = (self._private.text:sub(self._private.cursor_pos + 1, self._private.cursor_pos + 1) and (delta < 0)) or self._private.text:sub(self._private.cursor_pos - 1, self._private.cursor_pos - 1)
-  if character then
-    local cr = cairo.Context(cairo.ImageSurface(cairo.Format.ARGB32, 1, 1))
-    cr:select_font_face(self.font, cairo.FontSlant.NORMAL, cairo.FontWeight.NORMAL)
-    cr:set_font_size(self.font_size)
-    local extents = cr:text_extents(character)
-    if math.abs(delta) >= extents.x_advance then
-      self._private.cursor_pos = self._private.cursor_pos + (((delta > 0) and 1) or -1)
-      lx = mx
-      return (((delta > 0) and 1) or -1), lx
+function inputbox:unfocus(reset)
+  if akeygrabber.is_running then
+    self._private.akeygrabber:stop()
+    if reset then
+      self:set_cursor_pos(0)
+      self:set_highlight { start_pos = 0, end_pos = 0 }
     end
   end
-  return 0, lx
 end
 
---- Creates a new inputbox widget
--- @tparam table args Arguments for the inputbox widget
--- @tparam string args.text The text to display in the inputbox
--- @tparam[opt=beautiful.fg_normal] string args.fg Text foreground color
--- @tparam[opt=beautiful.border_focus] string args.border_focus_color Border color when focused
--- @tparam[opt=""] string args.placeholder_text placeholder text to be shown when not focused and
--- @tparam[opt=beautiful.inputbox_placeholder_fg] string args.placeholder_fg placeholder text foreground color
--- @tparam[opt=beautiful.inputbox_cursor_bg] string args.cursor_bg Cursor background color
--- @tparam[opt=beautiful.inputbox_cursor_fg] string args.cursor_fg Cursor foreground color
--- @tparam[opt=beautiful.inputbox_highlight_bg] string args.highlight_bg Highlight background color
--- @tparam[opt=beautiful.inputbox_highlight_fg] string args.highlight_fg Highlight foreground color
--- @treturn awful.widget.inputbox The inputbox widget.
--- @constructorfct awful.widget.inputbox
 function inputbox.new(args)
-  args = args or {}
+  local ret = gobject { enable_properties = true }
+  gtable.crush(ret, inputbox)
 
-  -- directly pass a possible default text(this is not meant to be a hint)
-  local w = imagebox()
+  ret._private = {}
+  ret._private.context = PangoCairo.font_map_get_default():create_context()
+  ret._private.layout = Pango.Layout.new(ret._private.context)
+  ret._private.layout:set_font_description(Pango.FontDescription.from_string('JetBrainsMono Nerd Font 16'))
 
-  --gtable.crush(w, args)
-  gtable.crush(w, inputbox, true)
-  w._private = {}
-
-  w._private.text = args.text or ''
-  w.font_size = 24
-  w.font = User_config.font.regular
-  w._private.cursor_pos = args.cursor_pos
-  w._private.highlight = args.highlight
-
-  w.p = apopup {
-    widget = {
-      {
-        image = w:draw_text_surface(),
-        resize = false,
-        valign = 'bottom',
-        halign = 'center',
-        widget = wibox.widget.imagebox,
-        id = 'text_image',
-      },
-      widget = wibox.container.margin,
-      margins = 20,
-    },
-    bg = '#212121',
-    visible = true,
-    screen = 1,
-    placement = aplacement.centered,
+  ret._private.text_hint = args.text_hint or ''
+  ret._private.cursor_pos = {
+    index = args.cursor_pos or 0,
+    trailing = 0,
+  }
+  ret._private.highlight = args.highlight or {
+    start_pos = 0,
+    end_pos = 0,
   }
 
-  w.p.widget:get_children_by_id('text_image')[1]:buttons(gtable.join {
-    abutton({}, 1, function()
-      -- Get the mouse coordinates realative to the widget
-      local x, y = mouse.coords().x - p.x - 20, mouse.coords().y - p.y - 20 -- 20 is the margin on either side
-      p.widget:get_children_by_id('text_image')[1].image = w:draw_text_surface(x, false)
-      w.highlight = { start_pos = w.cursor_pos, end_pos = w.cursor_pos }
-      p.widget:get_children_by_id('text_image')[1].image = w:draw_text_surface(x, false)
-      if not mousegrabber.isrunning() then
-        local last_x, advanced, cursor_pos, mx = x, nil, w.cursor_pos, nil
-        mousegrabber.run(function(m)
-          mx = m.x - p.x - 20
-          if (math.abs(mx - x) > 5) then
-            -- Returns 1 if the mouse has advanced to the right, -1 if it has advanced to the left
-            advanced, last_x = w:advanced_by_character(mx, last_x)
-            if advanced == 1 then
-              print(cursor_pos, w.highlight.start_pos, w.highlight.end_pos)
-              if cursor_pos <= w.highlight.start_pos then
-                if w.highlight.end_pos < #w._private.text then
-                  w.highlight.end_pos = w.highlight.end_pos + 1
-                end
-              else
-                w.highlight.start_pos = w.highlight.start_pos + 1
-              end
-              p.widget:get_children_by_id('text_image')[1].image = w:draw_text_surface(x, true)
-              print(w.highlight.start_pos, w.highlight.end_pos)
-            elseif advanced == -1 then
-              if cursor_pos >= w.highlight.end_pos then
-                if w.highlight.start_pos > 1 then
-                  w.highlight.start_pos = w.highlight.start_pos - 1
-                end
-              else
-                w.highlight.end_pos = w.highlight.end_pos - 1
-              end
-              p.widget:get_children_by_id('text_image')[1].image = w:draw_text_surface(x, true)
-              print(w.highlight.start_pos, w.highlight.end_pos)
-            end
-          end
+  ret.widget = imagebox(nil, false)
 
-          return m.buttons[1]
-        end, 'xterm')
+  if args.mouse_focus then
+    ret.widget:connect_signal('button::press', function(_, x, y, button)
+      if button == 1 then
+        ret:set_cursor_pos_from_mouse(x, y)
+        ret:start_mousegrabber(x, y)
+        ret:start_keygrabber()
       end
-      w:run()
-    end),
-  })
+    end)
+  end
 
-  --w.font = args.font or beautiful.font
-
-  --w.keybindings = args.keybindings or {}
-  --w.hint_text = args.hint_text
-
-  --w.markup = args.text or text_with_cursor('', 1, w)
-  return w
+  ret:set_text(args.text or '')
+  return ret
 end
 
-function inputbox.mt:__call(...)
-  return inputbox.new(...)
-end
-
-return setmetatable(inputbox, inputbox.mt)
+return setmetatable(inputbox, {
+  __call = function(_, ...)
+    return inputbox.new(...)
+  end,
+})

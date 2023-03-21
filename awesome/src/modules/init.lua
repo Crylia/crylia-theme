@@ -17,24 +17,23 @@ awful.screen.connect_for_each_screen(function(s)
   require('src.modules.application_launcher.init') { screen = s }
 end)
 
-local ip = require('src.modules.inputbox.new') {
+local ip = require('src.modules.inputbox.init') {
   text = 'inputboxtest',
   cursor_pos = 4,
   highlight = {
     start_pos = 1,
     end_pos = 4,
   },
-  text_hint = 'Input Some Text',
+  text_hint = 'Start typing...',
 }
 
-awful.popup {
+--[[ awful.popup {
   widget = ip.widget,
   bg = '#212121',
   visible = true,
   screen = 1,
   placement = awful.placement.centered,
-}
-
+} ]]
 --[[ require('src.modules.inputbox.init') {
   text = 'inputboxtest',
   cursor_pos = 4,
