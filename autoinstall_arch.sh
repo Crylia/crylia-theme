@@ -18,7 +18,7 @@ cd crylia-theme
 [ ! -d ~/.config/awesome ] && cp -r awesome ~/.config/. || cp -r ~/.config/awesome/ ~/.config/.awesome-backup && cp -r awesome ~/.config/.
 [ ! -f ~/.config/picom.conf ] && cp picom.conf ~/.config/. || cp ~/.config/picom.conf ~/.config/.picom.conf.backup && cp picom.conf ~/.config/.
 [ ! -d ~/.config/rofi ] && cp -r rofi ~/.config/. || cp -r ~/.config/rofi ~/.config/.rofi-backup && cp -r rofi ~/.config/.
-[ ! -d ~/.config/alacritty ] && cp -r alacritty ~/.config/. || cp -r ~/.config/alacritty ~/.config/.alacritty && cp -r alacritty ~/.config/.
+[ ! -d ~/.config/kitty ] && cp -r kitty ~/.config/. || cp -r ~/.config/kitty ~/.config/.kitty-backup && cp -r kitty ~/.config/.
 
 
 echo " ===== make sure to logout/reboot and select awesome desktop ====== "
