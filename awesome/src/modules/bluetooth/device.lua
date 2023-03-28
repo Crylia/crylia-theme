@@ -16,6 +16,7 @@ local wibox = require('wibox')
 -- Own libs
 local context_menu = require('src.modules.context_menu.init')
 local hover = require('src.tools.hover')
+local input = require('src.modules.inputbox')
 
 local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/bluetooth/'
 
@@ -107,10 +108,10 @@ function device.new(args)
 
   local icon = device.Icon or 'bluetooth-on'
 
-  local inputbox = awidget.inputbox {
+  local inputbox = input {
     text = args.device.Alias or args.device.Name,
-    halign = 'left',
-    valign = 'center',
+    font = 'JetBrainsMono Nerd Font 12',
+    fg = Theme_config.bluetooth_controller.device_fg,
   }
 
   local ret = base.make_widget_from_value(wibox.widget {
@@ -132,7 +133,7 @@ function device.new(args)
             widget = wibox.container.constraint,
           },
           {
-            inputbox,
+            inputbox.widget,
             widget = wibox.container.constraint,
             strategy = 'exact',
             width = dpi(300),
@@ -260,9 +261,11 @@ function device.new(args)
         icon = gcolor.recolor_image(icondir .. 'edit.svg', Theme_config.bluetooth_controller.icon_color),
         callback = function()
           inputbox:focus()
-          inputbox:connect_signal('submit', function(text)
-            text = text:get_text()
-            inputbox.markup = ret:rename(text)
+          inputbox:connect_signal('inputbox::keypressed', function(_, mod, key)
+            if key == 'Return' then
+              inputbox.markup = ret:rename(inputbox:get_text())
+              inputbox:unfocus()
+            end
           end)
         end,
       },
