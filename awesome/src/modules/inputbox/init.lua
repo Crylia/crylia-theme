@@ -1,23 +1,13 @@
 local Pango = require('lgi').Pango
 local PangoCairo = require('lgi').PangoCairo
-local abutton = require('awful.button')
 local akey = require('awful.key')
 local akeygrabber = require('awful.keygrabber')
-local aplacement = require('awful.placement')
-local apopup = require('awful.popup')
-local base = require('wibox.widget.base')
-local beautiful = require('beautiful')
 local cairo = require('lgi').cairo
 local gobject = require('gears.object')
-local gstring = require('gears.string')
-local gsurface = require('gears.surface')
 local gtable = require('gears.table')
 local gtimer = require('gears.timer')
 local imagebox = require('wibox.widget.imagebox')
 local setmetatable = setmetatable
-local textbox = require('wibox.widget.textbox')
-local wibox = require('wibox')
-local dpi = beautiful.xresources.apply_dpi
 
 local capi = {
   selection = selection,
@@ -30,7 +20,7 @@ local inputbox = {}
 local function get_subtext_layout(layout, starti, endi)
   local text = layout:get_text()
 
-  local subtext = text:sub(starti, endi)
+  local subtext = text:sub(starti + 1, endi)
 
   local ctx = layout:get_context()
 
@@ -54,6 +44,8 @@ function inputbox.draw_text(self)
     --local cairo_text = self._private.text_hint
     -- Get the text extents from Pango so we don't need to use cairo to get a possibly wrong extent
     -- Then draw the text with cairo
+
+    --return
   end
 
   local _, pango_extent = self._private.layout:get_extents()
@@ -110,21 +102,26 @@ function inputbox.draw_text(self)
 end
 
 function inputbox:start_keygrabber()
-  self._private.cursor_timer = gtimer {
-    timeout = 1,
-    autostart = true,
-    callback = function()
-      self._private.show_cursor = not self._private.show_cursor
-      self:draw_text()
-    end,
-  }
   self._private.akeygrabber = akeygrabber {
     autostart = true,
     stop_key = {},
+    mask_event_callback = false,
     start_callback = function(_, mod, key)
+      self._private.cursor_timer = gtimer {
+        timeout = 1,
+        autostart = true,
+        callback = function()
+          self._private.show_cursor = not self._private.show_cursor
+          self:draw_text()
+        end,
+      }
       self:emit_signal('inputbox::start', mod, key)
     end,
     stop_callback = function(_, mod, key)
+      self._private.cursor_timer:stop()
+      self._private.show_cursor = false
+      self._private.cursor_timer = nil
+      self:draw_text()
       self:emit_signal('inputbox::stop', mod, key)
     end,
     keybindings = {
@@ -134,11 +131,12 @@ function inputbox:start_keygrabber()
         on_press = function()
           local hl = self:get_highlight()
           local text = self:get_text()
+          if text == '' then return end
           local cursor_pos = self:get_cursor_index()
           if hl.end_pos ~= hl.start_pos then
             self:set_text(text:sub(0, hl.start_pos) .. text:sub(hl.end_pos + 1, #text))
             self:set_cursor_pos(hl.start_pos)
-            self:set_highlight { start_pos = 0, end_pos = 0 }
+            self:set_highlight(0, 0)
           else
             self:set_text(text:sub(1, cursor_pos - 1) .. text:sub(cursor_pos + 1))
             self:set_cursor_pos(cursor_pos - 1)
@@ -156,7 +154,7 @@ function inputbox:start_keygrabber()
           if hl.end_pos ~= hl.start_pos then
             self:set_text(text:sub(0, hl.start_pos) .. text:sub(hl.end_pos + 1, #text))
             self:set_cursor_pos(hl.start_pos)
-            self:set_highlight { start_pos = 0, end_pos = 0 }
+            self:set_highlight(0, 0)
           else
             self:set_text(text:sub(1, cursor_pos) .. text:sub(cursor_pos + 2, #text))
           end
@@ -168,7 +166,7 @@ function inputbox:start_keygrabber()
         key = 'Left',
         on_press = function()
           self:set_cursor_pos(self:get_cursor_index() - 1)
-          self:set_highlight { start_pos = 0, end_pos = 0 }
+          self:set_highlight(0, 0)
         end,
       },
       akey { -- Move cursor to right
@@ -176,7 +174,7 @@ function inputbox:start_keygrabber()
         key = 'Right',
         on_press = function()
           self:set_cursor_pos(self:get_cursor_index() + 1)
-          self:set_highlight { start_pos = 0, end_pos = 0 }
+          self:set_highlight(0, 0)
         end,
       },
       akey { -- Jump cursor to text beginning
@@ -184,7 +182,7 @@ function inputbox:start_keygrabber()
         key = 'Home',
         on_press = function()
           self:set_cursor_pos(0)
-          self:set_highlight { start_pos = 0, end_pos = 0 }
+          self:set_highlight(0, 0)
         end,
       },
       akey { -- Jump cursor to text end
@@ -192,7 +190,7 @@ function inputbox:start_keygrabber()
         key = 'End',
         on_press = function()
           self:set_cursor_pos(#self:get_text())
-          self:set_highlight { start_pos = 0, end_pos = 0 }
+          self:set_highlight(0, 0)
         end,
       },
       akey { -- Highlight to the left
@@ -201,20 +199,20 @@ function inputbox:start_keygrabber()
         on_press = function()
           local cursor_pos = self:get_cursor_index()
           local hl = self:get_highlight()
-          if cursor_pos == hl.start_pos then
-            self:set_cursor_pos(cursor_pos - 1)
-            self:set_highlight { start_pos = self:get_cursor_index(), end_pos = hl.end_pos }
-          elseif cursor_pos == hl.end_pos then
-            self:set_cursor_pos(cursor_pos - 1)
-            self:set_highlight { start_pos = hl.start_pos, end_pos = self:get_cursor_index() }
-          else
-            if (hl.start_pos ~= cursor_pos) and (hl.end_pos ~= cursor_pos) then
-              self:set_highlight { start_pos = cursor_pos, end_pos = cursor_pos }
-              hl = self:get_highlight()
-              self:set_cursor_pos(cursor_pos - 1)
-              self:set_highlight { start_pos = self:get_cursor_index(), end_pos = hl.end_pos }
-            end
+
+          if hl.end_pos == 0 and hl.start_pos == 0 then
+            self:set_highlight(cursor_pos, cursor_pos)
           end
+
+          if hl.start_pos >= cursor_pos then
+            self:set_cursor_pos(cursor_pos - 1)
+            self:set_highlight(hl.start_pos - 1, nil)
+          else
+            self:set_cursor_pos(cursor_pos - 1)
+            self:set_highlight(nil, hl.end_pos - 1)
+          end
+
+          print('cursor_pos', self:get_cursor_index(), 'hl.start_pos', self:get_highlight().start_pos, 'hl.end_pos', self:get_highlight().end_pos)
         end,
       },
       akey { -- Highlight to the right
@@ -225,16 +223,16 @@ function inputbox:start_keygrabber()
           local hl = self:get_highlight()
           if cursor_pos == hl.end_pos then
             self:set_cursor_pos(cursor_pos + 1)
-            self:set_highlight { start_pos = hl.start_pos, end_pos = self:get_cursor_index() }
+            self:set_highlight(hl.start_pos, self:get_cursor_index())
           elseif cursor_pos == hl.start_pos then
             self:set_cursor_pos(cursor_pos + 1)
-            self:set_highlight { start_pos = self:get_cursor_index(), end_pos = hl.end_pos }
+            self:set_highlight(self:get_cursor_index(), hl.end_pos)
           else
             if (hl.start_pos ~= cursor_pos) and (hl.end_pos ~= cursor_pos) then
-              self:set_highlight { start_pos = cursor_pos, end_pos = cursor_pos }
+              self:set_highlight(cursor_pos, cursor_pos)
               hl = self:get_highlight()
               self:set_cursor_pos(cursor_pos + 1)
-              self:set_highlight { start_pos = hl.start_pos, end_pos = self:get_cursor_index() }
+              self:set_highlight(hl.start_pos, self:get_cursor_index())
             end
           end
         end,
@@ -243,8 +241,8 @@ function inputbox:start_keygrabber()
         modifiers = { 'Control' },
         key = 'a',
         on_press = function()
-          self:set_highlight { start_pos = 0, end_pos = #self:get_text() }
-          self:set_cursor_pos(#self:get_text() - 1)
+          self:set_highlight(0, #self:get_text())
+          self:set_cursor_pos(#self:get_text())
         end,
       },
       akey { -- Copy highlight
@@ -267,7 +265,7 @@ function inputbox:start_keygrabber()
           if hl.start_pos ~= hl.end_pos then
             self:set_text(self:get_text():sub(1, hl.start_pos) .. selection .. self:get_text():sub(hl.end_pos + 1, #self:get_text()))
             self:set_cursor_pos(hl.start_pos + #selection)
-            self:set_highlight { start_pos = 0, end_pos = 0 }
+            self:set_highlight(0, 0)
           else
             self:set_text(self:get_text():sub(1, self:get_cursor_pos()) .. selection .. self:get_text():sub(self:get_cursor_pos() + 1, #self:get_text()))
             self:set_cursor_pos(self:get_cursor_pos() + #selection)
@@ -315,14 +313,20 @@ function inputbox:start_keygrabber()
       self._private.show_cursor = true
       local text = self:get_text()
       local cursor_pos = self:get_cursor_index()
-      if (mod[1] == 'Mod2' or '') and (key:wlen() == 1) then
+      if (mod[1] == 'Mod2' or '') and (key:wlen() == 1) and (not (mod[1] == 'Control')) then
         self:set_text(text:sub(1, cursor_pos) .. key .. text:sub(cursor_pos + 1, #text))
         self:set_cursor_pos(cursor_pos + #key)
       elseif (mod[1] == 'Shift') and (key:wlen() == 1) then
         self:set_text(text:sub(1, cursor_pos) .. key:upper() .. text:sub(cursor_pos + 1, #text))
         self:set_cursor_pos(cursor_pos + #key)
       end
+      self.draw_text(self)
       self:emit_signal('inputbox::keypressed', mod, key)
+    end,
+    keyreleased_callback = function(_, mod, key)
+      self._private.cursor_timer:start()
+      self.draw_text(self)
+      self:emit_signal('inputbox::keyreleased', mod, key)
     end,
   }
 end
@@ -366,7 +370,7 @@ function inputbox:start_mousegrabber(x, y)
 
     self:set_cursor_pos(index)
     -- Remove highlight, but also prepare its position (same pos = no highlight)
-    self:set_highlight { start_pos = index, end_pos = index }
+    self:set_highlight(index, index)
 
     local text = self:get_text()
     local hl = self:get_highlight()
@@ -382,18 +386,18 @@ function inputbox:start_mousegrabber(x, y)
       if mb_start - index == 1 then
         if index <= hl.start_pos then
           if hl.end_pos < #text then
-            self:set_highlight { start_pos = hl.start_pos, end_pos = hl.end_pos + 1 }
+            self:set_highlight(hl.start_pos, hl.end_pos + 1)
           end
         else
-          self:set_highlight { start_pos = hl.start_pos + 1, end_pos = hl.end_pos }
+          self:set_highlight(hl.start_pos + 1, hl.end_pos)
         end
       elseif mb_start - index == -1 then
         if index >= hl.end_pos then
           if hl.start_pos > 1 then
-            self:set_highlight { start_pos = hl.start_pos - 1, end_pos = hl.end_pos }
+            self:set_highlight(hl.start_pos - 1, hl.end_pos)
           end
         else
-          self:set_highlight { start_pos = hl.start_pos, end_pos = hl.end_pos - 1 }
+          self:set_highlight(hl.start_pos, hl.end_pos - 1)
         end
       end
 
@@ -413,7 +417,7 @@ function inputbox:set_cursor_pos_from_mouse(x, y)
   local index = self._private.layout:xy_to_index(x * Pango.SCALE, y * Pango.SCALE)
   if not index then index = #self:get_text() end
 
-  self:set_highlight { start_pos = 0, end_pos = 0 }
+  self:set_highlight(0, 0)
   self:set_cursor_pos(index)
 end
 
@@ -464,14 +468,30 @@ function inputbox:get_highlight()
   return self._private.highlight
 end
 
-function inputbox:set_highlight(highlight)
-  self._private.highlight = highlight
+function inputbox:set_highlight(start_pos, end_pos)
+  if start_pos then
+    self._private.highlight.start_pos = start_pos
+  end
+  if end_pos then
+    self._private.highlight.end_pos = end_pos
+  end
+
   self.draw_text(self)
+end
+
+local button_signal = function(self, x, y, button)
+  if button == 1 then
+    self:set_cursor_pos_from_mouse(x, y)
+    self:start_mousegrabber(x, y)
+    self:start_keygrabber()
+  end
 end
 
 function inputbox:focus()
   self._private.show_cursor = true
   self:start_keygrabber()
+  self.widget:connect_signal('button::press', button_signal)
+  self.draw_text(self)
 end
 
 function inputbox:unfocus(reset)
@@ -481,8 +501,9 @@ function inputbox:unfocus(reset)
   end
   if reset then
     self:set_cursor_pos(0)
-    self:set_highlight { start_pos = 0, end_pos = 0 }
+    self:set_highlight(0, 0)
   end
+  self.widget:disconnect_signal('button::press', button_signal)
   self._private.show_cursor = false
   self.draw_text(self)
 end
