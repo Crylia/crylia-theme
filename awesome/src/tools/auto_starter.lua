@@ -2,7 +2,22 @@ local Gio = require('lgi').Gio
 local aspawn = require('awful.spawn')
 local gfilesystem = require('gears.filesystem')
 
+local capi = {
+  awesome = awesome,
+}
+
+local function is_restart()
+  capi.awesome.register_xproperty('is_restart', 'boolean')
+  local restart_detected = capi.awesome.get_xproperty('is_restart') ~= nil
+  capi.awesome.set_xproperty('is_restart', true)
+
+  return restart_detected
+end
+
 return function(table)
+
+  if is_restart() then return end
+
   for _, t in ipairs(table) do
     aspawn(t);
   end
