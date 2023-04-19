@@ -1,0 +1,22 @@
+{
+  "fg_dark": "#212121",
+  "fg": "#f5f5f5",
+  "bg": "#212121",
+  "bg1": "#424242",
+  "bg2": "#616161",
+  "bg_red": "#ef9a9a",
+  "bg_green": "#a5d6a7",
+  "bg_yellow": "#fff59d",
+  "bg_blue": "#90caf9",
+  "bg_teal": "#80cbc4",
+  "bg_purple": "#CE93D8",
+  "bg_deeppurple": "#B39DDB",
+  "bg_cyan": "#80DEEA",
+  "bg_orange": "#ffcc80",
+  "bg_deeporange": "#ffab91",
+  "bg_lightblue": "#81D4FA",
+  "bg_pink": "#f48fb1",
+  "bg_lightgreen": "#C5E1A5",
+  "bg_lime": "#E6EE9C",
+  "border_color": "#424242"
+}

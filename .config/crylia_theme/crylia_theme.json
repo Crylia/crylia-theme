@@ -1,0 +1,92 @@
+{
+  "autostart": [
+    "nm-applet",
+    "protonvpn-cli ks --off",
+    "picom",
+    "/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
+    "setxkbmap -option caps:swapescape",
+    "/home/crylia/.screenlayout/double.sh",
+    "gnome-keyring-daemon --start --components=secrets"
+  ],
+  "battery_kind": "BATTERY",
+  "battery_path": null,
+  "brightness_step": 2,
+  "dock_icon_size": 64,
+  "energy_manager": "xfce4-power-manager-settings",
+  "file_manager": "nemo",
+  "font": "JetBrainsMono Nerd Font",
+  "font-size": 12,
+  "font-weight": "Bold",
+  "gtk_settings": "lxappearance",
+  "icon_theme": "Papirus-Dark",
+  "kblayout": [
+    "de",
+    "ru"
+  ],
+  "layouts": [
+    "awful.layout.suit.fair",
+    "awful.layout.suit.floating"
+  ],
+  "modkey": "Mod4",
+  "namestyle": "userhost",
+  "screen_settings": "arandr",
+  "screenshot_program": "flameshot gui",
+  "status_bar_widgets": [
+    "cpu_usage",
+    "cpu_temp",
+    "ram_usage",
+    "microphone",
+    "volume",
+    "gpu_temp",
+    "gpu_usage",
+    "backlight",
+    "battery"
+  ],
+  "taskbar_use_name": true,
+  "terminal": "kitty",
+  "text_editor": "code",
+  "titlebar_exception": [
+    "protonvpn"
+  ],
+  "titlebar_position": "left",
+  "titlebar_items": {
+    "left_and_bottom": [
+      "icon"
+    ],
+    "right_and_top": [
+      "close",
+      "maximize",
+      "minimize"
+    ]
+  },
+  "wallpaper": "/home/crylia/Bilder/Hintergründe/1223939.jpg",
+  "weather_secrets": {
+    "key": "e71b00168ca7219563dde4514a425b14",
+    "city_id": "2864118",
+    "unit": "metric"
+  },
+  "web_browser": "firefox",
+  "crylia_bar": [
+    {
+      "left_bar": [
+        "Tiling Layout",
+        "Systray",
+        "Taglist"
+      ],
+      "center_bar": [
+        "Tasklist"
+      ],
+      "right_bar": [
+        "Bluetooth",
+        "Network",
+        "Battery",
+        "Cpu Usage",
+        "Audio",
+        "Keyboard Layout",
+        "Date",
+        "Clock",
+        "Power Button"
+      ]
+    }
+  ]
+}

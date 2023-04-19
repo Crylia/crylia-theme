@@ -1,0 +1,14 @@
+{
+  "bg": "#282c34",
+  "bg1": "#3e4451",
+  "bg2": "#545d6d",
+  "fg": "#FFFFFF",
+  "fg_dark": "#282c34",
+  "border_color": "#3e4451",
+  "bg_red": "#E06C75",
+  "bg_green": "#98C379",
+  "bg_yellow": "#E5C07B",
+  "bg_blue": "#61AFEF",
+  "bg_purple": "#C678DD",
+  "bg_teal": "#56B6C2"
+}
