@@ -6,6 +6,7 @@
 local abutton = require('awful.button')
 local awidget = require('awful.widget')
 local base = require('wibox.widget.base')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears').color
 local gfilesystem = require('gears').filesystem
@@ -50,7 +51,7 @@ end
 
 --#endregion
 
-local dbus_proxy = require('dbus_proxy')
+local dbus_proxy = require('src.lib.lua-dbus_proxy.src.dbus_proxy')
 --- Connect to a device if not connected else disconnect
 function device:toggle_connect()
   if not self.device.Paired then
@@ -110,8 +111,8 @@ function device.new(args)
 
   local inputbox = input {
     text = args.device.Alias or args.device.Name,
-    font = 'JetBrainsMono Nerd Font 12',
-    fg = Theme_config.bluetooth_controller.device_fg,
+    font = beautiful.user_config.font .. ' 12',
+    fg = beautiful.colorscheme.bg_blue,
   }
 
   local ret = base.make_widget_from_value(wibox.widget {
@@ -121,7 +122,7 @@ function device.new(args)
           {
             {
               image = gcolor.recolor_image(
-                icondir .. icon .. '.svg', Theme_config.bluetooth_controller.icon_color),
+                icondir .. icon .. '.svg', beautiful.colorscheme.bg_purple),
               resize = false,
               valign = 'center',
               halign = 'center',
@@ -165,8 +166,8 @@ function device.new(args)
               margins = dpi(2),
               widget = wibox.container.margin,
             },
-            shape = Theme_config.bluetooth_controller.icon_shape,
-            bg = Theme_config.bluetooth_controller.con_button_color,
+            shape = beautiful.shape[4],
+            bg = beautiful.colorscheme.bg_blue,
             widget = wibox.container.background,
           },
           margin = dpi(5),
@@ -177,12 +178,12 @@ function device.new(args)
       margins = dpi(5),
       widget = wibox.container.margin,
     },
-    bg = Theme_config.bluetooth_controller.device_bg,
-    fg = Theme_config.bluetooth_controller.device_fg,
-    border_color = Theme_config.bluetooth_controller.device_border_color,
-    border_width = Theme_config.bluetooth_controller.device_border_width,
+    bg = beautiful.colorscheme.bg,
+    fg = beautiful.colorscheme.bg_blue,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
     id = 'background',
-    shape = Theme_config.bluetooth_controller.device_shape,
+    shape = beautiful.shape[4],
     widget = wibox.container.background,
   })
 
@@ -195,7 +196,7 @@ function device.new(args)
   -- Set the image of the connection button depending on the connection state
   ret:get_children_by_id('con')[1].image = gcolor.recolor_image(ret.device.Connected and icondir .. 'link.svg' or
     icondir .. 'link-off.svg',
-    Theme_config.bluetooth_controller.icon_color_dark)
+    beautiful.colorscheme.bg)
 
   local cm = context_menu {
     widget_template = wibox.widget {
@@ -232,7 +233,7 @@ function device.new(args)
         name = ret.device.Connected and 'Disconnect' or 'Connect',
         icon = gcolor.recolor_image(ret.device.Connected and icondir .. 'bluetooth-off.svg' or
           icondir .. 'bluetooth-on.svg',
-          Theme_config.bluetooth_controller.icon_color),
+          beautiful.colorscheme.bg_purple),
         callback = function()
           ret:toggle_connect()
         end,
@@ -242,7 +243,7 @@ function device.new(args)
         name = 'Pair',
         icon = gcolor.recolor_image(ret.device.Paired and icondir .. 'link-off.svg' or
           icondir .. 'link.svg',
-          Theme_config.bluetooth_controller.icon_color),
+          beautiful.colorscheme.bg_purple),
         callback = function()
           ret:toggle_pair()
         end,
@@ -250,7 +251,7 @@ function device.new(args)
       { -- Trust/Untrust a device
         name = ret.device.Trusted and 'Untrust' or 'Trust',
         icon = gcolor.recolor_image(ret.device.Trusted and icondir .. 'untrusted.svg' or icondir .. 'trusted.svg',
-          Theme_config.bluetooth_controller.icon_color),
+          beautiful.colorscheme.bg_purple),
         callback = function()
           ret:toggle_trusted()
         end,
@@ -258,7 +259,7 @@ function device.new(args)
       },
       { -- Rename a device
         name = 'Rename',
-        icon = gcolor.recolor_image(icondir .. 'edit.svg', Theme_config.bluetooth_controller.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'edit.svg', beautiful.colorscheme.bg_purple),
         callback = function()
           inputbox:focus()
           inputbox:connect_signal('inputbox::keypressed', function(_, mod, key)
@@ -271,7 +272,7 @@ function device.new(args)
       },
       { -- Remove a device
         name = 'Remove',
-        icon = gcolor.recolor_image(icondir .. 'delete.svg', Theme_config.bluetooth_controller.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'delete.svg', beautiful.colorscheme.bg_purple),
         callback = function()
           args.remove_callback(ret.device)
         end,
@@ -296,14 +297,14 @@ function device.new(args)
           value:get_children_by_id('text_role')[1].text = ret.device.Connected and 'Disconnect' or 'Connect'
           value:get_children_by_id('icon_role')[1].image = gcolor.recolor_image(ret.device.Connected and
             icondir .. 'bluetooth-off.svg' or icondir .. 'bluetooth-on.svg',
-            Theme_config.bluetooth_controller.icon_color)
+            beautiful.colorscheme.bg_purple)
         elseif value.id:match('trusted') then
           value:get_children_by_id('text_role')[1].text = ret.device.Trusted and 'Untrust' or 'Trust'
           value:get_children_by_id('icon_role')[1].image = gcolor.recolor_image(ret.device.Trusted and
-            icondir .. 'untrusted.svg' or icondir .. 'trusted.svg', Theme_config.bluetooth_controller.icon_color)
+            icondir .. 'untrusted.svg' or icondir .. 'trusted.svg', beautiful.colorscheme.bg_purple)
         elseif value.id:match('paired') then
           value:get_children_by_id('icon_role')[1].image = gcolor.recolor_image(ret.device.Paired and
-            icondir .. 'link-off.svg' or icondir .. 'link.svg', Theme_config.bluetooth_controller.icon_color)
+            icondir .. 'link-off.svg' or icondir .. 'link.svg', beautiful.colorscheme.bg_purple)
         end
       end
       cm:toggle()
@@ -314,7 +315,7 @@ function device.new(args)
   capi.awesome.connect_signal(ret.device.object_path .. '_updated', function(d)
     ret:get_children_by_id('con')[1].image = gcolor.recolor_image(d.Connected and icondir .. 'link.svg' or
       icondir .. 'link-off.svg',
-      Theme_config.bluetooth_controller.icon_color_dark)
+      beautiful.colorscheme.bg)
   end)
 
   hover.bg_hover { widget = ret }

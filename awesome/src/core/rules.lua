@@ -6,6 +6,8 @@
 local aclient = require('awful.client')
 local aplacement = require('awful.placement')
 local ascreen = require('awful.screen')
+local beautiful = require('beautiful')
+local dpi = require('beautiful').xresources.apply_dpi
 local ruled = require('ruled')
 
 local config = require('src.tools.config')
@@ -16,8 +18,8 @@ ruled.client.connect_signal('request::rules', function()
   ruled.client.append_rule {
     rule = {},
     properties = {
-      border_width = Theme.border_width,
-      border_color = Theme.border_normal,
+      border_width = dpi(2),
+      border_color = beautiful.colorscheme.border_color,
       maximized = false,
       maximized_horizontal = false,
       maximized_vertical = false,

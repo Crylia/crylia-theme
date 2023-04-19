@@ -1,5 +1,7 @@
 -- Awesome Libs
 local awful = require('awful')
+local apopup = require('awful.popup')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gtable = require('gears.table')
 local gcolor = require('gears.color')
@@ -348,7 +350,7 @@ function calendar:create_calendar_weeks_widget()
           widget = wibox.widget.textbox,
         },
         id = 'background',
-        fg = Theme_config.calendar.day.fg_unfocus,
+        fg = beautiful.colorscheme.bg2,
         widget = wibox.container.background,
       },
       strategy = 'exact',
@@ -371,8 +373,8 @@ function calendar:create_weekdays_widget()
         valign = 'center',
         widget = wibox.widget.textbox,
       },
-      bg = Theme_config.calendar.weekdays.bg,
-      fg = Theme_config.calendar.weekdays.fg,
+      bg = beautiful.colorscheme.bg,
+      fg = beautiful.colorscheme.bg_blue,
       widget = wibox.container.background,
     })
   end
@@ -421,9 +423,9 @@ function calendar:create_calendar_widget()
           margins = dpi(2),
           widget = wibox.container.margin,
         },
-        fg = Theme_config.calendar.task.fg,
+        fg = beautiful.colorscheme.bg,
         bg = bg,
-        shape = Theme_config.calendar.task.shape,
+        shape = beautiful.shape[4],
         forced_height = dpi(20),
         widget = wibox.container.background,
       }
@@ -460,11 +462,11 @@ function calendar:create_calendar_widget()
               color = cal.color,
             }
 
-            local task_popup = awful.popup {
+            local task_popup = apopup {
               widget = ti,
               ontop = true,
               visible = false,
-              bg = '#00000000',
+              bg = gcolor.transparent,
               x = capi.mouse.coords().x,
               y = capi.mouse.coords().y,
               screen = capi.mouse.screen,
@@ -508,16 +510,16 @@ function calendar:create_calendar_widget()
     local last_month_length = self:get_last_day_in_month(last_month, year)
 
     for i = last_month_length - months_t[self.date.month].first_day + 2, last_month_length, 1 do
-      local border = Theme_config.calendar.day.border_color
-      local bg = Theme_config.calendar.day.bg_unfocus
-      local fg = Theme_config.calendar.day.fg_unfocus
+      local border = beautiful.colorscheme.border_color
+      local bg = beautiful.colorscheme.bg
+      local fg = beautiful.colorscheme.bg2
 
       local y = tonumber(os.date('%Y'))
       local m = tonumber(os.date('%m'))
 
       if (i == self.date.day) and (m == last_month) and (y == year) then
-        bg = Theme_config.calendar.day.bg_focus
-        fg = Theme_config.calendar.day.fg_focus
+        bg = beautiful.colorscheme.bg_teal
+        fg = beautiful.colorscheme.bg
       end
 
       local day = wibox.widget {
@@ -540,7 +542,7 @@ function calendar:create_calendar_widget()
                   id = 'day_bg',
                   widget = wibox.container.background,
                   bg = bg,
-                  shape = Theme_config.calendar.day.shape,
+                  shape = beautiful.shape[4],
                   fg = fg,
                 },
                 widget = wibox.container.place,
@@ -563,11 +565,11 @@ function calendar:create_calendar_widget()
           },
           id = 'background',
           widget = wibox.container.background,
-          bg = Theme_config.calendar.day.bg_unfocus,
-          fg = Theme_config.calendar.day.fg_unfocus,
+          bg = beautiful.colorscheme.bg,
+          fg = beautiful.colorscheme.bg2,
           border_color = border,
-          border_width = Theme_config.calendar.day.border_width,
-          shape = Theme_config.calendar.day.shape,
+          border_width = dpi(2),
+          shape = beautiful.shape[4],
         },
         id = 'day',
         widget = wibox.container.constraint,
@@ -586,15 +588,15 @@ function calendar:create_calendar_widget()
   local row = 1
   local col = months_t[self.date.month].first_day
   for i = 1, months_t[self.date.month].day_count, 1 do
-    local border = Theme_config.calendar.day.border_color
-    local bg = Theme_config.calendar.day.bg
-    local fg = Theme_config.calendar.day.fg
+    local border = beautiful.colorscheme.border_color
+    local bg = beautiful.colorscheme.bg
+    local fg = beautiful.colorscheme.fg
 
     local m = tonumber(os.date('%m'))
     local y = tonumber(os.date('%Y'))
     if (i == self.date.day) and (m == self.date.month) and (y == self.date.year) then
-      bg = Theme_config.calendar.day.bg_focus
-      fg = Theme_config.calendar.day.fg_focus
+      bg = beautiful.colorscheme.bg_teal
+      fg = beautiful.colorscheme.bg
     end
 
     local day = wibox.widget {
@@ -617,7 +619,7 @@ function calendar:create_calendar_widget()
                 id = 'day_bg',
                 widget = wibox.container.background,
                 bg = bg,
-                shape = Theme_config.calendar.day.shape,
+                shape = beautiful.shape[4],
                 fg = fg,
               },
               widget = wibox.container.place,
@@ -638,11 +640,11 @@ function calendar:create_calendar_widget()
         },
         id = 'background',
         widget = wibox.container.background,
-        bg = Theme_config.calendar.day.bg,
-        fg = Theme_config.calendar.day.fg,
+        bg = beautiful.colorscheme.bg,
+        fg = beautiful.colorscheme.fg,
         border_color = border,
-        border_width = Theme_config.calendar.day.border_width,
-        shape = Theme_config.calendar.day.shape,
+        border_width = dpi(2),
+        shape = beautiful.shape[4],
       },
       widget = wibox.container.constraint,
       width = dpi(100),
@@ -668,15 +670,15 @@ function calendar:create_calendar_widget()
     end
 
     for i = 1, 7 - months_t[self.date.month].last_day, 1 do
-      local border = Theme_config.calendar.day.border_color
-      local bg = Theme_config.calendar.day.bg_unfocus
-      local fg = Theme_config.calendar.day.fg_unfocus
+      local border = beautiful.colorscheme.border_color
+      local bg = beautiful.colorscheme.bg
+      local fg = beautiful.colorscheme.bg2
 
       local m = tonumber(os.date('%m'))
       local y = tonumber(os.date('%Y'))
       if (i == self.date.day) and (m == next_month) and (y == year) then
-        bg = Theme_config.calendar.day.bg_focus
-        fg = Theme_config.calendar.day.fg_focus
+        bg = beautiful.colorscheme.bg_teal
+        fg = beautiful.colorscheme.bg
       end
       local day = wibox.widget {
         {
@@ -698,7 +700,7 @@ function calendar:create_calendar_widget()
                   id = 'day_bg',
                   widget = wibox.container.background,
                   bg = bg,
-                  shape = Theme_config.calendar.day.shape,
+                  shape = beautiful.shape[4],
                   fg = fg,
                 },
                 widget = wibox.container.place,
@@ -719,11 +721,11 @@ function calendar:create_calendar_widget()
           },
           id = 'background',
           widget = wibox.container.background,
-          bg = Theme_config.calendar.day.bg_unfocus,
-          fg = Theme_config.calendar.day.fg_unfocus,
+          bg = beautiful.colorscheme.bg,
+          fg = beautiful.colorscheme.bg2,
           border_color = border,
-          border_width = Theme_config.calendar.day.border_width,
-          shape = Theme_config.calendar.day.shape,
+          border_width = dpi(2),
+          shape = beautiful.shape[4],
         },
         widget = wibox.container.constraint,
         width = dpi(100),
@@ -752,13 +754,13 @@ function calendar.new(args)
                 {
                   widget = wibox.widget.imagebox,
                   resize = false,
-                  image = gcolor.recolor_image(icondir .. 'add_ical.svg', Theme_config.calendar.add_ical.fg_focus),
+                  image = gcolor.recolor_image(icondir .. 'add_ical.svg', beautiful.colorscheme.bg_red),
                   halign = 'center',
                   valign = 'center',
                 },
                 id = 'add_ical',
-                shape = Theme_config.calendar.add_ical.shape,
-                bg = Theme_config.calendar.add_ical.bg,
+                shape = beautiful.shape[4],
+                bg = beautiful.colorscheme.bg_red,
                 widget = wibox.container.background,
               },
               widget = wibox.container.margin,
@@ -769,13 +771,13 @@ function calendar.new(args)
                 {
                   widget = wibox.widget.imagebox,
                   resize = false,
-                  image = gcolor.recolor_image(icondir .. 'add_task.svg', Theme_config.calendar.add_task.fg),
+                  image = gcolor.recolor_image(icondir .. 'add_task.svg', beautiful.colorscheme.bg),
                   halign = 'center',
                   valign = 'center',
                 },
                 id = 'add_task',
-                shape = Theme_config.calendar.add_task.shape,
-                bg = Theme_config.calendar.add_task.bg,
+                shape = beautiful.shape[4],
+                bg = beautiful.colorscheme.bg_blue,
                 widget = wibox.container.background,
               },
               widget = wibox.container.margin,
@@ -876,12 +878,12 @@ function calendar.new(args)
       layout = wibox.layout.fixed.horizontal,
     },
     widget = wibox.container.background,
-    bg = Theme_config.calendar.bg,
-    border_color = Theme_config.calendar.border_color,
-    border_width = Theme_config.calendar.border_width,
+    bg = beautiful.colorscheme.bg,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
     border_strategy = 'inner',
-    fg = Theme_config.calendar.fg,
-    shape = Theme_config.calendar.shape,
+    fg = beautiful.colorscheme.fg,
+    shape = beautiful.shape,
   })
 
   ret:get_tasks()

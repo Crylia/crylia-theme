@@ -6,6 +6,7 @@
 local abutton = require('awful.button')
 local base = require('wibox.widget.base')
 local dbus_proxy = require('src.lib.lua-dbus_proxy.src.dbus_proxy')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
@@ -168,7 +169,7 @@ function network:scan_access_points()
         app_name = 'Network Manager',
         title = 'Error: Scan failed!',
         message = 'Failed to scan for access points.\n' .. failure,
-        icon = gcolor.recolor_image(icondir .. 'ethernet.svg', Theme_config.network.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'ethernet.svg', beautiful.colorscheme.bg),
         timeout = 5,
       }
       return
@@ -239,7 +240,7 @@ function network.new(args)
                   {
                     resize = false,
                     image = gcolor.recolor_image(icondir .. 'menu-down.svg',
-                      Theme_config.network_manager.wifi_icon_color),
+                      beautiful.colorscheme.bg_red),
                     widget = wibox.widget.imagebox,
                     valign = 'center',
                     halign = 'center',
@@ -263,11 +264,9 @@ function network.new(args)
                 layout = wibox.layout.fixed.horizontal,
               },
               id = 'wifi_bg',
-              bg = Theme_config.network_manager.wifi_bg,
-              fg = Theme_config.network_manager.wifi_fg,
-              shape = function(cr, width, height)
-                gshape.rounded_rect(cr, width, height, dpi(4))
-              end,
+              bg = beautiful.colorscheme.bg1,
+              fg = beautiful.colorscheme.bg_red,
+              shape = beautiful.shape[4],
               widget = wibox.container.background,
             },
             id = 'wifi_margin',
@@ -287,8 +286,8 @@ function network.new(args)
               margins = dpi(10),
               widget = wibox.container.margin,
             },
-            border_color = Theme_config.network_manager.ap_border_color,
-            border_width = Theme_config.network_manager.ap_border_width,
+            border_color = beautiful.colorscheme.border_color,
+            border_width = dpi(2),
             shape = function(cr, width, height)
               gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
             end,
@@ -299,7 +298,7 @@ function network.new(args)
             { -- action buttons
               {
                 dnd_widget {
-                  color = Theme_config.network_manager.power_icon_color,
+                  color = beautiful.colorscheme.bg_red,
                   size = dpi(40),
                 },
                 id = 'dnd',
@@ -312,7 +311,7 @@ function network.new(args)
                 {
                   {
                     image = gcolor.recolor_image(icondir .. 'refresh.svg',
-                      Theme_config.network_manager.refresh_icon_color),
+                      beautiful.colorscheme.bg_red),
                     resize = false,
                     valign = 'center',
                     halign = 'center',
@@ -324,11 +323,9 @@ function network.new(args)
                   id = 'center',
                 },
                 border_width = dpi(2),
-                border_color = Theme_config.network_manager.border_color,
-                shape = function(cr, width, height)
-                  gshape.rounded_rect(cr, width, height, dpi(4))
-                end,
-                bg = Theme_config.network_manager.refresh_bg,
+                border_color = beautiful.colorscheme.border_color,
+                shape = beautiful.shape[4],
+                bg = beautiful.colorscheme.bg,
                 widget = wibox.container.background,
                 id = 'refresh',
               },
@@ -345,12 +342,10 @@ function network.new(args)
         margins = dpi(15),
         widget = wibox.container.margin,
       },
-      shape = function(cr, width, height)
-        gshape.rounded_rect(cr, width, height, dpi(8))
-      end,
-      border_color = Theme_config.network_manager.border_color,
-      border_width = Theme_config.network_manager.border_width,
-      bg = Theme_config.network_manager.bg,
+      shape = beautiful.shape[8],
+      border_color = beautiful.colorscheme.border_color,
+      border_width = dpi(2),
+      bg = beautiful.colorscheme.bg,
       id = 'background',
       widget = wibox.container.background,
     },
@@ -460,14 +455,14 @@ function network.new(args)
             gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
           end
           wifi.icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-            Theme_config.network_manager.wifi_icon_color))
+            beautiful.colorscheme.bg_red))
         else
           rubato_timer.target = 0
           wifi_margin.wifi_bg.shape = function(cr, width, height)
             gshape.partially_rounded_rect(cr, width, height, true, true, true, true, dpi(4))
           end
           wifi.icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
-            Theme_config.network_manager.wifi_icon_color))
+            beautiful.colorscheme.bg_red))
         end
       end
     )

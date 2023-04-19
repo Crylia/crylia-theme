@@ -1,12 +1,12 @@
----------------------------------
--- This is the tasklist widget --
----------------------------------
+local ipairs = ipairs
+local setmetatable = setmetatable
 
 -- Awesome Libs
 local abutton = require('awful.button')
 local atooltip = require('awful.tooltip')
 local awidget = require('awful.widget')
-local dpi = require('beautiful').xresources.apply_dpi
+local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
 local gtable = require('gears.table')
 local wibox = require('wibox')
 
@@ -54,9 +54,9 @@ return setmetatable({}, { __call = function(_, screen)
 						left = dpi(10),
 						widget = wibox.container.margin,
 					},
-					fg = Theme_config.tasklist.fg,
-					bg = Theme_config.tasklist.bg,
-					shape = Theme_config.tasklist.shape,
+					fg = beautiful.colorscheme.fg,
+					bg = beautiful.colorscheme.bg1,
+					shape = beautiful.shape[6],
 					widget = wibox.container.background,
 				}
 
@@ -79,7 +79,7 @@ return setmetatable({}, { __call = function(_, screen)
 					end)
 				), }
 
-				local label = User_config.taskbar_use_name and client.name or client.class or ''
+				local label = beautiful.user_config.taskbar_use_name and client.name or client.class or ''
 
 				-- If the client is focused, show the tooltip and add a label
 				if client == capi.client.focus then
@@ -93,10 +93,10 @@ return setmetatable({}, { __call = function(_, screen)
 						delay_show = 1,
 					}
 					task_widget:get_children_by_id('text_role')[1].text = label:sub(1, 20)
-					task_widget.bg = Theme_config.tasklist.bg_focus
-					task_widget.fg = Theme_config.tasklist.fg_focus
+					task_widget.bg = beautiful.colorscheme.fg
+					task_widget.fg = beautiful.colorscheme.bg
 				else
-					task_widget.bg = Theme_config.tasklist.bg
+					task_widget.bg = beautiful.colorscheme.bg1
 					task_widget:get_children_by_id('text_role')[1].text = ''
 				end
 

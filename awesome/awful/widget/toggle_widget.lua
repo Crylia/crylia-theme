@@ -1,6 +1,7 @@
 local base = require('wibox.widget.base')
 local gtable = require('gears.table')
 local gcolor = require('gears.color')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local wibox = require('wibox')
 local gshape = require('gears.shape')
@@ -38,21 +39,21 @@ end
 
 function toggle_widget:set_disabled()
   self.active = not self.active
-  self.toggle_button.border_color = Theme_config.dnd.border_disabled
-  self.newcolor = Theme_config.dnd.disabled
+  self.toggle_button.border_color = beautiful.colorscheme.bg1
+  self.newcolor = beautiful.colorscheme.bg1
   self.rubato_timed.target = 5
 end
 
 function toggle_widget:toggle_animation(pos, color)
   if pos > 39 then return end
   return function(_, _, cr, width, height)
-    cr:set_source(gcolor(Theme_config.dnd.bg))
+    cr:set_source(gcolor(beautiful.colorscheme.bg))
     cr:paint()
     cr:set_source(gcolor(color))
     cr:move_to(pos, 0)
     local x = pos
     local y = 5
-    local newwidth = width / 2 - 6
+    local newwidth = dpi(width / 2 - 6)
     local newheight = height - 10
 
     local radius = height / 6.0
@@ -77,7 +78,7 @@ function toggle_widget.new(args)
 
   gtable.crush(ret, toggle_widget, true)
 
-  ret.newcolor = Theme_config.dnd.disabled
+  ret.newcolor = beautiful.colorscheme.bg1
   ret.color = args.color
 
   ret.toggle_button = wibox.widget {
@@ -92,14 +93,12 @@ function toggle_widget.new(args)
     },
     active = false,
     widget = wibox.container.background,
-    bg = Theme_config.dnd.bg,
-    border_color = Theme_config.dnd.border_disabled,
+    bg = beautiful.colorscheme.bg,
+    border_color = beautiful.colorscheme.border_color,
     border_width = dpi(2),
     forced_height = args.size,
     forced_width = args.size * 2,
-    shape = function(cr, width, height)
-      gshape.rounded_rect(cr, width, height, dpi(10))
-    end,
+    shape = beautiful.shape[10],
   }
 
   ret.rubato_timed = rubato.timed {
@@ -128,9 +127,7 @@ function toggle_widget.new(args)
       },
       id = 'background4',
       fg = args.fg,
-      shape = function(cr, width, height)
-        gshape.rounded_rect(cr, width, height, dpi(12))
-      end,
+      shape = beautiful.shape[12],
       widget = wibox.container.background,
     },
     id = 'place',

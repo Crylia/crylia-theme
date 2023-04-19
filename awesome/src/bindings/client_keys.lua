@@ -2,9 +2,11 @@
 local aclient = require('awful.client')
 local akey = require('awful.key')
 local ascreen = require('awful.screen')
+local beautiful = require('beautiful')
+
 local gtable = require('gears.table')
 
-local modkey = User_config.modkey
+local modkey = beautiful.user_config['modkey']
 
 return gtable.join(
 --#region Basic interactions

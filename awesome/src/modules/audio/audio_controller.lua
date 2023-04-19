@@ -2,6 +2,7 @@
 local abutton = require('awful.button')
 local aspawn = require('awful.spawn')
 local base = require('wibox.widget.base')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gshape = require('gears.shape')
@@ -70,11 +71,11 @@ function audio_controller:get_device_widget(device, name, device_type)
   name = name:gsub('^%s*(.-)%s*$', '%1')
   local icon_color, fg
   if device_type == 'source' then
-    icon_color = Theme_config.volume_controller.device_microphone_fg
-    fg = Theme_config.volume_controller.device_microphone_fg
+    icon_color = beautiful.colorscheme.bg_blue
+    fg = beautiful.colorscheme.bg_blue
   elseif device_type == 'sink' then
-    icon_color = Theme_config.volume_controller.device_headphones_fg
-    fg = Theme_config.volume_controller.device_headphones_fg
+    icon_color = beautiful.colorscheme.bg_purple
+    fg = beautiful.colorscheme.bg_purple
   end
 
   local device_widget = wibox.widget {
@@ -112,11 +113,11 @@ function audio_controller:get_device_widget(device, name, device_type)
       margins = dpi(10),
       widget = wibox.container.margin,
     },
-    bg = Theme_config.volume_controller.device_bg,
+    bg = beautiful.colorscheme.bg,
     fg = fg,
-    border_color = Theme_config.volume_controller.device_border_color,
-    border_width = Theme_config.volume_controller.device_border_width,
-    shape = Theme_config.volume_controller.device_shape,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
+    shape = beautiful.shape[4],
     widget = wibox.container.background,
     sink = device,
   }
@@ -137,11 +138,11 @@ function audio_controller:get_device_widget(device, name, device_type)
 
   self:connect_signal('AC::device_changed', function(new_sink)
     if device_widget.device == new_sink then
-      device_widget.bg = Theme_config.volume_controller.device_headphones_selected_bg
-      device_widget.fg = Theme_config.volume_controller.device_headphones_selected_fg
-      device_widget:get_children_by_id('icon')[1].image = gcolor.recolor_image(icondir .. 'volume-high.svg', Theme_config.volume_controller.device_headphones_selected_fg)
+      device_widget.bg = beautiful.colorscheme.bg_purple
+      device_widget.fg = beautiful.colorscheme.bg
+      device_widget:get_children_by_id('icon')[1].image = gcolor.recolor_image(icondir .. 'volume-high.svg', beautiful.colorscheme.bg)
     else
-      device_widget.bg = Theme_config.volume_controller.device_bg
+      device_widget.bg = beautiful.colorscheme.bg
       device_widget.fg = fg
       device_widget:get_children_by_id('icon')[1].image = gcolor.recolor_image(icondir .. 'volume-high.svg', icon_color)
     end
@@ -198,7 +199,7 @@ function audio_controller.new()
             {
               resize = false,
               image = gcolor.recolor_image(icondir .. 'menu-down.svg',
-                Theme_config.volume_controller.device_headphones_selected_icon_color),
+                beautiful.colorscheme.bg_purple),
               widget = wibox.widget.imagebox,
               valign = 'center',
               halign = 'center',
@@ -217,9 +218,11 @@ function audio_controller.new()
             layout = wibox.layout.fixed.horizontal,
           },
           id = 'sink_dd_shape',
-          bg = Theme_config.volume_controller.list_bg,
-          fg = Theme_config.volume_controller.list_headphones_fg,
-          shape = Theme_config.volume_controller.list_shape,
+          bg = beautiful.colorscheme.bg1,
+          fg = beautiful.colorscheme.bg_purple,
+          shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+          end,
           widget = wibox.container.background,
         },
         { -- sink dropdown
@@ -235,10 +238,12 @@ function audio_controller.new()
               margins = dpi(10),
               widget = wibox.container.margin,
             },
-            border_color = Theme_config.volume_controller.list_border_color,
-            border_width = Theme_config.volume_controller.list_border_width,
+            border_color = beautiful.colorscheme.border_color,
+            border_width = dpi(2),
             id = 'sink_list_shape',
-            shape = Theme_config.volume_controller.list_shape,
+            shape = function(cr, width, height)
+              gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+            end,
             widget = wibox.container.background,
           },
           id = 'sink_height',
@@ -256,7 +261,7 @@ function audio_controller.new()
             {
               resize = false,
               image = gcolor.recolor_image(icondir .. 'menu-down.svg',
-                Theme_config.volume_controller.device_headphones_selected_icon_color),
+                beautiful.colorscheme.bg_purple),
               widget = wibox.widget.imagebox,
               valign = 'center',
               halign = 'center',
@@ -275,9 +280,11 @@ function audio_controller.new()
             layout = wibox.layout.fixed.horizontal,
           },
           id = 'source_dd_shape',
-          bg = Theme_config.volume_controller.list_bg,
-          fg = Theme_config.volume_controller.list_headphones_fg,
-          shape = Theme_config.volume_controller.list_shape,
+          bg = beautiful.colorscheme.bg1,
+          fg = beautiful.colorscheme.bg_purple,
+          shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+          end,
           widget = wibox.container.background,
         },
         { -- source dropdown
@@ -293,10 +300,12 @@ function audio_controller.new()
               margins = dpi(10),
               widget = wibox.container.margin,
             },
-            border_color = Theme_config.volume_controller.list_border_color,
-            border_width = Theme_config.volume_controller.list_border_width,
+            border_color = beautiful.colorscheme.border_color,
+            border_width = dpi(2),
             id = 'source_list_shape',
-            shape = Theme_config.volume_controller.list_shape,
+            shape = function(cr, width, height)
+              gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+            end,
             widget = wibox.container.background,
           },
           id = 'source_height',
@@ -317,7 +326,7 @@ function audio_controller.new()
                 widget = wibox.widget.imagebox,
                 valign = 'center',
                 halign = 'center',
-                image = gcolor.recolor_image(icondir .. 'volume-high.svg', Theme_config.volume_controller.volume_fg),
+                image = gcolor.recolor_image(icondir .. 'volume-high.svg', beautiful.colorscheme.bg_purple),
                 id = 'sink_icon',
               },
               widget = wibox.container.constraint,
@@ -326,15 +335,13 @@ function audio_controller.new()
               strategy = 'exact',
             },
             {
-              bar_shape = function(cr, width, height)
-                gshape.rounded_rect(cr, width, height, dpi(5))
-              end,
+              bar_shape = beautiful.shape[4],
               bar_height = dpi(5),
-              bar_color = Theme_config.volume_controller.border_color,
-              bar_active_color = Theme_config.volume_controller.volume_fg,
-              handle_color = Theme_config.volume_controller.volume_fg,
+              bar_color = beautiful.colorscheme.border_color,
+              bar_active_color = beautiful.colorscheme.bg_purple,
+              handle_color = beautiful.colorscheme.bg_purple,
               handle_shape = gshape.circle,
-              handle_border_color = Theme_config.volume_controller.volume_fg,
+              handle_border_color = beautiful.colorscheme.bg_purple,
               handle_width = dpi(15),
               handle_cursor = 'left_ptr',
               maximum = 100,
@@ -363,7 +370,7 @@ function audio_controller.new()
                 widget = wibox.widget.imagebox,
                 valign = 'center',
                 halign = 'center',
-                image = gcolor.recolor_image(icondir .. 'microphone.svg', Theme_config.volume_controller.volume_fg),
+                image = gcolor.recolor_image(icondir .. 'microphone.svg', beautiful.colorscheme.bg_purple),
                 id = 'source_icon',
               },
               widget = wibox.container.constraint,
@@ -372,15 +379,13 @@ function audio_controller.new()
               strategy = 'exact',
             },
             {
-              bar_shape = function(cr, width, height)
-                gshape.rounded_rect(cr, width, height, dpi(5))
-              end,
+              bar_shape = beautiful.shape[4],
               bar_height = dpi(5),
-              bar_color = Theme_config.volume_controller.border_color,
-              bar_active_color = Theme_config.volume_controller.volume_fg,
-              handle_color = Theme_config.volume_controller.volume_fg,
+              bar_color = beautiful.colorscheme.border_color,
+              bar_active_color = beautiful.colorscheme.bg_purple,
+              handle_color = beautiful.colorscheme.bg_purple,
               handle_shape = gshape.circle,
-              handle_border_color = Theme_config.volume_controller.volume_fg,
+              handle_border_color = beautiful.colorscheme.bg_purple,
               handle_width = dpi(15),
               handle_cursor = 'left_ptr',
               maximum = 100,
@@ -426,7 +431,7 @@ function audio_controller.new()
     w.sink_volume = volume
     w.sink_muted = muted
     if muted then
-      sink_icon:set_image(gcolor.recolor_image(icondir .. 'volume-mute.svg', Theme_config.volume_controller.volume_fg))
+      sink_icon:set_image(gcolor.recolor_image(icondir .. 'volume-mute.svg', beautiful.colorscheme.bg_purple))
     else
       local icon = icondir .. 'volume'
       if volume == 0 then
@@ -440,7 +445,7 @@ function audio_controller.new()
       end
 
       sink_slider:set_value(volume)
-      sink_icon:set_image(gcolor.recolor_image(icon .. '.svg', Theme_config.volume_controller.volume_fg))
+      sink_icon:set_image(gcolor.recolor_image(icon .. '.svg', beautiful.colorscheme.bg_purple))
     end
   end)
 
@@ -460,14 +465,14 @@ function audio_controller.new()
     w.source_volume = volume
     w.source_muted = muted
     if muted then
-      source_icon:set_image(gcolor.recolor_image(icondir .. 'microphone-off.svg', Theme_config.volume_controller.microphone_fg))
+      source_icon:set_image(gcolor.recolor_image(icondir .. 'microphone-off.svg', beautiful.colorscheme.bg_blue))
     else
       if not volume then return end
       source_slider:set_value(tonumber(volume))
       if volume > 0 then
-        source_icon:set_image(gcolor.recolor_image(icondir .. 'microphone.svg', Theme_config.volume_controller.microphone_fg))
+        source_icon:set_image(gcolor.recolor_image(icondir .. 'microphone.svg', beautiful.colorscheme.bg_blue))
       else
-        source_icon:set_image(gcolor.recolor_image(icondir .. 'microphone-off.svg', Theme_config.volume_controller.microphone_fg))
+        source_icon:set_image(gcolor.recolor_image(icondir .. 'microphone-off.svg', beautiful.colorscheme.bg_blue))
       end
     end
   end)
@@ -500,16 +505,14 @@ function audio_controller.new()
         end
 
         sink_dd_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          Theme_config.volume_controller.device_headphones_selected_icon_color))
+          beautiful.colorscheme.bg_purple))
       else
         rubato_timer.target = 0
 
-        sink_dd_shape.shape = function(cr, width, height)
-          gshape.rounded_rect(cr, width, height, 4)
-        end
+        sink_dd_shape.shape = beautiful.shape[4]
 
         sink_dd_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
-          Theme_config.volume_controller.device_headphones_selected_icon_color))
+          beautiful.colorscheme.bg_purple))
       end
     end),
   })
@@ -543,16 +546,14 @@ function audio_controller.new()
         end
 
         source_dd_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          Theme_config.volume_controller.device_headphones_selected_icon_color))
+          beautiful.colorscheme.bg_purple))
       else
         rubato_timer.target = 0
 
-        source_dd_shape.shape = function(cr, width, height)
-          gshape.rounded_rect(cr, width, height, 4)
-        end
+        source_dd_shape.shape = beautiful.shape[4]
 
         source_dd_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
-          Theme_config.volume_controller.device_headphones_selected_icon_color))
+          beautiful.colorscheme.bg_purple))
       end
     end),
   })

@@ -5,6 +5,7 @@
 -- Awesome Libs
 local aplacement = require('awful.placement')
 local apopup = require('awful.popup')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
@@ -39,7 +40,7 @@ function osd.new(args)
         {
           { -- Volume Icon
             {
-              image = gcolor.recolor_image(icondir .. 'volume-off.svg', Theme_config.volume_osd.icon_color),
+              image = gcolor.recolor_image(icondir .. 'volume-off.svg', beautiful.colorscheme.bg_purple),
               valign = 'center',
               halign = 'center',
               resize = true,
@@ -55,8 +56,8 @@ function osd.new(args)
             {
               {
                 id = 'progressbar',
-                color = Theme_config.volume_osd.bar_bg_active,
-                background_color = Theme_config.volume_osd.bar_bg,
+                color = beautiful.colorscheme.bg_purple,
+                background_color = beautiful.colorscheme.bg1,
                 max_value = 100,
                 value = 0,
                 shape = gshape.rounded_rect,
@@ -84,16 +85,16 @@ function osd.new(args)
         bottom = dpi(20),
         widget = wibox.container.margin,
       },
-      shape = Theme_config.volume_osd.shape,
+      shape = beautiful.shape[12],
       widget = wibox.container.background,
     },
     ontop = true,
     stretch = false,
     visible = false,
-    border_color = Theme_config.volume_osd.border_color,
-    border_width = Theme_config.volume_osd.border_width,
-    fg = Theme_config.volume_osd.fg,
-    bg = Theme_config.volume_osd.bg,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
+    fg = beautiful.colorscheme.bg_purple,
+    bg = beautiful.colorscheme.bg,
     screen = 1,
     placement = function(c) aplacement.bottom(c, { margins = dpi(20) }) end,
   }
@@ -111,7 +112,7 @@ function osd.new(args)
   audio_helper:connect_signal('output::get', function(_, muted, volume)
     volume = tonumber(volume or 0)
     if muted then
-      w.widget:get_children_by_id('icon_role')[1]:set_image(gcolor.recolor_image(icondir .. 'volume-mute' .. '.svg', Theme_config.volume_osd.icon_color))
+      w.widget:get_children_by_id('icon_role')[1]:set_image(gcolor.recolor_image(icondir .. 'volume-mute' .. '.svg', beautiful.colorscheme.bg_purple))
       w.widget:get_children_by_id('progressbar')[1].value = 0
     else
       w.widget:get_children_by_id('progressbar')[1].value = volume
@@ -126,7 +127,7 @@ function osd.new(args)
         icon = icon .. '-high'
       end
 
-      w.widget:get_children_by_id('icon_role')[1]:set_image(gcolor.recolor_image(icon .. '.svg', Theme_config.volume_osd.icon_color))
+      w.widget:get_children_by_id('icon_role')[1]:set_image(gcolor.recolor_image(icon .. '.svg', beautiful.colorscheme.bg_purple))
       w.widget:get_children_by_id('text_role')[1].text = volume
     end
     w:run()

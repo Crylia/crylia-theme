@@ -4,6 +4,7 @@
 
 -- Awesome Libs
 local awful = require('awful')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gears = require('gears')
 local wibox = require('wibox')
@@ -91,13 +92,11 @@ return function()
           margins = dpi(20),
           widget = wibox.container.margin,
         },
-        shape = function(cr, width, height)
-          gears.shape.rounded_rect(cr, width, height, dpi(12))
-        end,
-        border_color = Theme_config.window_switcher.border_color,
-        border_width = Theme_config.window_switcher.border_width,
-        bg = Theme_config.window_switcher.bg,
-        fg = Theme_config.window_switcher.element_fg,
+        shape = beautiful.shape[12],
+        border_color = beautiful.colorscheme.border_color,
+        border_width = dpi(2),
+        bg = beautiful.colorscheme.bg,
+        fg = beautiful.colorscheme.bg_green,
         widget = wibox.container.background,
       }
 
@@ -119,7 +118,7 @@ return function()
         local b_timed_bg = rubato.timed { duration = 0.5 }
 
         -- starting color
-        r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.bg)
+        r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg)
 
 
         -- Foreground rubato init
@@ -128,7 +127,7 @@ return function()
         local b_timed_fg = rubato.timed { duration = 0.5 }
 
         -- starting color
-        r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.element_fg)
+        r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg_green)
 
         -- Border rubato init
         local r_timed_border = rubato.timed { duration = 0.5 }
@@ -136,7 +135,7 @@ return function()
         local b_timed_border = rubato.timed { duration = 0.5 }
 
         -- starting color
-        r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
+        r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(beautiful.colorscheme
           .border_color)
 
         local function set_bg(newbg)
@@ -176,29 +175,26 @@ return function()
         b_timed_border:subscribe(update_border)
 
         if i == selected then
-          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.bg)
-          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.element_fg)
-          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
-            .border_color)
-          set_border(Theme_config.window_switcher.selected_border_color)
-          set_fg(Theme_config.window_switcher.selected_fg)
-          set_bg(Theme_config.window_switcher.selected_bg)
+          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg)
+          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg_green)
+          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(beautiful.colorscheme.border_color)
+          set_border(beautiful.colorscheme.bg_purple)
+          set_fg(beautiful.colorscheme.fg)
+          set_bg(beautiful.colorscheme.bg1)
         elseif i == selected - 1 or (selected == 1 and i == #clients_sorted) then
-          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.selected_bg)
-          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.selected_fg)
-          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
-            .selected_border_color)
-          set_border(Theme_config.window_switcher.border_color)
-          set_fg(Theme_config.window_switcher.element_fg)
-          set_bg(Theme_config.window_switcher.bg)
+          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg1)
+          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.fg)
+          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg_purple)
+          set_border(beautiful.colorscheme.border_color)
+          set_fg(beautiful.colorscheme.bg_green)
+          set_bg(beautiful.colorscheme.bg)
         else
-          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.bg)
-          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(Theme_config.window_switcher.element_fg)
-          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(Theme_config.window_switcher
-            .border_color)
-          set_border(Theme_config.window_switcher.border_color)
-          set_fg(Theme_config.window_switcher.element_fg)
-          set_bg(Theme_config.window_switcher.bg)
+          r_timed_bg.pos, g_timed_bg.pos, b_timed_bg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg)
+          r_timed_fg.pos, g_timed_fg.pos, b_timed_fg.pos = color.utils.hex_to_rgba(beautiful.colorscheme.bg_green)
+          r_timed_border.pos, g_timed_border.pos, b_timed_border.pos = color.utils.hex_to_rgba(beautiful.colorscheme.border_color)
+          set_border(beautiful.colorscheme.border_color)
+          set_fg(beautiful.colorscheme.bg_green)
+          set_bg(beautiful.colorscheme.bg)
         end
       end
     elseif fn == 'raise' then

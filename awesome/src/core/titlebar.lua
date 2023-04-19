@@ -4,6 +4,7 @@ local math = math
 local abutton = require('awful.button')
 local atitlebar = require('awful.titlebar')
 local atooltip = require('awful.tooltip')
+local beautiful = require('beautiful')
 local cairo = require('lgi').cairo
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
@@ -26,7 +27,7 @@ local instance = nil
 
 local titlebar = {}
 
-local titlebar_position = User_config.titlebar_position
+local titlebar_position = beautiful.user_config.titlebar_position
 
 -- Converts the given hex color to hsv
 local function hex2hsv(color)
@@ -229,12 +230,12 @@ end
 local function create_button_image(name, is_focused, event, is_on)
   titlebar.key = titlebar.key or {}
 
-  titlebar.key.close_color = Theme_config.titlebar.close
-  titlebar.key.minimize_color = Theme_config.titlebar.minimize
-  titlebar.key.maximize_color = Theme_config.titlebar.maximize
-  titlebar.key.floating_color = Theme_config.titlebar.floating
-  titlebar.key.ontop_color = Theme_config.titlebar.ontop
-  titlebar.key.sticky_color = Theme_config.titlebar.sticky
+  titlebar.key.close_color = beautiful.colorscheme.bg_red
+  titlebar.key.minimize_color = beautiful.colorscheme.bg_yellow
+  titlebar.key.maximize_color = beautiful.colorscheme.bg_green
+  titlebar.key.floating_color = beautiful.colorscheme.bg_purple
+  titlebar.key.ontop_color = beautiful.colorscheme.bg_purple
+  titlebar.key.sticky_color = beautiful.colorscheme.bg_purple
 
   local focus_state = is_focused and 'focused' or 'unfocused'
   local key_img
@@ -259,11 +260,11 @@ local function create_button_image(name, is_focused, event, is_on)
         (event == 'press') and darken(button_color, 25) or button_color
     titlebar.key[key_color] = button_color
   end
-  local button_size = Theme_config.titlebar.button_size
+  local button_size = dpi(18)
   local surface = cairo.ImageSurface.create('ARGB32', button_size, button_size)
   local cr = cairo.Context.create(surface)
   cr:arc(button_size / 2, button_size / 2, button_size / 2, math.rad(0), math.rad(360))
-  cr:set_source_rgba(gcolor.parse_color(titlebar.key[key_color] or '#fefefa'))
+  cr:set_source_rgba(gcolor.parse_color(titlebar.key[key_color] or beautiful.colorscheme.fg))
   cr.antialias = cairo.Antialias.BEST
   cr:fill()
   titlebar.key[key_img] = surface
@@ -332,8 +333,8 @@ local function create_titlebar_button(c, name, button_callback, property)
       {
         button_img,
         widget = wibox.container.constraint,
-        height = Theme_config.titlebar.button_size,
-        width = Theme_config.titlebar.button_size,
+        height = dpi(18),
+        width = dpi(18),
         strategy = 'exact',
       },
       widget = wibox.container.margin,
@@ -387,8 +388,8 @@ local function create_titlebar_title(c)
 
   local function update()
     title_widget.markup = ("<span foreground='%s'>%s</span>"):format(
-      (((relative_luminance('#fefefa') + 0.05) / (relative_luminance(c.color) + 0.05)) >= 7 and true)
-      and '#fefefa' or '#242424', c.name)
+      (((relative_luminance(beautiful.colorscheme.fg) + 0.05) / (relative_luminance(c.color) + 0.05)) >= 7 and true)
+      and beautiful.colorscheme.fg or beautiful.colorscheme.bg, c.name)
   end
 
   c:connect_signal('property::name', update)
@@ -400,7 +401,7 @@ local function create_titlebar_title(c)
   return {
     title_widget,
     widget = wibox.container.margin,
-    margins = Theme_config.titlebar.title_margin,
+    margins = dpi(5),
   }
 end
 
@@ -501,23 +502,23 @@ end
 function add_titlebar(c)
   if titlebar_position == 'top' then
     atitlebar(c, {
-      size = Theme_config.titlebar.size,
+      size = dpi(38),
       bg = gcolor.transparent,
       position = 'top',
     }):setup {
       {
         {
-          create_titlebar_items(c, User_config.titlebar_items.left_and_bottom),
+          create_titlebar_items(c, beautiful.user_config.titlebar_items.left_and_bottom),
           widget = wibox.container.margin,
           left = dpi(5),
         },
         {
-          create_titlebar_items(c, User_config.titlebar_items.middle),
+          create_titlebar_items(c, beautiful.user_config.titlebar_items.middle),
           buttons = get_titlebar_mouse_bindings(c),
           layout = wibox.layout.flex.horizontal,
         },
         {
-          create_titlebar_items(c, User_config.titlebar_items.right_and_top),
+          create_titlebar_items(c, beautiful.user_config.titlebar_items.right_and_top),
           widget = wibox.container.margin,
           right = dpi(5),
         },
@@ -527,30 +528,30 @@ function add_titlebar(c)
       bg = duotone_gradient_vertical(
         lighten(c.color, 1),
         c.color,
-        Theme_config.titlebar.size,
+        dpi(38),
         0,
         0.5
       ),
     }
   elseif titlebar_position == 'left' then
     atitlebar(c, {
-      size = Theme_config.titlebar.size,
+      size = dpi(38),
       bg = gcolor.transparent,
       position = 'left',
     }):setup {
       {
         {
-          create_titlebar_items(c, User_config.titlebar_items.right_and_top),
+          create_titlebar_items(c, beautiful.user_config.titlebar_items.right_and_top),
           widget = wibox.container.margin,
           top = dpi(5),
         },
         {
-          create_titlebar_items(c, User_config.titlebar_items.middle),
+          create_titlebar_items(c, beautiful.user_config.titlebar_items.middle),
           buttons = get_titlebar_mouse_bindings(c),
           layout = wibox.layout.flex.vertical,
         },
         {
-          create_titlebar_items(c, User_config.titlebar_items.left_and_bottom),
+          create_titlebar_items(c, beautiful.user_config.titlebar_items.left_and_bottom),
           widget = wibox.container.margin,
           left = dpi(5),
         },
@@ -560,7 +561,7 @@ function add_titlebar(c)
       bg = duotone_gradient_horizontal(
         lighten(c.color, 1),
         c.color,
-        Theme_config.titlebar.size,
+        dpi(38),
         0,
         0.5
       ),
@@ -608,7 +609,7 @@ if not instance then
         c.color = color
         add_titlebar(c)
       else
-        c.color = Theme_config.titlebar.color
+        c.color = beautiful.colorscheme.bg
         add_titlebar(c)
         c:connect_signal('request::activate', c._cb_add_window_decorations)
       end

@@ -2,6 +2,7 @@
 local gobject = require('gears.object')
 local gtable = require('gears.table')
 local aspawn = require('awful.spawn')
+local beautiful = require('beautiful')
 
 local instance = nil
 local kb_helper = {}
@@ -37,7 +38,7 @@ local function new()
 
   gtable.crush(self, kb_helper, true)
 
-  self.layout_list = User_config.kblayout
+  self.layout_list = beautiful.user_config.kblayout
 
   return self
 end

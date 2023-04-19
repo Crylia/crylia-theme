@@ -3,6 +3,7 @@
 -------------------------------------
 
 -- Awesome Libs
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gfilesystem = require('gears.filesystem')
 local base = require('wibox.widget.base')
@@ -81,7 +82,7 @@ function info_center.new(args)
         {
           {
             {
-              bg = Theme_config.notification_center.spacing_line.color,
+              bg = beautiful.colorscheme.bg1,
               widget = wibox.container.background,
             },
             widget = wibox.container.constraint,
@@ -152,8 +153,8 @@ function info_center.new(args)
             {
               dnd_widget {
                 text = 'Do not disturb',
-                color = Theme_config.notification_center.dnd_color,
-                fg = Theme_config.notification_center.dnd_fg,
+                color = beautiful.colorscheme.bg_purple,
+                fg = beautiful.colorscheme.bg_red,
                 size = dpi(40),
               },
               id = 'dnd',
@@ -171,11 +172,9 @@ function info_center.new(args)
                       widget = wibox.widget.textbox,
                       id = 'clear',
                     },
-                    fg = Theme_config.notification_center.clear_all_button.fg,
-                    bg = Theme_config.notification_center.clear_all_button.bg,
-                    shape = function(cr, width, height)
-                      gshape.rounded_rect(cr, width, height, 12)
-                    end,
+                    fg = beautiful.colorscheme.bg,
+                    bg = beautiful.colorscheme.bg_blue,
+                    shape = beautiful.shape[12],
                     id = 'clear_all_bg',
                     widget = wibox.container.background,
                   },
@@ -200,7 +199,7 @@ function info_center.new(args)
       },
       spacing_widget = {
         thickness = dpi(2),
-        color = Theme_config.notification_center.spacing_color,
+        color = beautiful.colorscheme.bg1,
         span_ratio = 0.9,
         widget = wibox.widget.separator,
       },
@@ -243,14 +242,14 @@ function info_center.new(args)
   end)
 
   w:get_children_by_id('dnd')[1]:get_widget():connect_signal('dnd::toggle', function(enabled)
-    User_config.dnd = enabled
+    beautiful.user_config.dnd = enabled
   end)
 
   w.container = apopup {
     widget = w,
-    bg = Theme_config.notification_center.bg,
-    border_color = Theme_config.notification_center.border_color,
-    border_width = Theme_config.notification_center.border_width,
+    bg = beautiful.colorscheme.bg,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
     placement = function(c)
       aplacement.top(c, { margins = dpi(10) })
     end,

@@ -3,7 +3,9 @@
 ---------------------------------------
 -- Awesome Libs
 local awful = require('awful')
+local apopup = require('awful.popup')
 local abutton = awful.button
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gtable = require('gears.table')
 local base = require('wibox.widget.base')
@@ -101,8 +103,8 @@ function context_menu:make_entries(wtemplate, entries, spacing)
         margins = dpi(5),
         widget = wibox.container.margin,
       },
-      bg = Theme_config.desktop.context_menu.entry_bg,
-      fg = Theme_config.desktop.context_menu.entry_fg,
+      bg = beautiful.colorscheme.bg,
+      fg = beautiful.colorscheme.bg_red,
       widget = wibox.container.background,
     }
 
@@ -114,7 +116,7 @@ function context_menu:make_entries(wtemplate, entries, spacing)
     menu_entry:get_children_by_id('text_role')[1].text = entry.name
     if entry.submenu then
       menu_entry:get_children_by_id('arrow_role')[1].image =
-      gcolor.recolor_image(icondir .. 'entry.svg', Theme_config.desktop.context_menu.entry_fg)
+      gcolor.recolor_image(icondir .. 'entry.svg', beautiful.colorscheme.bg_red)
     end
     gtable.crush(menu_entry, entry, true)
 
@@ -133,14 +135,13 @@ function context_menu:make_entries(wtemplate, entries, spacing)
     })
 
     if entry.submenu then
-      menu_entry.popup = awful.popup {
+      menu_entry.popup = apopup {
         widget = self:make_entries(wtemplate, entry.submenu, spacing),
-        bg = Theme_config.desktop.context_menu.bg,
+        bg = beautiful.colorscheme.bg,
         ontop = true,
-        fg = Theme_config.desktop.context_menu.fg,
-        border_width = Theme_config.desktop.context_menu.border_width,
-        border_color = Theme_config.desktop.context_menu.border_color,
-        shape = Theme_config.desktop.context_menu.shape,
+        fg = beautiful.colorscheme.bg_red,
+        border_width = dpi(2),
+        border_color = beautiful.colorscheme.border_color,
         visible = false,
       }
 
@@ -197,14 +198,13 @@ function context_menu.new(args)
 
   local entries = ret:make_entries(args.widget_template, args.entries, args.spacing)
 
-  ret = awful.popup {
+  ret = apopup {
     widget = entries,
-    bg = Theme_config.desktop.context_menu.bg,
-    fg = Theme_config.desktop.context_menu.fg,
+    bg = beautiful.colorscheme.bg,
+    fg = beautiful.colorscheme.bg_red,
     ontop = true,
-    border_width = Theme_config.desktop.context_menu.border_width,
-    border_color = Theme_config.desktop.context_menu.border_color,
-    shape = Theme_config.desktop.context_menu.shape,
+    border_width = dpi(2),
+    border_color = beautiful.colorscheme.border_color,
     visible = false,
     x = capi.mouse.coords().x + 10,
     y = capi.mouse.coords().y - 10,

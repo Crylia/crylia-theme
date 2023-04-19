@@ -3,48 +3,72 @@
 --------------------------------
 
 -- Awesome Libs
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local wibox = require('wibox')
+local abutton = require('awful.button')
+local gfilesystem = require('gears.filesystem')
 
-local capi = { awesome = awesome }
+local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/systray/'
 
--- Systray theme variables
-Theme.bg_systray = Theme_config.systray.bg
-Theme.systray_icon_spacing = dpi(10)
+local instance = nil
+if not instance then
+  instance = setmetatable({}, {
+    __call = function()
+      local systray = wibox.widget {
+        {
+          {
+            {
+              widget = wibox.widget.imagebox,
+              resize = true,
+              halign = 'center',
+              valign = 'center',
+              image = icondir .. 'chevron-right.svg',
+            },
+            height = dpi(28),
+            width = dpi(28),
+            widget = wibox.container.constraint,
+            strategy = 'exact',
+          },
+          {
+            {
+              {
+                wibox.widget.systray(),
+                id = 'systray_margin',
+                margins = dpi(6),
+                widget = wibox.container.margin,
+              },
+              strategy = 'exact',
+              widget = wibox.container.constraint,
+            },
+            widget = wibox.container.place,
+          },
+          id = 'lay',
+          layout = wibox.layout.fixed.horizontal,
+        },
+        widget = wibox.container.background,
+        shape = beautiful.shape[6],
+        bg = beautiful.colorscheme.bg1,
+      }
 
-return function()
-  local systray = wibox.widget {
-    {
-      {
-        wibox.widget.systray(),
-        id = 'systray_margin',
-        widget = wibox.container.margin,
-      },
-      strategy = 'exact',
-      widget = wibox.container.constraint,
-    },
-    widget = wibox.container.background,
-    shape = Theme_config.systray.shape,
-    bg = Theme_config.systray.bg
-  }
+      systray:buttons {
+        abutton({}, 1, function()
+          local c = systray:get_children_by_id('lay')[1].children[2]
+          c.visible = not c.visible
 
-  local systray_margin = systray:get_children_by_id('systray_margin')[1]
+          if not c.visible then
+            systray:get_children_by_id('lay')[1].children[1].children[1].image = icondir .. 'chevron-left.svg'
+          else
+            systray:get_children_by_id('lay')[1].children[1].children[1].image = icondir .. 'chevron-right.svg'
+          end
+        end),
+      }
 
-  -- Wait for an systray update
-  capi.awesome.connect_signal('systray::update', function()
-    -- Get the number of entries in the systray
-    local num_entries = capi.awesome.systray()
+      -- Set the icon size
+      systray:get_children_by_id('systray_margin')[1].widget:set_base_size(dpi(24))
 
-    -- If its 0 remove the margins to hide the widget
-    if num_entries == 0 then
-      systray_margin:set_margins(0)
-    else
-      systray_margin:set_margins(dpi(6))
-    end
-  end)
-
-  -- Set the icon size
-  systray_margin.widget:set_base_size(dpi(24))
-
-  return systray
+      return systray
+    end,
+  })
 end
+return instance

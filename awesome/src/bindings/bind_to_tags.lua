@@ -2,16 +2,17 @@
 local akey = require('awful.key')
 local ascreen = require('awful.screen')
 local atag = require('awful.tag')
+local beautiful = require('beautiful')
 local gtable = require('gears.table')
 
 -- Local libs
 local globalkeys = require('src.bindings.global_keys')
 
-local modkey = User_config.modkey
+local modkey = beautiful.user_config['modkey']
 
 local capi = {
   client = client,
-  root = root
+  root = root,
 }
 
 for i = 1, 9 do

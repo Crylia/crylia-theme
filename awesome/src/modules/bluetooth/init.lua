@@ -6,6 +6,7 @@
 local abutton = require('awful.button')
 local aspawn = require('awful.spawn')
 local base = require('wibox.widget.base')
+local beautiful = require('beautiful')
 local dbus_proxy = require('src.lib.lua-dbus_proxy.src.dbus_proxy')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears').color
@@ -263,7 +264,7 @@ function bluetooth.new(args)
               {
                 resize = false,
                 image = gcolor.recolor_image(icondir .. 'menu-down.svg',
-                  Theme_config.bluetooth_controller.connected_icon_color),
+                  beautiful.colorscheme.bg_purple),
                 widget = wibox.widget.imagebox,
                 valign = 'center',
                 halign = 'center',
@@ -281,9 +282,9 @@ function bluetooth.new(args)
               },
               layout = wibox.layout.fixed.horizontal,
             },
-            bg = Theme_config.bluetooth_controller.connected_bg,
-            fg = Theme_config.bluetooth_controller.connected_fg,
-            shape = Theme_config.bluetooth_controller.connected_shape,
+            bg = beautiful.colorscheme.bg1,
+            fg = beautiful.colorscheme.bg_purple,
+            shape = beautiful.shape[4],
             widget = wibox.container.background,
             id = 'connected_bg',
           },
@@ -304,9 +305,9 @@ function bluetooth.new(args)
               margins = dpi(10),
               widget = wibox.container.margin,
             },
-            border_color = Theme_config.bluetooth_controller.con_device_border_color,
-            border_width = Theme_config.bluetooth_controller.con_device_border_width,
-            shape = Theme_config.bluetooth_controller.con_device_shape,
+            border_color = beautiful.colorscheme.bg1,
+            border_width = dpi(2),
+            shape = beautiful.shape[4],
             widget = wibox.container.background,
           },
           widget = wibox.container.constraint,
@@ -320,7 +321,7 @@ function bluetooth.new(args)
               {
                 resize = false,
                 image = gcolor.recolor_image(icondir .. 'menu-down.svg',
-                  Theme_config.bluetooth_controller.discovered_icon_color),
+                  beautiful.colorscheme.bg_blue),
                 widget = wibox.widget.imagebox,
                 valign = 'center',
                 halign = 'center',
@@ -339,9 +340,9 @@ function bluetooth.new(args)
               layout = wibox.layout.fixed.horizontal,
             },
             id = 'discovered_bg',
-            bg = Theme_config.bluetooth_controller.discovered_bg,
-            fg = Theme_config.bluetooth_controller.discovered_fg,
-            shape = Theme_config.bluetooth_controller.discovered_shape,
+            bg = beautiful.colorscheme.bg1,
+            fg = beautiful.colorscheme.bg_blue,
+            shape = beautiful.shape[4],
             widget = wibox.container.background,
           },
           id = 'discovered_margin',
@@ -360,9 +361,9 @@ function bluetooth.new(args)
             margins = dpi(10),
             widget = wibox.container.margin,
           },
-          border_color = Theme_config.bluetooth_controller.con_device_border_color,
-          border_width = Theme_config.bluetooth_controller.con_device_border_width,
-          shape = Theme_config.bluetooth_controller.con_device_shape,
+          border_color = beautiful.colorscheme.border_color,
+          border_width = dpi(2),
+          shape = beautiful.shape[4],
           widget = wibox.container.background,
           forced_height = 0,
           id = 'discovered_list',
@@ -371,7 +372,7 @@ function bluetooth.new(args)
           { -- action buttons
             {
               dnd_widget {
-                color = Theme_config.bluetooth_controller.power_bg,
+                color = beautiful.colorscheme.bg_blue,
                 size = dpi(40),
               },
               id = 'dnd',
@@ -384,7 +385,7 @@ function bluetooth.new(args)
               {
                 {
                   image = gcolor.recolor_image(icondir .. 'refresh.svg',
-                    Theme_config.bluetooth_controller.refresh_icon_color),
+                    beautiful.colorscheme.bg),
                   resize = false,
                   valign = 'center',
                   halign = 'center',
@@ -393,8 +394,8 @@ function bluetooth.new(args)
                 widget = wibox.container.margin,
                 margins = dpi(5),
               },
-              shape = Theme_config.bluetooth_controller.refresh_shape,
-              bg = Theme_config.bluetooth_controller.refresh_bg,
+              shape = beautiful.shape[4],
+              bg = beautiful.colorscheme.bg_blue,
               id = 'scan',
               widget = wibox.container.background,
             },
@@ -515,7 +516,7 @@ function bluetooth.new(args)
         end
 
         connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          Theme_config.bluetooth_controller.connected_icon_color))
+          beautiful.colorscheme.bg_purple))
       end
     end
   end)
@@ -530,7 +531,7 @@ function bluetooth.new(args)
       end
 
       connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-        Theme_config.bluetooth_controller.connected_icon_color))
+        beautiful.colorscheme.bg_purple))
     end
   end)
 
@@ -545,16 +546,14 @@ function bluetooth.new(args)
         end
 
         connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          Theme_config.bluetooth_controller.connected_icon_color))
+          beautiful.colorscheme.bg_purple))
       end
     else
       connected_animation.target = 0
-      connected_margin.connected_bg.shape = function(cr, width, height)
-        gshape.rounded_rect(cr, width, height, 4)
-      end
+      connected_margin.connected_bg.shape = beautiful.shape[4]
 
       connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
-        Theme_config.bluetooth_controller.connected_icon_color))
+        beautiful.colorscheme.bg_purple))
     end
   end)
 
@@ -584,7 +583,7 @@ function bluetooth.new(args)
           gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
         end
         discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          Theme_config.bluetooth_controller.discovered_icon_color))
+          beautiful.colorscheme.bg_blue))
       end
     end
   end)
@@ -600,7 +599,7 @@ function bluetooth.new(args)
         gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
       end
       discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-        Theme_config.bluetooth_controller.discovered_icon_color))
+        beautiful.colorscheme.bg_blue))
     end
   end)
 
@@ -616,15 +615,13 @@ function bluetooth.new(args)
           gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
         end
         discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          Theme_config.bluetooth_controller.discovered_icon_color))
+          beautiful.colorscheme.bg_blue))
       end
     else
       discovered_animation.target = 0
-      discovered_bg.shape = function(cr, width, height)
-        gshape.rounded_rect(cr, width, height, 4)
-      end
+      discovered_bg.shape = beautiful.shape[4]
       discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
-        Theme_config.bluetooth_controller.discovered_icon_color))
+        beautiful.colorscheme.bg_blue))
     end
   end)
   --#endregion

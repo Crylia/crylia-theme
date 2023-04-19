@@ -1,0 +1,422 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/product.schema.json",
+  "title": "theme completion",
+  "description": "completion for crylia-theme config",
+  "type": "object",
+  "properties": {
+    "autostart": {
+      "description": "Commands that run on startup",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "battery_kind": {
+      "description": "Where to fetch the battery information from",
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "LINE_POWER",
+        "TABLET",
+        "COMPUTER",
+        "GAMING_INPUT",
+        "LAST",
+        "BATTERY",
+        "UPS",
+        "MONITOR",
+        "MOUSE",
+        "KEYBOARD",
+        "PDA",
+        "PHONE",
+        "MEDIA_PLAYER"
+      ]
+    },
+    "battery_path": {
+      "description": "Custom battery path",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "brightness_step": {
+      "description": "Brightness step in %",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "dock_icon_size": {
+      "description": "Dock icon size",
+      "type": "integer"
+    },
+    "energy_manager": {
+      "description": "Program started when battery widget is clicked",
+      "type": "string"
+    },
+    "file_manager": {
+      "description": "Default File manager",
+      "type": "string"
+    },
+    "font": {
+      "description": "Font used for UI elements",
+      "type": "string"
+    },
+    "font-size": {
+      "description": "Font size",
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "font-weight": {
+      "description": "Font weight",
+      "type": "string"
+    },
+    "gtk_settings": {
+      "description": "Program used for GTK settings",
+      "type": "string"
+    },
+    "icon_theme": {
+      "description": "Icon theme",
+      "type": "string"
+    },
+    "kblayout": {
+      "description": "Keyboard layouts to use",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "layouts": {
+      "description": "Layouts",
+      "type": "array",
+      "items": {
+        "enum": [
+          "awful.layout.suit.fair",
+          "awful.layout.suit.floating"
+        ],
+        "type": "string"
+      }
+    },
+    "modkey": {
+      "description": "Modkey",
+      "type": "string",
+      "enum": [
+        "Mod5",
+        "Mod4",
+        "Mod3",
+        "Mod2",
+        "Mod1"
+      ]
+    },
+    "namestyle": {
+      "description": "Name formatting used for power menu",
+      "type": "string",
+      "enum": [
+        "userhost",
+        "fullname"
+      ]
+    },
+    "screen_settings": {
+      "description": "Program used for screen settings",
+      "type": "string"
+    },
+    "screenshot_program": {
+      "description": "Program used for screenshots",
+      "type": "string"
+    },
+    "status_bar_widgets": {
+      "description": "Widgets used in the notification center",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "cpu_usage",
+          "cpu_temp",
+          "ram_usage",
+          "microphone",
+          "volume",
+          "gpu_temp",
+          "gpu_usage",
+          "battery",
+          "backlight"
+        ]
+      }
+    },
+    "taskbar_use_name": {
+      "description": "If the taskbar should use the name or class",
+      "type": "boolean"
+    },
+    "terminal": {
+      "description": "Default terminal",
+      "type": "string"
+    },
+    "text_editor": {
+      "description": "Default texteditor",
+      "type": "string"
+    },
+    "titlebar_exception": {
+      "description": "Exceptions for titlebars",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "titlebar_position": {
+      "description": "Position of the titlebar",
+      "type": "string",
+      "enum": [
+        "top",
+        "left"
+      ]
+    },
+    "titlebar_items": {
+      "description": "Items in the titlebar",
+      "type": "object",
+      "properties": {
+        "left_and_bottom": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "icon",
+              "close",
+              "maximize",
+              "minimize",
+              "title"
+            ]
+          }
+        },
+        "right_and_top": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "icon",
+              "close",
+              "maximize",
+              "minimize",
+              "title"
+            ]
+          }
+        }
+      }
+    },
+    "wallpaper": {
+      "description": "wallpaper",
+      "type": "string"
+    },
+    "weather_secrets": {
+      "description": "weather api secrets",
+      "type": "object",
+      "properties": {
+        "type": "string",
+        "key": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 32
+        },
+        "city_id": {
+          "type": "string",
+          "minLength": 7,
+          "maxLength": 7
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "metric",
+            "imperial"
+          ]
+        }
+      }
+    },
+    "web_browser": {
+      "description": "Browser",
+      "type": "string"
+    },
+    "crylia_bar": {
+      "description": "Default bar widgets",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "left_bar": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Tiling Layout",
+                "Systray",
+                "Taglist",
+                "Tasklist",
+                "Bluetooth",
+                "Network",
+                "Battery",
+                "Cpu Usage",
+                "Cpu Temp",
+                "Cpu Freq",
+                "Gpu Usage",
+                "Gpu Temp",
+                "Ram Usage",
+                "Audio",
+                "Keyboard Layout",
+                "Date",
+                "Clock",
+                "Power Button"
+              ]
+            }
+          },
+          "center_bar": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Tiling Layout",
+                "Systray",
+                "Taglist",
+                "Tasklist",
+                "Bluetooth",
+                "Network",
+                "Battery",
+                "Cpu Usage",
+                "Cpu Temp",
+                "Cpu Freq",
+                "Gpu Usage",
+                "Gpu Temp",
+                "Ram Usage",
+                "Audio",
+                "Keyboard Layout",
+                "Date",
+                "Clock",
+                "Power Button"
+              ]
+            }
+          },
+          "right_bar": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Tiling Layout",
+                "Systray",
+                "Taglist",
+                "Tasklist",
+                "Bluetooth",
+                "Network",
+                "Battery",
+                "Cpu Usage",
+                "Cpu Temp",
+                "Cpu Freq",
+                "Gpu Usage",
+                "Gpu Temp",
+                "Ram Usage",
+                "Audio",
+                "Keyboard Layout",
+                "Date",
+                "Clock",
+                "Power Button"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "crylia_wibox": {
+      "description": "Default bar widgets",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "left": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Tiling Layout",
+                "Systray",
+                "Taglist",
+                "Tasklist",
+                "Bluetooth",
+                "Network",
+                "Battery",
+                "Cpu Usage",
+                "Cpu Temp",
+                "Cpu Freq",
+                "Gpu Usage",
+                "Gpu Temp",
+                "Ram Usage",
+                "Audio",
+                "Keyboard Layout",
+                "Date",
+                "Clock",
+                "Power Button"
+              ]
+            }
+          },
+          "center": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Tiling Layout",
+                "Systray",
+                "Taglist",
+                "Tasklist",
+                "Bluetooth",
+                "Network",
+                "Battery",
+                "Cpu Usage",
+                "Cpu Temp",
+                "Cpu Freq",
+                "Gpu Usage",
+                "Gpu Temp",
+                "Ram Usage",
+                "Audio",
+                "Keyboard Layout",
+                "Date",
+                "Clock",
+                "Power Button"
+              ]
+            }
+          },
+          "right": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Tiling Layout",
+                "Systray",
+                "Taglist",
+                "Tasklist",
+                "Bluetooth",
+                "Network",
+                "Battery",
+                "Cpu Usage",
+                "Cpu Temp",
+                "Cpu Freq",
+                "Gpu Usage",
+                "Gpu Temp",
+                "Ram Usage",
+                "Audio",
+                "Keyboard Layout",
+                "Date",
+                "Clock",
+                "Power Button"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "crylia_bar"
+      ]
+    },
+    {
+      "required": [
+        "crylia_wibox"
+      ]
+    }
+  ]
+}

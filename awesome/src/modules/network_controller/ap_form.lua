@@ -2,6 +2,7 @@ local abutton = require('awful.button')
 local aplacement = require('awful.placement')
 local apopup = require('awful.popup')
 local awidget = require('awful.widget')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gtable = require('gears.table')
 local gcolor = require('gears.color')
@@ -42,7 +43,7 @@ function ap_form.new(args)
               {
                 widget = wibox.widget.textbox,
                 text = NM.utils_ssid_to_utf8(args.NetworkManagerAccessPoint.Ssid),
-                font = User_config.font.specify .. ',extra bold 16',
+                font = beautiful.user_config.font.specify .. ',extra bold 16',
                 halign = 'center',
                 valign = 'center',
               },
@@ -53,7 +54,7 @@ function ap_form.new(args)
               {
                 {
                   widget = wibox.widget.imagebox,
-                  image = gcolor.recolor_image(icondir .. 'close.svg', Theme_config.network_manager.form.icon_fg),
+                  image = gcolor.recolor_image(icondir .. 'close.svg', beautiful.colorscheme.bg),
                   resize = false,
                   valign = 'center',
                   halign = 'center',
@@ -62,15 +63,15 @@ function ap_form.new(args)
                 margins = dpi(5),
               },
               widget = wibox.container.background,
-              shape = Theme_config.network_manager.form.close_icon_shape,
+              shape = beautiful.shape[8],
               id = 'close_button',
-              bg = Theme_config.network_manager.form.close_bg,
+              bg = beautiful.colorscheme.bg_red,
             },
             layout = wibox.layout.align.horizontal,
           },
           widget = wibox.container.background,
-          bg = Theme_config.network_manager.form.header_bg,
-          fg = Theme_config.network_manager.form.header_fg,
+          bg = beautiful.colorscheme.bg,
+          fg = beautiful.colorscheme.bg_red,
         },
         { -- Form
           { -- Password
@@ -100,10 +101,10 @@ function ap_form.new(args)
               id = 'const',
             },
             widget = wibox.container.background,
-            bg = '#212121',
-            fg = '#F0F0F0',
-            border_color = '#414141',
-            border_width = 2,
+            bg = beautiful.colorscheme.bg,
+            fg = beautiful.colorscheme.fg,
+            border_color = beautiful.colorscheme.border_color,
+            border_width = dpi(2),
             shape = gshape.rounded_rect,
             forced_width = 300,
             forced_height = 50,
@@ -117,12 +118,12 @@ function ap_form.new(args)
               {
                 {
                   checked = false,
-                  shape = Theme_config.network_manager.form.checkbox_shape,
-                  color = Theme_config.network_manager.form.checkbox_fg,
+                  shape = beautiful.shape[4],
+                  color = beautiful.colorscheme.bg,
                   paddings = dpi(3),
-                  check_color = Theme_config.network_manager.form.checkbox_bg,
-                  border_color = Theme_config.network_manager.form.checkbox_bg,
-                  border_width = 2,
+                  check_color = beautiful.colorscheme.bg_red,
+                  border_color = beautiful.colorscheme.bg_red,
+                  border_width = dpi(2),
                   id = 'checkbox',
                   widget = wibox.widget.checkbox,
                 },
@@ -158,9 +159,9 @@ function ap_form.new(args)
                 margins = dpi(10),
               },
               widget = wibox.container.background,
-              bg = Theme_config.network_manager.form.button_bg,
-              fg = Theme_config.network_manager.form.button_fg,
-              shape = Theme_config.network_manager.form.button_shape,
+              bg = beautiful.colorscheme.bg_blue,
+              fg = beautiful.colorscheme.bg,
+              shape = beautiful.shape[8],
               id = 'connect_button',
             },
             widget = wibox.container.margin,
@@ -179,11 +180,10 @@ function ap_form.new(args)
     visible = false,
     width = dpi(600),
     height = dpi(400),
-    bg = Theme_config.network_manager.form.bg,
-    fg = Theme_config.network_manager.form.fg,
-    shape = Theme_config.network_manager.form.shape,
-    border_color = Theme_config.network_manager.form.border_color,
-    border_width = Theme_config.network_manager.form.border_width,
+    bg = beautiful.colorscheme.bg,
+    fg = beautiful.colorscheme.fg,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
     type = 'dialog',
     screen = args.screen,
   }

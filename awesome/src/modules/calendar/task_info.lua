@@ -1,5 +1,6 @@
 -- Awesome Libs
 local awful = require('awful')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gtable = require('gears.table')
@@ -21,7 +22,7 @@ function task_info.new(args)
   local ret = gobject {}
   gtable.crush(ret, task_info, true)
 
-  args.color = args.color or '#ffffff'
+  args.color = args.color or beautiful.colorscheme.fg
 
   local date_long_written = os.date('%A, %d. %B %Y', os.time(args.date_start))
 
@@ -133,9 +134,9 @@ function task_info.new(args)
       top = dpi(15),
       bottom = dpi(15),
     },
-    bg = Theme_config.calendar.task_info.bg,
-    fg = Theme_config.calendar.task_info.fg,
-    shape = Theme_config.calendar.task_info.shape,
+    bg = beautiful.colorscheme.bg,
+    fg = beautiful.colorscheme.fg,
+    shape = beautiful.shape[12],
     widget = wibox.container.background,
   }
 

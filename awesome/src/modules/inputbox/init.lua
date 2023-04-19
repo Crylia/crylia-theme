@@ -2,6 +2,7 @@ local Pango = require('lgi').Pango
 local PangoCairo = require('lgi').PangoCairo
 local akey = require('awful.key')
 local akeygrabber = require('awful.keygrabber')
+local beautiful = require('beautiful')
 local cairo = require('lgi').cairo
 local gobject = require('gears.object')
 local gtable = require('gears.table')
@@ -33,20 +34,9 @@ local function get_subtext_layout(layout, starti, endi)
 end
 
 function inputbox.draw_text(self)
-  local text = self:get_text()
   local highlight = self:get_highlight()
   local fg_color = { 1, 1, 1, 1 }
   local cursor_color = { 1, 1, 1, 1 }
-
-  if text == '' then
-    fg_color = { 0.2, 0.2, 0.2, 1 }
-    --self._private.layout:set_text(self._private.text_hint)
-    --local cairo_text = self._private.text_hint
-    -- Get the text extents from Pango so we don't need to use cairo to get a possibly wrong extent
-    -- Then draw the text with cairo
-
-    --return
-  end
 
   local _, pango_extent = self._private.layout:get_extents()
 
@@ -56,8 +46,8 @@ function inputbox.draw_text(self)
   -- Draw highlight
   if highlight.start_pos ~= highlight.end_pos then
     cr:set_source_rgb(0, 0, 1)
-    local sub_extent = get_subtext_layout(self._private.layout, self:get_highlight().start_pos, self:get_highlight().end_pos)
-    local _, x_offset = self._private.layout:index_to_line_x(self:get_highlight().start_pos, false)
+    local sub_extent = get_subtext_layout(self._private.layout, highlight.start_pos, highlight.end_pos)
+    local _, x_offset = self._private.layout:index_to_line_x(highlight.start_pos, false)
     cr:rectangle(
       x_offset / Pango.SCALE,
       pango_extent.y / Pango.SCALE,
@@ -68,23 +58,11 @@ function inputbox.draw_text(self)
   end
 
   -- Draw text
-  if not self.password_mode then
-    PangoCairo.update_layout(cr, self._private.layout)
-    cr:set_source_rgba(table.unpack(fg_color))
-    cr:move_to(0, 0)
-    PangoCairo.show_layout(cr, self._private.layout)
-  else
-    local count = #self._private.layout:get_text()
-    local passwd_string = ''
-    for i = 1, count, 1 do
-      passwd_string = passwd_string .. '🞄'
-    end
-    self._private.layout:set_text(passwd_string)
-    PangoCairo.update_layout(cr, self._private.layout)
-    cr:set_source_rgba(table.unpack(fg_color))
-    cr:move_to(0, 0)
-    PangoCairo.show_layout(cr, self._private.layout)
-  end
+  PangoCairo.update_layout(cr, self._private.layout)
+  cr:set_source_rgba(table.unpack(fg_color))
+  cr:move_to(0, 0)
+  PangoCairo.show_layout(cr, self._private.layout)
+
   -- Draw cursor
   if self._private.show_cursor then
     cr:set_source_rgba(table.unpack(cursor_color))
@@ -141,7 +119,6 @@ function inputbox:start_keygrabber()
             self:set_text(text:sub(1, cursor_pos - 1) .. text:sub(cursor_pos + 1))
             self:set_cursor_pos(cursor_pos - 1)
           end
-          self:emit_signal('inputbox::keypressed', {}, 'BackSpace')
         end,
       },
       akey { -- Delete highlight or right of cursor
@@ -158,7 +135,6 @@ function inputbox:start_keygrabber()
           else
             self:set_text(text:sub(1, cursor_pos) .. text:sub(cursor_pos + 2, #text))
           end
-          self:emit_signal('inputbox::keypressed', {}, 'Delete')
         end,
       },
       akey { -- Move cursor to left
@@ -211,8 +187,6 @@ function inputbox:start_keygrabber()
             self:set_cursor_pos(cursor_pos - 1)
             self:set_highlight(nil, hl.end_pos - 1)
           end
-
-          print('cursor_pos', self:get_cursor_index(), 'hl.start_pos', self:get_highlight().start_pos, 'hl.end_pos', self:get_highlight().end_pos)
         end,
       },
       akey { -- Highlight to the right
@@ -405,7 +379,6 @@ function inputbox:start_mousegrabber(x, y)
         self:set_cursor_pos(index)
         mb_start = index
       end
-      print(self:get_highlight().start_pos, self:get_highlight().end_pos)
       hl = self:get_highlight()
       return m.buttons[1]
     end, 'xterm')
@@ -428,7 +401,7 @@ end
 function inputbox:set_text(text)
   if self:get_text() == text then return end
 
-  text = '<span foreground="' .. (self._private.fg or '#ffffff') .. '">' .. text .. '</span>'
+  text = '<span foreground="' .. (self._private.fg or beautiful.colorscheme.fg) .. '">' .. text .. '</span>'
 
   local attributes, parsed = Pango.parse_markup(text, -1, 0)
 
@@ -524,7 +497,7 @@ function inputbox.new(args)
     trailing = 0,
   }
 
-  ret._private.fg = args.fg or '#ffffff'
+  ret._private.fg = args.fg or beautiful.colorscheme.fg
   ret._private.highlight = args.highlight or {
     start_pos = 0,
     end_pos = 0,

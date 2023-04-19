@@ -1,65 +1,72 @@
---------------------------------------------------------------------------------------------------------------
--- This is the statusbar, every widget, module and so on is combined to all the stuff you see on the screen --
---------------------------------------------------------------------------------------------------------------
+local tinsert = table.insert
+local pairs = pairs
+
 -- Awesome Libs
-local awful = require('awful')
-local dpi = require('beautiful').xresources.apply_dpi
+local aplacement = require('awful.placement')
+local apopup = require('awful.popup')
+local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
 local wibox = require('wibox')
 
-return function(s, w)
-  local function prepare_widgets(widgets)
-    local layout = {
-      forced_height = dpi(50),
-      layout = wibox.layout.fixed.horizontal,
-    }
-    for i, widget in pairs(widgets) do
-      if i == 1 then
-        table.insert(layout,
-          {
-            widget,
-            left = dpi(6),
-            right = dpi(3),
-            top = dpi(6),
-            bottom = dpi(6),
-            widget = wibox.container.margin,
-          })
-      elseif i == #widgets then
-        table.insert(layout,
-          {
-            widget,
-            left = dpi(3),
-            right = dpi(6),
-            top = dpi(6),
-            bottom = dpi(6),
-            widget = wibox.container.margin,
-          })
-      else
-        table.insert(layout,
-          {
-            widget,
-            left = dpi(3),
-            right = dpi(3),
-            top = dpi(6),
-            bottom = dpi(6),
-            widget = wibox.container.margin,
-          })
-      end
+local function prepare_widgets(w)
+  local layout = {
+    layout = wibox.layout.fixed.horizontal,
+  }
+
+  for i, widget in pairs(w) do
+    if i == 1 then
+      tinsert(layout,
+        {
+          widget,
+          left = dpi(6),
+          right = dpi(3),
+          top = dpi(6),
+          bottom = dpi(6),
+          widget = wibox.container.margin,
+        })
+    elseif i == #w then
+      tinsert(layout,
+        {
+          widget,
+          left = dpi(3),
+          right = dpi(6),
+          top = dpi(6),
+          bottom = dpi(6),
+          widget = wibox.container.margin,
+        })
+    else
+      tinsert(layout,
+        {
+          widget,
+          left = dpi(3),
+          right = dpi(3),
+          top = dpi(6),
+          bottom = dpi(6),
+          widget = wibox.container.margin,
+        })
     end
-    return layout
   end
-
-  local top_right = awful.popup {
-    widget = prepare_widgets(w),
-    ontop = false,
-    bg = Theme_config.right_bar.bg,
-    visible = true,
-    screen = s,
-    placement = function(c) awful.placement.top_right(c, { margins = dpi(10) }) end,
-  }
-
-  top_right:struts {
-    top = dpi(55),
-  }
-
-  Global_config.top_struts = top_right
+  return layout
 end
+
+return setmetatable({}, {
+  __call = function(_, s, w)
+    local top_right = apopup {
+      widget = {
+        prepare_widgets(w),
+        widget = wibox.container.constraint,
+        strategy = 'exact',
+        height = dpi(50),
+      },
+      ontop = false,
+      bg = beautiful.colorscheme.bg,
+      visible = true,
+      screen = s,
+      placement = function(c) aplacement.top_right(c, { margins = dpi(10) }) end,
+    }
+
+    top_right:struts {
+      top = dpi(60),
+    }
+  end,
+})

@@ -6,6 +6,7 @@
 local abutton = require('awful.button')
 local aspawn = require('awful.spawn')
 local base = require('wibox.widget.base')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears').filesystem
@@ -13,14 +14,12 @@ local Gio = require('lgi').Gio
 local gtable = require('gears.table')
 local wibox = require('wibox')
 
--- Third party libs
-
-local cm = require('src.modules.context_menu.init')
-local dock = require('src.modules.crylia_bar.dock')
-
 -- Local libs
 local config = require('src.tools.config')
 local hover = require('src.tools.hover')
+local cm = require('src.modules.context_menu.init')
+local dock = require('src.modules.crylia_bar.dock')
+local icon_lookup = require('src.tools.gio_icon_lookup')()
 
 local capi = {
   awesome = awesome,
@@ -132,8 +131,8 @@ local function get_applications_from_file()
                 { -- Icon
                   valign = 'center',
                   halign = 'center',
-                  image = Get_gicon_path(app_info.get_icon(app)) or
-                      Get_gicon_path(app_info.get_icon(app),
+                  image = icon_lookup:get_gicon_path(app_info.get_icon(app)) or
+                      icon_lookup:get_gicon_path(app_info.get_icon(app),
                         Gio.DesktopAppInfo.get_string(desktop_app_info, 'X-AppImage-Old-Icon')) or '',
                   resize = true,
                   widget = wibox.widget.imagebox,
@@ -173,11 +172,11 @@ local function get_applications_from_file()
         terminal = Gio.DesktopAppInfo.get_string(desktop_app_info, 'Terminal') == 'true',
         actions = Gio.DesktopAppInfo.list_actions(desktop_app_info),
         desktop_file = Gio.DesktopAppInfo.get_filename(desktop_app_info) or '',
-        border_color = Theme_config.application_launcher.application.border_color,
-        border_width = Theme_config.application_launcher.application.border_width,
-        bg = Theme_config.application_launcher.application.bg,
-        fg = Theme_config.application_launcher.application.fg,
-        shape = Theme_config.application_launcher.application.shape,
+        border_color = beautiful.colorscheme.border_color,
+        border_width = dpi(2),
+        bg = beautiful.colorscheme.bg1,
+        fg = beautiful.colorscheme.fg,
+        shape = beautiful.shape[4],
         widget = wibox.container.background,
       }
       local context_menu = cm {
@@ -215,7 +214,7 @@ local function get_applications_from_file()
           {
             name = 'Execute as sudo',
             icon = gcolor.recolor_image(icondir .. 'launch.svg',
-              Theme_config.application_launcher.application.cm_icon_color),
+              beautiful.colorscheme.bg_purple),
             callback = function()
               capi.awesome.emit_signal('application_launcher::show')
               aspawn('/home/crylia/.config/awesome/src/scripts/start_as_admin.sh ' .. app_widget.exec)
@@ -224,14 +223,14 @@ local function get_applications_from_file()
           {
             name = 'Pin to dock',
             icon = gcolor.recolor_image(icondir .. 'pin.svg',
-              Theme_config.application_launcher.application.cm_icon_color),
+              beautiful.colorscheme.bg_purple),
             callback = function()
               -- Open dock.js and read all its content into a table, add the new app into the table and write it back
               --[[ async.read_json(gfilesystem.get_configuration_dir() .. 'src/config/dock.json', function(data)
                 table.insert(data, {
                   name = app_widget.name or '',
-                  icon = Get_gicon_path(app_info.get_icon(app)) or
-                      Get_gicon_path(app_info.get_icon(app),
+                  icon = icon_lookup.get_gicon_path(app_info.get_icon(app)) or
+                      icon_lookup.get_gicon_path(app_info.get_icon(app),
                         Gio.DesktopAppInfo.get_string(desktop_app_info, 'X-AppImage-Old-Icon')) or '',
                   comment = app_widget.comment or '',
                   exec = app_widget.exec or '',
@@ -254,12 +253,12 @@ local function get_applications_from_file()
           {
             name = 'Add to desktop',
             icon = gcolor.recolor_image(icondir .. 'desktop.svg',
-              Theme_config.application_launcher.application.cm_icon_color),
+              beautiful.colorscheme.bg_purple),
             callback = function()
               capi.awesome.emit_signal('application_launcher::show')
               capi.awesome.emit_signal('desktop::add_to_desktop', {
                 label = app_info.get_name(app),
-                icon = Get_gicon_path(app_info.get_icon(app)) or '',
+                icon = icon_lookup:get_gicon_path(app_info.get_icon(app)) or '',
                 exec = Gio.DesktopAppInfo.get_string(desktop_app_info, 'Exec'),
                 desktop_file = Gio.DesktopAppInfo.get_filename(desktop_app_info) or '',
               })
@@ -372,9 +371,9 @@ function application_grid:set_applications(search_filter)
       'update::selected',
       function()
         if self._private.curser.y == pos.row and self._private.curser.x == pos.col then
-          app.border_color = Theme_config.application_launcher.application.border_color_active
+          app.border_color = beautiful.colorscheme.bg_purple
         else
-          app.border_color = Theme_config.application_launcher.application.border_color
+          app.border_color = beautiful.colorscheme.bg1
         end
       end
     )

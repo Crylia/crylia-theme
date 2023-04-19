@@ -1,6 +1,7 @@
 local Gio = require('lgi').Gio
 local awful = require('awful')
 local dpi = require('beautiful').xresources.apply_dpi
+local beautiful = require('beautiful')
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
 local grid = require('wibox.layout.grid')
@@ -17,6 +18,7 @@ local capi = {
   awesome = awesome,
   screen = screen,
 }
+
 local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/desktop/'
 
 local desktop = { mt = {} }
@@ -88,14 +90,14 @@ end
 function desktop:get_grid_index_at(y, x)
   local margin_x, margin_y = dpi(10), dpi(10)
   local screen_width, screen_height = self.args.screen.geometry.width - margin_x * 2, self.args.screen.geometry.height - dpi(75) - dpi(95) - margin_y * 2
-  local cell_width, cell_height = screen_width / 20, screen_height / 11
+  local cell_width, cell_height = screen_width / 15, screen_height / 8
 
   local col = math.floor((x - margin_x) / cell_width) + 1
-  col = math.min(col, 20)
+  col = math.min(col, 15)
   col = math.max(col, 1)
 
   local row = math.floor((y - margin_y) / cell_height) + 1
-  row = math.min(row, 11)
+  row = math.min(row, 8)
   row = math.max(row, 1)
 
   return col, row
@@ -159,32 +161,32 @@ function desktop:add_element(args, pos)
     entries = {
       {
         name = 'Open with',
-        icon = gcolor.recolor_image(icondir .. 'launch.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'launch.svg', beautiful.colorscheme.bg_purple),
         submenu = {
           --!TODO: Fetch programs and add them as entries
         },
       },
       {
         name = 'Copy',
-        icon = gcolor.recolor_image(icondir .. 'copy.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'copy.svg', beautiful.colorscheme.bg_purple),
         callback = function()
         end,
       },
       {
         name = 'Cut',
-        icon = gcolor.recolor_image(icondir .. 'cut.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'cut.svg', beautiful.colorscheme.bg_purple),
         callback = function()
         end,
       },
       {
         name = 'Rename',
-        icon = gcolor.recolor_image(icondir .. 'edit.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'edit.svg', beautiful.colorscheme.bg_purple),
         callback = function()
         end,
       },
       {
         name = 'Remove',
-        icon = gcolor.recolor_image(icondir .. 'delete.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'delete.svg', beautiful.colorscheme.bg_purple),
         callback = function()
           self:remove_element(e)
           self:save_layout()
@@ -192,7 +194,7 @@ function desktop:add_element(args, pos)
       },
       {
         name = 'Actions',
-        icon = gcolor.recolor_image(icondir .. 'dots-vertical.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'dots-vertical.svg', beautiful.colorscheme.bg_purple),
         submenu = {
           -- TODO: fetch actions from desktop file
         },
@@ -295,9 +297,7 @@ function desktop:draw_selector()
       x = start_pos.x - self.args.screen.geometry.x,
       y = start_pos.y - self.args.screen.geometry.y,
       visible = true,
-      shape = function(cr, w, h)
-        gshape.rounded_rect(cr, w, h, dpi(10))
-      end,
+      shape = beautiful.shape[10],
     }
     selector.point = { x = start_pos.x - self.args.screen.geometry.x, y = start_pos.y - self.args.screen.geometry.y }
     self.widget.manual:add(selector)
@@ -359,8 +359,8 @@ function desktop.new(args)
 
   args.icon_size = dpi(48)
 
-  local rows = 20
-  local cols = 11
+  local rows = 15
+  local cols = 8
   local h_spacing = dpi(10)
   local v_spacing = dpi(20)
 
@@ -449,11 +449,11 @@ function desktop.new(args)
     entries = {
       {
         name = 'Create new',
-        icon = gcolor.recolor_image(icondir .. 'file_add.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'file_add.svg', beautiful.colorscheme.bg_purple),
         submenu = {
           {
             name = 'Folder',
-            icon = gcolor.recolor_image(icondir .. 'folder.svg', Theme_config.desktop.context_menu.icon_color),
+            icon = gcolor.recolor_image(icondir .. 'folder.svg', beautiful.colorscheme.bg_purple),
             callback = function()
               --create a new folder and if it exists add a number to the end
               local folder_name = 'New folder'
@@ -475,7 +475,7 @@ function desktop.new(args)
           },
           {
             name = 'File',
-            icon = gcolor.recolor_image(icondir .. 'file.svg', Theme_config.desktop.context_menu.icon_color),
+            icon = gcolor.recolor_image(icondir .. 'file.svg', beautiful.colorscheme.bg_purple),
             callback = function()
               --create new text file and if it exists add a number to the end
               local file_name = 'New file.txt'
@@ -499,76 +499,76 @@ function desktop.new(args)
       },
       {
         name = 'Terminal',
-        icon = gcolor.recolor_image(icondir .. 'terminal.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'terminal.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.terminal)
+          awful.spawn(beautiful.user_config.terminal)
         end,
       },
       {
         name = 'Web Browser',
-        icon = gcolor.recolor_image(icondir .. 'web_browser.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'web_browser.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.web_browser)
+          awful.spawn(beautiful.user_config.web_browser)
         end,
       },
       {
         name = 'File Manager',
-        icon = gcolor.recolor_image(icondir .. 'file_manager.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'file_manager.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.file_manager)
+          awful.spawn(beautiful.user_config.file_manager)
         end,
       },
       {
         name = 'Text Editor',
-        icon = gcolor.recolor_image(icondir .. 'text_editor.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'text_editor.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.text_editor)
+          awful.spawn(beautiful.user_config.text_editor)
         end,
       },
       {
         name = 'Music Player',
-        icon = gcolor.recolor_image(icondir .. 'music_player.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'music_player.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.music_player)
+          awful.spawn(beautiful.user_config.music_player)
         end,
       },
       {
         name = 'Applications',
-        icon = gcolor.recolor_image(icondir .. 'application.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'application.svg', beautiful.colorscheme.bg_purple),
         callback = function()
         end,
       },
       {
         name = 'GTK Settings',
-        icon = gcolor.recolor_image(icondir .. 'gtk_settings.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'gtk_settings.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.gtk_settings)
+          awful.spawn(beautiful.user_config.gtk_settings)
         end,
       },
       {
         name = 'Energy Settings',
-        icon = gcolor.recolor_image(icondir .. 'energy_settings.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'energy_settings.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.energy_manager)
+          awful.spawn(beautiful.user_config.energy_manager)
         end,
       },
       {
         name = 'Screen Settings',
-        icon = gcolor.recolor_image(icondir .. 'screen_settings.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'screen_settings.svg', beautiful.colorscheme.bg_purple),
         callback = function()
-          awful.spawn(User_config.screen_settings)
+          awful.spawn(beautiful.user_config.screen_settings)
         end,
       },
       {
         name = 'Reload Awesome',
-        icon = gcolor.recolor_image(icondir .. 'refresh.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'refresh.svg', beautiful.colorscheme.bg_purple),
         callback = function()
           capi.awesome.restart()
         end,
       },
       {
         name = 'Quit',
-        icon = gcolor.recolor_image(icondir .. 'quit.svg', Theme_config.desktop.context_menu.icon_color),
+        icon = gcolor.recolor_image(icondir .. 'quit.svg', beautiful.colorscheme.bg_purple),
         callback = function()
           capi.awesome.quit()
         end,

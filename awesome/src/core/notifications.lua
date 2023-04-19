@@ -4,10 +4,10 @@
 -- Awesome Libs
 
 local aspawn = require('awful.spawn')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
-local gshape = require('gears.shape')
 local naughty = require('naughty')
 local wibox = require('wibox')
 local abutton = require('awful.button')
@@ -28,15 +28,13 @@ naughty.config.defaults.icon_size = dpi(80)
 naughty.config.defaults.timeout = 5
 naughty.config.defaults.title = 'System Notification'
 naughty.config.defaults.margin = dpi(10)
-naughty.config.defaults.position = Theme_config.notification.position
-naughty.config.defaults.border_width = Theme_config.notification.border_width
-naughty.config.defaults.border_color = Theme_config.notification.border_color
-naughty.config.defaults.spacing = Theme_config.notification.spacing
-
-Theme.notification_spacing = Theme_config.notification.corner_spacing
+naughty.config.defaults.position = 'bottom_right'
+naughty.config.defaults.border_width = dpi(2)
+naughty.config.defaults.border_color = beautiful.colorscheme.border_color
+naughty.config.defaults.spacing = dpi(10)
 
 naughty.connect_signal('request::display', function(n)
-  if User_config.dnd then
+  if beautiful.user_config.dnd then
     n:destroy()
   else
     if not n.icon then n.icon = gfilesystem.get_configuration_dir() .. 'src/assets/CT.svg' end
@@ -44,9 +42,9 @@ naughty.connect_signal('request::display', function(n)
     if not n.title then n.title = 'System Notification' end
     if not n.message then n.message = 'No message provided' end
 
-    local color = Theme_config.notification.bg_normal
+    local color = beautiful.colorscheme.bg_blue
     if n.urgency == 'critical' then
-      color = Theme_config.notification.fg_urgent_message
+      color = beautiful.colorscheme.bg_red
     end
 
     if n.app_name == 'Spotify' then
@@ -104,28 +102,24 @@ naughty.connect_signal('request::display', function(n)
         id = 'background_role',
         widget = wibox.container.background,
         bg = color,
-        fg = Theme_config.notification.bg,
-        shape = function(cr, width, height)
-          gshape.rounded_rect(cr, width, height, dpi(8))
-        end,
+        fg = beautiful.colorscheme.bg,
+        shape = beautiful.shape[8],
       },
       style = {
         underline_normal = false,
         underline_selected = false,
-        shape_normal = function(cr, width, height)
-          gshape.rounded_rect(cr, width, height, dpi(8))
-        end,
+        shape_normal = beautiful.shape[8],
         --Don't remove or it will break
         bg_normal = color,
         bg_selected = color,
-        fg_normal = Theme_config.notification.bg,
-        fg_selected = Theme_config.notification.bg,
+        fg_normal = beautiful.colorscheme.bg,
+        fg_selected = beautiful.colorscheme.bg,
       },
       widget = naughty.list.actions,
     }
 
     -- Hack to get the action buttons to work even after update
-    --[[ for i = 1, #action_template._private.layout.children, 1 do
+    for i = 1, #action_template._private.layout.children, 1 do
       hover.bg_hover { widget = action_template._private.layout.children[i].children[1], overlay = 12, press_overlay = 24 }
     end
     if (#action_template._private.layout.children > 0) and action_template._private.notification[1].actions[1].program == 'Spotify' then
@@ -138,7 +132,7 @@ naughty.connect_signal('request::display', function(n)
       action_template._private.layout.children[3].children[1]:connect_signal('button::press', function()
         aspawn('playerctl next')
       end)
-    end ]]
+    end
 
     local start_timer = n.timeout
     if n.timeout == 0 then
@@ -164,9 +158,7 @@ naughty.connect_signal('request::display', function(n)
                               resize = true,
                             },
                             widget = wibox.container.background,
-                            shape = function(cr, width, height)
-                              gshape.rounded_rect(cr, width, height, dpi(4))
-                            end,
+                            shape = beautiful.shape[4],
                           },
                           widget = wibox.container.place,
                         },
@@ -180,7 +172,7 @@ naughty.connect_signal('request::display', function(n)
                           notification = n,
                           widget = naughty.widget.title,
                           markup = [[<span foreground="]] ..
-                              Theme_config.notification.bg .. [[" font="JetBrainsMono Nerd Font, Bold 16">]] .. (n.app_name or
+                              beautiful.colorscheme.bg .. [[" font="JetBrainsMono Nerd Font, Bold 16">]] .. (n.app_name or
                                   'Unknown App') .. [[</span> | <span font="JetBrainsMono Nerd Font, Regular 16">]] .. (n.title or 'System Notification') .. [[</span>]],
                           halign = 'left',
                           valign = 'center',
@@ -203,7 +195,7 @@ naughty.connect_signal('request::display', function(n)
                         widget = wibox.widget.textclock,
                         format = '%H:%M',
                         font = 'JetBrainsMono Nerd Font, Bold 16',
-                        fg = Theme_config.notification.bg,
+                        fg = beautiful.colorscheme.bg,
                         halign = 'right',
                         valign = 'center',
                       },
@@ -213,7 +205,7 @@ naughty.connect_signal('request::display', function(n)
                             {
                               {
                                 widget = wibox.widget.imagebox,
-                                image = gcolor.recolor_image(icondir .. 'close.svg', Theme_config.notification.bg),
+                                image = gcolor.recolor_image(icondir .. 'close.svg', beautiful.colorscheme.bg),
                                 resize = true,
                                 halign = 'center',
                                 valign = 'center',
@@ -226,7 +218,7 @@ naughty.connect_signal('request::display', function(n)
                               widget = wibox.container.arcchart,
                               id = 'arc',
                             },
-                            fg = Theme_config.notification.bg_close,
+                            fg = beautiful.colorscheme.bg,
                             bg = color,
                             widget = wibox.container.background,
                             id = 'arc_bg',
@@ -248,10 +240,8 @@ naughty.connect_signal('request::display', function(n)
                 },
                 widget = wibox.container.background,
                 bg = color,
-                fg = '#212121',
-                shape = function(cr, width, height)
-                  gshape.rounded_rect(cr, width, height, dpi(8))
-                end,
+                fg = beautiful.colorscheme.bg,
+                shape = beautiful.shape[8],
               },
               { -- Main body
                 { -- Image
@@ -266,9 +256,7 @@ naughty.connect_signal('request::display', function(n)
                       widget = naughty.widget.icon,
                     },
                     widget = wibox.container.background,
-                    shape = function(cr, width, height)
-                      gshape.rounded_rect(cr, width, height, dpi(10))
-                    end,
+                    shape = beautiful.shape[10],
                   },
                   widget = wibox.container.constraint,
                   strategy = 'exact',
@@ -293,7 +281,7 @@ naughty.connect_signal('request::display', function(n)
               { -- Spacer
                 {
                   widget = wibox.container.background,
-                  bg = Theme_config.notification.action_bg,
+                  bg = beautiful.colorscheme.bg,
                 },
                 widget = wibox.container.constraint,
                 strategy = 'exact',
@@ -307,12 +295,10 @@ naughty.connect_signal('request::display', function(n)
             widget = wibox.container.margin,
             margins = dpi(15),
           },
-          bg = '#212121',
-          border_color = '#414141',
+          bg = beautiful.colorscheme.bg,
+          border_color = beautiful.colorscheme.border_color,
           border_width = dpi(2),
-          shape = function(cr, width, height)
-            gshape.rounded_rect(cr, width, height, dpi(8))
-          end,
+          shape = beautiful.shape[8],
           widget = wibox.container.background,
         },
         widget = wibox.container.constraint,
@@ -388,171 +374,6 @@ naughty.connect_signal('request::display', function(n)
     }
     box.buttons = {}
     n.buttons = {}
-
-    -- This is stupid but there is on way to clone the notifaction widget and being able to modify only the clone
-    --[=[ naughty.emit_signal('notification_surface', wibox.template {
-      widget = wibox.widget {
-        {
-          {
-            {
-              { -- Title
-                {
-                  {
-                    { -- Icon
-                      {
-                        {
-                          {
-                            {
-                              notification = n,
-                              widget = naughty.widget.icon,
-                              --image = n.icon or '',
-                              resize = true,
-                            },
-                            widget = wibox.container.background,
-                            shape = function(cr, width, height)
-                              gshape.rounded_rect(cr, width, height, dpi(4))
-                            end,
-                          },
-                          widget = wibox.container.place,
-                        },
-                        widget = wibox.container.constraint,
-                        strategy = 'exact',
-                        width = dpi(20),
-                        height = dpi(20),
-                      },
-                      { -- Title
-                        {
-                          notification = n,
-                          widget = naughty.widget.title,
-                          markup = [[<span foreground="]] ..
-                              Theme_config.notification.bg .. [[" font="JetBrainsMono Nerd Font, Bold 16">]] .. (n.app_name or
-                                  'Unknown App') .. [[</span> | <span font="JetBrainsMono Nerd Font, Regular 16">]] .. (n.title or 'System Notification') .. [[</span>]],
-                          halign = 'left',
-                          valign = 'center',
-                        },
-                        widget = wibox.container.constraint,
-                        width = dpi(280),
-                        height = dpi(35),
-                        strategy = 'max',
-                      },
-                      spacing = dpi(10),
-                      layout = wibox.layout.fixed.horizontal,
-                    },
-                    widget = wibox.container.margin,
-                    left = dpi(10),
-                  },
-                  nil,
-                  {
-                    {
-                      { -- Clock
-                        widget = wibox.widget.textclock,
-                        format = '%H:%M',
-                        font = 'JetBrainsMono Nerd Font, Bold 16',
-                        fg = Theme_config.notification.bg,
-                        halign = 'right',
-                        valign = 'center',
-                      },
-                      { -- Close button
-                        {
-                          {
-                            {
-                              {
-                                widget = wibox.widget.imagebox,
-                                image = gcolor.recolor_image(icondir .. 'close.svg', Theme_config.notification.bg),
-                                resize = true,
-                                halign = 'center',
-                                valign = 'center',
-                              },
-                              start_angle = 4.71239,
-                              thickness = dpi(2),
-                              min_value = 0,
-                              max_value = start_timer,
-                              value = start_timer,
-                              widget = wibox.container.arcchart,
-                              id = 'arc',
-                            },
-                            fg = Theme_config.notification.bg_close,
-                            bg = color,
-                            widget = wibox.container.background,
-                            id = 'arc_bg',
-                          },
-                          strategy = 'exact',
-                          width = dpi(18),
-                          height = dpi(18),
-                          widget = wibox.container.constraint,
-                        },
-                        left = dpi(5),
-                        widget = wibox.container.margin,
-                      },
-                      layout = wibox.layout.fixed.horizontal,
-                    },
-                    right = dpi(5),
-                    widget = wibox.container.margin,
-                  },
-                  layout = wibox.layout.align.horizontal,
-                },
-                widget = wibox.container.background,
-                bg = color,
-                fg = '#212121',
-                shape = function(cr, width, height)
-                  gshape.rounded_rect(cr, width, height, dpi(8))
-                end,
-              },
-              { -- Main body
-                { -- Image
-                  {
-                    {
-                      notification = n,
-                      --image = n.icon or '',
-                      valign = 'center',
-                      halign = 'center',
-                      upscale = true,
-                      resize_strategy = 'scale',
-                      widget = naughty.widget.icon,
-                    },
-                    widget = wibox.container.background,
-                    shape = function(cr, width, height)
-                      gshape.rounded_rect(cr, width, height, dpi(10))
-                    end,
-                  },
-                  widget = wibox.container.constraint,
-                  strategy = 'exact',
-                  height = dpi(128),
-                  width = dpi(128),
-                },
-                {
-                  {
-                    notification = n,
-                    widget = naughty.widget.message,
-                    text = n.message,
-                    font = 'JetBrainsMono Nerd Font, Regular 8',
-                    halign = 'left',
-                    valign = 'center',
-                  },
-                  widget = wibox.container.constraint,
-                  strategy = 'exact',
-                  height = dpi(128),
-                },
-                spacing = dpi(15),
-                layout = wibox.layout.fixed.horizontal,
-              },
-            },
-            widget = wibox.container.margin,
-            margins = dpi(15),
-          },
-          bg = '#212121',
-          border_color = '#414141',
-          border_width = dpi(2),
-          shape = function(cr, width, height)
-            gshape.rounded_rect(cr, width, height, dpi(8))
-          end,
-          widget = wibox.container.background,
-        },
-        widget = wibox.container.constraint,
-        strategy = 'exact',
-        width = dpi(600),
-      },
-    }) ]=]
   end
 end)
 --[[ 

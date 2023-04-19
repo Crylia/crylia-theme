@@ -4,6 +4,7 @@
 local wibox = require('wibox')
 local dpi = require('beautiful').xresources.apply_dpi
 local gshape = require('gears.shape')
+local beautiful = require('beautiful')
 
 return function(s)
   ---Lookup function to return the widget from its easy name string
@@ -16,13 +17,13 @@ return function(s)
         if widget == 'Audio' then
           table.insert(widget_table, require('src.widgets.audio')(s))
         elseif widget == 'Battery' then
-          table.insert(widget_table, require('src.widgets.battery')(User_config.battery_kind))
+          table.insert(widget_table, require('src.widgets.battery')(beautiful.user_config.battery_kind))
         elseif widget == 'Bluetooth' then
           table.insert(widget_table, require('src.widgets.bluetooth')())
         elseif widget == 'Clock' then
           table.insert(widget_table, require('src.widgets.clock')())
         elseif widget == 'Cpu Frequency' then
-          table.insert(widget_table, require('src.widgets.cpu_info')('freq', User_config.cpu_frequency))
+          table.insert(widget_table, require('src.widgets.cpu_info')('freq', beautiful.user_config.cpu_frequency))
         elseif widget == 'Cpu Temperature' then
           table.insert(widget_table, require('src.widgets.cpu_info')('temp'))
         elseif widget == 'Cpu Usage' then
@@ -55,8 +56,8 @@ return function(s)
     return widget_table
   end
 
-  if User_config.crylia_wibox then
-    for index, screen in ipairs(User_config.crylia_wibox) do
+  if beautiful.user_config.crylia_wibox then
+    for index, screen in ipairs(beautiful.user_config.crylia_wibox) do
       if index == s.index then
         local function prepare_widgets(widgets)
           local layout = {
@@ -112,17 +113,15 @@ return function(s)
           type = 'desktop',
           height = dpi(55),
           width = 1920,
-          bg = '#212121',
+          bg = beautiful.colorscheme.bg,
           shape = function(cr, width, height)
-            gshape.partially_rounded_rect(cr, width, height, true, true, false, false, 8)
+            gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(8))
           end,
         }
 
         w:struts {
-          bottom = dpi(55),
+          bottom = dpi(60),
         }
-
-        Global_config.bottom_struts = dpi(55)
       end
     end
   end

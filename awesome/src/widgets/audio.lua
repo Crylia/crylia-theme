@@ -1,13 +1,15 @@
-------------------------------
--- This is the audio widget --
-------------------------------
+local setmetatable = setmetatable
+local tonumber = tonumber
+
 -- Awesome Libs
 local abutton = require('awful.button')
 local apopup = require('awful.popup')
-local dpi = require('beautiful').xresources.apply_dpi
+local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
+local gtimer = require('gears.timer')
 local wibox = require('wibox')
 
 -- Local libs
@@ -25,12 +27,16 @@ return setmetatable({}, { __call = function(_, screen)
   local ac_popup = apopup {
     widget = audio_controller,
     ontop = true,
-    visible = false,
+    visible = true,
     screen = screen,
-    border_color = Theme_config.bluetooth_controller.container_border_color,
-    border_width = Theme_config.bluetooth_controller.container_border_width,
-    bg = Theme_config.bluetooth_controller.container_bg,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
+    bg = beautiful.colorscheme.bg,
   }
+
+  gtimer.delayed_call(function()
+    ac_popup.visible = false
+  end)
 
   local w = wibox.widget {
     {
@@ -63,14 +69,14 @@ return setmetatable({}, { __call = function(_, screen)
       right = dpi(8),
       widget = wibox.container.margin,
     },
-    bg = Theme_config.audio.bg,
-    fg = Theme_config.audio.fg,
-    shape = Theme_config.audio.shape,
+    bg = beautiful.colorscheme.bg_yellow,
+    fg = beautiful.colorscheme.fg_dark,
+    shape = beautiful.shape[6],
     widget = wibox.container.background,
     buttons = { gtable.join(
       abutton({}, 1, function()
         local geo = capi.mouse.coords()
-        ac_popup.y = dpi(65)
+        ac_popup.y = dpi(70)
         ac_popup.x = geo.x - ac_popup.width / 2
         ac_popup.visible = not ac_popup.visible
       end)
@@ -84,7 +90,6 @@ return setmetatable({}, { __call = function(_, screen)
   local audio_spacing = w:get_children_by_id('audio_layout')[1]
   audio_helper:connect_signal('sink::get', function(_, muted, volume)
     volume = tonumber(volume)
-    assert(type(volume) == 'number' and type(muted) == 'boolean', 'Invalid arguments')
 
     if w.volume == volume and w.muted == muted then return end
     w.volume = volume
@@ -92,7 +97,7 @@ return setmetatable({}, { __call = function(_, screen)
 
     if muted then
       audio_label.visible = false
-      audio_icon:set_image(gcolor.recolor_image(icondir .. 'volume-mute' .. '.svg', Theme_config.audio.fg))
+      audio_icon:set_image(gcolor.recolor_image(icondir .. 'volume-mute' .. '.svg', beautiful.colorscheme.fg_dark))
     else
       if not volume then return end
       w.container:set_right(10)
@@ -111,7 +116,7 @@ return setmetatable({}, { __call = function(_, screen)
         icon = icon .. '-high'
       end
       audio_label:set_text(volume .. '%')
-      audio_icon:set_image(gcolor.recolor_image(icon .. '.svg', Theme_config.audio.fg))
+      audio_icon:set_image(gcolor.recolor_image(icon .. '.svg', beautiful.colorscheme.fg_dark))
     end
   end)
 

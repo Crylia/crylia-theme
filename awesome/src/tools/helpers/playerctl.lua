@@ -7,6 +7,7 @@ local gfilesystem = require('gears.filesystem')
 local gtimer = require('gears.timer')
 local gcolor = require('gears.color')
 local gtable = require('gears.table')
+local beautiful = require('beautiful')
 
 local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/notifications/'
 
@@ -157,13 +158,13 @@ local function start_manage(self, w, name)
   local function on_loop_status(_, status)
     if status == 'TRACK' then
       w:get_children_by_id('repeat')[1].image = gcolor.recolor_image(icondir .. 'repeat-once.svg',
-        Theme_config.notification_center.song_info.repeat_all)
+        beautiful.colorscheme.bg_green)
     elseif status == 'PLAYLIST' then
       w:get_children_by_id('repeat')[1].image = gcolor.recolor_image(icondir .. 'repeat.svg',
-        Theme_config.notification_center.song_info.repeat_all)
+        beautiful.colorscheme.bg_green)
     else
       w:get_children_by_id('repeat')[1].image = gcolor.recolor_image(icondir .. 'repeat.svg',
-        Theme_config.notification_center.song_info.repeat_disabled)
+        beautiful.colorscheme.bg1)
     end
   end
 
@@ -173,10 +174,10 @@ local function start_manage(self, w, name)
   local function on_shuffle(_, status)
     if status then
       w:get_children_by_id('shuffle')[1].image = gcolor.recolor_image(icondir .. 'shuffle.svg',
-        Theme_config.notification_center.song_info.shuffle_enabled)
+        beautiful.colorscheme.bg_green)
     else
       w:get_children_by_id('shuffle')[1].image = gcolor.recolor_image(icondir .. 'shuffle.svg',
-        Theme_config.notification_center.song_info.shuffle_disabled)
+        beautiful.colorscheme.bg1)
     end
   end
 

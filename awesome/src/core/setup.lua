@@ -7,12 +7,13 @@ local aplacement = require('awful.placement')
 local apopup = require('awful.popup')
 local aspawn = require('awful.spawn')
 local atooltip = require('awful.tooltip')
-local awidget = require('awful.widget')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gtable = require('gears.table')
 local wibox = require('wibox')
 local gfilesystem = require('gears.filesystem')
+local inputwidget = require('src.modules.inputbox')
 
 --Own Libs
 local toggle_button = require('awful.widget.toggle_widget')
@@ -147,11 +148,10 @@ end
 --- The second page, with a list of wallpapers to choose from
 function setup:wallpaper_page()
 
-  local path_promt = awidget.inputbox {
-    hint_text = 'Path to image...',
-    halign = 'left',
-    valign = 'center',
-    font = 'JetBrainsMono Regular 12',
+  local path_promt = inputwidget {
+    text_hint = 'Path to image...',
+    mouse_focus = true,
+    font = 'JetBrainsMono Nerd Font 12 Regular',
   }
 
   local widget = wibox.widget {
@@ -164,7 +164,7 @@ function setup:wallpaper_page()
             image = assets_dir .. 'space.jpg',
             valign = 'center',
             halign = 'center',
-            clip_shape = Theme_config.setup.wallpaper.clip_shape,
+            clip_shape = beautiful.shape[12],
             id = 'wallpaper',
           },
           widget = wibox.container.constraint,
@@ -203,9 +203,9 @@ function setup:wallpaper_page()
                 layout = wibox.layout.fixed.horizontal,
               },
               widget = wibox.container.background,
-              bg = Theme_config.setup.wallpaper.button_bg,
-              fg = Theme_config.setup.wallpaper.button_fg,
-              shape = Theme_config.setup.wallpaper.button_shape,
+              bg = beautiful.colorscheme.bg_yellow,
+              fg = beautiful.colorscheme.bg,
+              shape = beautiful.shape[12],
               id = 'choose_image',
             },
             widget = wibox.container.constraint,
@@ -223,7 +223,7 @@ function setup:wallpaper_page()
               nil,
               { -- Text
                 {
-                  path_promt,
+                  path_promt.widget,
                   widget = wibox.container.constraint,
                   width = dpi(600),
                   height = dpi(50),
@@ -242,14 +242,14 @@ function setup:wallpaper_page()
                 },
                 widget = wibox.container.background,
                 bg = gcolor.transparent,
-                fg = Theme_config.setup.wallpaper.close_fg,
+                fg = beautiful.colorscheme.bg_red,
               },
               layout = wibox.layout.align.horizontal,
             },
             widget = wibox.container.background,
-            bg = Theme_config.setup.wallpaper.path_bg,
-            fg = Theme_config.setup.wallpaper.path_fg,
-            shape = Theme_config.setup.wallpaper.path_shape,
+            bg = beautiful.colorscheme.bg1,
+            fg = beautiful.colorscheme.fg,
+            shape = beautiful.shape[12],
           },
           widget = wibox.container.constraint,
           width = dpi(600),
@@ -309,7 +309,7 @@ local function get_widgets()
   for _, widget in pairs(widget_list) do
     local tb = toggle_button {
       size = dpi(30),
-      color = Theme_config.setup.bar.widget_toggle_color,
+      color = beautiful.colorscheme.bg_blue,
     }
 
     local w = wibox.widget {
@@ -321,17 +321,17 @@ local function get_widgets()
             text = widget,
             halign = 'left',
             valign = 'center',
-            font = User_config.font.specify .. ' Regular, 10',
+            font = beautiful.user_config.font,
           },
           widget = wibox.container.margin,
           margins = dpi(5),
         },
         widget = wibox.widget.background,
-        bg = Theme_config.setup.bar.widget_bg,
-        fg = Theme_config.setup.bar.widget_fg,
-        shape = Theme_config.setup.bar.widget_shape,
-        border_color = Theme_config.setup.bar.widget_border_color,
-        border_width = Theme_config.setup.bar.widget_border_width,
+        bg = beautiful.colorscheme.bg1,
+        fg = beautiful.colorscheme.fg,
+        shape = beautiful.shape[8],
+        border_color = beautiful.colorscheme.bg2,
+        border_width = dpi(2),
       },
       {
         tb,
@@ -371,9 +371,9 @@ function setup:bar_page()
                   widget = wibox.widget.checkbox,
                   checked = true,
                   id = 'topbar_checkbox',
-                  shape = Theme_config.setup.bar.shape,
-                  color = Theme_config.setup.bar.color,
-                  padding = Theme_config.setup.bar.padding,
+                  shape = gshape.circle,
+                  color = beautiful.colorscheme.bg_green,
+                  padding = dpi(4),
                 },
                 widget = wibox.container.constraint,
                 width = 30,
@@ -389,7 +389,7 @@ function setup:bar_page()
                 widget = wibox.widget.imagebox,
                 image = '/home/crylia/Downloads/2022-12-08_23-19.png', --icon_dir .. "topbar.svg",
                 resize = true,
-                clip_shape = Theme_config.setup.bar.bar_image_shape,
+                clip_shape = beautiful.shape[4],
                 halign = 'center',
                 valign = 'center',
               },
@@ -430,9 +430,9 @@ function setup:bar_page()
                   margins = dpi(10),
                 },
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.bar.border_color,
-                border_width = Theme_config.setup.bar.border_width,
-                shape = Theme_config.setup.bar.bar_shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[8],
               },
               {
                 {
@@ -457,9 +457,9 @@ function setup:bar_page()
                   margins = dpi(10),
                 },
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.bar.border_color,
-                border_width = Theme_config.setup.bar.border_width,
-                shape = Theme_config.setup.bar.bar_shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[8],
               },
               {
                 {
@@ -484,9 +484,9 @@ function setup:bar_page()
                   margins = dpi(10),
                 },
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.bar.border_color,
-                border_width = Theme_config.setup.bar.border_width,
-                shape = Theme_config.setup.bar.bar_shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[8],
               },
               expand = 'none',
               forced_width = dpi(capi.screen.primary.geometry.width * 0.6) * 0.4,
@@ -538,9 +538,9 @@ function setup:bar_page()
                   margins = dpi(10),
                 },
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.bar.border_color,
-                border_width = Theme_config.setup.bar.border_width,
-                shape = Theme_config.setup.bar.bar_shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[8],
               },
               {
                 {
@@ -565,9 +565,9 @@ function setup:bar_page()
                   margins = dpi(10),
                 },
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.bar.border_color,
-                border_width = Theme_config.setup.bar.border_width,
-                shape = Theme_config.setup.bar.bar_shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[8],
               },
               {
                 {
@@ -592,9 +592,9 @@ function setup:bar_page()
                   margins = dpi(10),
                 },
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.bar.border_color,
-                border_width = Theme_config.setup.bar.border_width,
-                shape = Theme_config.setup.bar.bar_shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[8],
               },
               expand = 'none',
               forced_width = dpi(capi.screen.primary.geometry.width * 0.6) * 0.4,
@@ -616,9 +616,9 @@ function setup:bar_page()
                   widget = wibox.widget.checkbox,
                   checked = false,
                   id = 'bottombar_checkbox',
-                  shape = Theme_config.setup.bar.shape,
-                  color = Theme_config.setup.bar.color,
-                  padding = Theme_config.setup.bar.padding,
+                  shape = gshape.circle,
+                  color = beautiful.colorscheme.bg_green,
+                  padding = dpi(4),
                 },
                 widget = wibox.container.constraint,
                 width = 30,
@@ -634,7 +634,7 @@ function setup:bar_page()
                 widget = wibox.widget.imagebox,
                 image = '/home/crylia/Downloads/2022-12-08_23-19.png', --icon_dir .. "topbar.svg",
                 resize = true,
-                clip_shape = Theme_config.setup.bar.bar_image_shape,
+                clip_shape = beautiful.shape[4],
                 halign = 'center',
                 valign = 'center',
               },
@@ -664,7 +664,7 @@ function setup:bar_page()
       },
       {
         widget = wibox.container.background,
-        bg = gcolor('#212121BB'),
+        bg = beautiful.colorscheme.bg .. 'BB',
         id = 'bottom_overlay',
       },
       layout = wibox.layout.stack,
@@ -687,9 +687,9 @@ function setup:bar_page()
       bottom_checkbox.checked = not top_checkbox.checked
       if top_checkbox.checked then
         top_overlay.bg = gcolor.transparent
-        bottom_overlay.bg = gcolor('#212121BB')
+        bottom_overlay.bg = beautiful.colorscheme.bg .. 'BB'
       else
-        top_overlay.bg = gcolor('#212121BB')
+        top_overlay.bg = beautiful.colorscheme.bg .. 'BB'
         bottom_overlay.bg = gcolor.transparent
       end
     end
@@ -701,11 +701,11 @@ function setup:bar_page()
       bottom_checkbox.checked = not bottom_checkbox.checked
       top_checkbox.checked = not bottom_checkbox.checked
       if bottom_checkbox.checked then
-        top_overlay.bg = gcolor('#212121BB')
+        top_overlay.bg = beautiful.colorscheme.bg .. 'BB'
         bottom_overlay.bg = gcolor.transparent
       else
         top_overlay.bg = gcolor.transparent
-        bottom_overlay.bg = gcolor('#212121BB')
+        bottom_overlay.bg = beautiful.colorscheme.bg .. 'BB'
       end
     end
     )
@@ -733,7 +733,7 @@ local function get_status_bars()
   for i, widget in pairs(statusbar_list) do
     local tb = toggle_button {
       size = dpi(30),
-      color = Theme_config.setup.bar.widget_toggle_color,
+      color = beautiful.colorscheme.bg_blue,
     }
 
     local w = wibox.widget {
@@ -744,7 +744,7 @@ local function get_status_bars()
           text = widget,
           halign = 'left',
           valign = 'center',
-          font = User_config.font.specify .. ' Regular, 14',
+          font = beautiful.user_config.font .. ' Regular, 14',
         },
         widget = wibox.container.margin,
         margins = dpi(5),
@@ -770,15 +770,15 @@ end
 --- The fourth page, to customize the notification center
 function setup:notification_page()
   local secrets = {
-    api_key = awidget.inputbox {
-      hint_text = 'API Key...',
-      valign = 'center',
-      halign = 'left',
+    api_key = inputwidget {
+      text_hint = 'API Key...',
+      font = 'JetBrainsMono Nerd Font 12 Regular',
+      mouse_focus = true,
     },
-    city_id = awidget.inputbox {
-      hint_text = 'City ID...',
-      valign = 'center',
-      halign = 'left',
+    city_id = inputwidget {
+      text_hint = 'City ID...',
+      font = 'JetBrainsMono Nerd Font 12 Regular',
+      mouse_focus = true,
     },
   }
 
@@ -788,7 +788,7 @@ function setup:notification_page()
         {
           widget = wibox.widget.textbox,
           text = 'Notification Center Setup',
-          font = User_config.font.specify .. ' Regular, 24',
+          font = beautiful.user_config.font .. ' Regular 24',
           halign = 'center',
           valign = 'center',
         },
@@ -801,7 +801,7 @@ function setup:notification_page()
             {
               widget = wibox.widget.textbox,
               text = 'Status bars',
-              font = User_config.font.specify .. ' Regular, 16',
+              font = beautiful.user_config.font .. ' Regular 16',
               halign = 'center',
             },
             widget = wibox.container.margin,
@@ -834,7 +834,7 @@ function setup:notification_page()
             {
               widget = wibox.widget.textbox,
               text = 'OpenWeatherMap API',
-              font = User_config.font.specify .. ' Regular, 16',
+              font = beautiful.user_config.font .. ' Regular 16',
               halign = 'center',
             },
             widget = wibox.container.margin,
@@ -860,7 +860,7 @@ function setup:notification_page()
                     {
                       widget = wibox.widget.textbox,
                       text = 'API Key',
-                      font = User_config.font.specify .. ' Regular, 16',
+                      font = beautiful.user_config.font .. ' Regular 16',
                       halign = 'center',
                       valign = 'center',
                     },
@@ -869,7 +869,7 @@ function setup:notification_page()
                   },
                   {
                     {
-                      secrets.api_key,
+                      secrets.api_key.widget,
                       widget = wibox.container.margin,
                       left = dpi(10),
                     },
@@ -877,9 +877,9 @@ function setup:notification_page()
                     forced_height = dpi(50),
                     forced_width = dpi(400),
                     widget = wibox.container.background,
-                    border_color = Theme_config.setup.notification.border_color,
-                    border_width = Theme_config.setup.notification.border_width,
-                    shape = Theme_config.setup.notification.shape,
+                    border_color = beautiful.colorscheme.bg1,
+                    border_width = dpi(2),
+                    shape = beautiful.shape[4],
                   },
                   layout = wibox.layout.align.horizontal,
                 },
@@ -888,7 +888,7 @@ function setup:notification_page()
                     {
                       widget = wibox.widget.textbox,
                       text = 'City ID',
-                      font = User_config.font.specify .. ' Regular, 16',
+                      font = beautiful.user_config.font .. ' Regular 16',
                       halign = 'center',
                       valign = 'center',
                     },
@@ -897,7 +897,7 @@ function setup:notification_page()
                   },
                   {
                     {
-                      secrets.city_id,
+                      secrets.city_id.widget,
                       widget = wibox.container.margin,
                       left = dpi(10),
                     },
@@ -905,9 +905,9 @@ function setup:notification_page()
                     forced_height = dpi(50),
                     forced_width = dpi(400),
                     widget = wibox.container.background,
-                    border_color = Theme_config.setup.notification.border_color,
-                    border_width = Theme_config.setup.notification.border_width,
-                    shape = Theme_config.setup.notification.shape,
+                    border_color = beautiful.colorscheme.bg1,
+                    border_width = dpi(2),
+                    shape = beautiful.shape[4],
                   },
                   layout = wibox.layout.align.horizontal,
                 },
@@ -921,9 +921,9 @@ function setup:notification_page()
                       {
                         widget = wibox.widget.checkbox,
                         checked = true,
-                        color = Theme_config.setup.notification.checkbox_color,
-                        paddings = Theme_config.setup.notification.checkbox_paddings,
-                        shape = Theme_config.setup.notification.checkbox_shape,
+                        color = beautiful.colorscheme.green,
+                        paddings = dpi(4),
+                        shape = gshape.circle,
                         id = 'celsius_selector',
                       },
                       widget = wibox.container.constraint,
@@ -937,7 +937,7 @@ function setup:notification_page()
                   {
                     widget = wibox.widget.textbox,
                     text = 'Celsius °C',
-                    font = User_config.font.specify .. ' Regular, 14',
+                    font = beautiful.user_config.font .. ' Regular 14',
                     halign = 'center',
                     valign = 'center',
                   },
@@ -950,9 +950,9 @@ function setup:notification_page()
                       {
                         widget = wibox.widget.checkbox,
                         checked = false,
-                        color = Theme_config.setup.notification.checkbox_color,
-                        paddings = Theme_config.setup.notification.checkbox_paddings,
-                        shape = Theme_config.setup.notification.checkbox_shape,
+                        color = beautiful.colorscheme.green,
+                        paddings = dpi(4),
+                        shape = gshape.circle,
                         id = 'Fahrenheit_selector',
                       },
                       widget = wibox.container.constraint,
@@ -966,7 +966,7 @@ function setup:notification_page()
                   {
                     widget = wibox.widget.textbox,
                     text = 'Fahrenheit °F',
-                    font = User_config.font.specify .. ' Regular, 14',
+                    font = beautiful.user_config.font .. ' Regular 14',
                     halign = 'center',
                     valign = 'center',
                   },
@@ -986,7 +986,7 @@ function setup:notification_page()
           layout = wibox.layout.align.vertical,
         },
         spacing_widget = wibox.widget.separator {
-          color = Theme_config.setup.notification.separator_color,
+          color = beautiful.colorscheme.bg1,
         },
         spacing = dpi(5),
         layout = wibox.layout.flex.horizontal,
@@ -1072,14 +1072,14 @@ end
 --- The fifth page, to customize the default programs
 function setup:programs_page()
   local applications = {
-    power_manager = awidget.inputbox { hint_text = 'e.g. xfce4-power-manager-settings' },
-    web_browser = awidget.inputbox { hint_text = 'e.g. firefox' },
-    terminal = awidget.inputbox { hint_text = 'e.g. kitty' },
-    text_editor = awidget.inputbox { hint_text = 'e.g. code' },
-    music_player = awidget.inputbox { hint_text = 'e.g. flatpak run com.spotify.Client' },
-    gtk_settings = awidget.inputbox { hint_text = 'e.g. lxappearance' },
-    file_manager = awidget.inputbox { hint_text = 'e.g. nautilus' },
-    screen_manager = awidget.inputbox { hint_text = 'e.g. arandr' },
+    power_manager = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. xfce4-power-manager-settings' },
+    web_browser = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. firefox' },
+    terminal = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. kitty' },
+    text_editor = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. code' },
+    music_player = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. flatpak run com.spotify.Client' },
+    gtk_settings = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. lxappearance' },
+    file_manager = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. nautilus' },
+    screen_manager = inputwidget { mouse_focus = true, font = 'JetBrainsMono Nerd Font 12 Regular', hint_text = 'e.g. arandr' },
   }
 
   local widget = wibox.widget {
@@ -1088,7 +1088,7 @@ function setup:programs_page()
         {
           widget = wibox.widget.textbox,
           text = 'Default Applications',
-          font = User_config.font.specify .. ' Regular, 24',
+          font = beautiful.user_config.font .. ' Regular 24',
           halign = 'center',
           valign = 'center',
         },
@@ -1103,7 +1103,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'Power Manager',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1113,7 +1113,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.power_manager,
+                  applications.power_manager.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1121,9 +1121,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1133,7 +1133,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'Web Browser',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1143,7 +1143,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.web_browser,
+                  applications.web_browser.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1151,9 +1151,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1163,7 +1163,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'Terminal',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1173,7 +1173,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.terminal,
+                  applications.terminal.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1181,9 +1181,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1193,7 +1193,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'Text Editor',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1203,7 +1203,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.text_editor,
+                  applications.text_editor.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1211,9 +1211,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1232,7 +1232,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'Music Player',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1242,7 +1242,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.music_player,
+                  applications.music_player.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1250,9 +1250,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1262,7 +1262,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'GTK Settings',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1272,7 +1272,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.gtk_settings,
+                  applications.gtk_settings.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1280,9 +1280,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1292,7 +1292,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'File Manager',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1302,7 +1302,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.file_manager,
+                  applications.file_manager.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1310,9 +1310,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1322,7 +1322,7 @@ function setup:programs_page()
                 {
                   widget = wibox.widget.textbox,
                   text = 'Screen Manager',
-                  font = User_config.font.specify .. ' Regular, 14',
+                  font = beautiful.user_config.font .. ' Regular 14',
                   halign = 'center',
                   valign = 'center',
                 },
@@ -1332,7 +1332,7 @@ function setup:programs_page()
               nil,
               {
                 {
-                  applications.screen_manager,
+                  applications.screen_manager.widget,
                   widget = wibox.container.margin,
                   left = dpi(10),
                 },
@@ -1340,9 +1340,9 @@ function setup:programs_page()
                 forced_height = dpi(50),
                 forced_width = dpi(350),
                 widget = wibox.container.background,
-                border_color = Theme_config.setup.notification.border_color,
-                border_width = Theme_config.setup.notification.border_width,
-                shape = Theme_config.setup.notification.shape,
+                border_color = beautiful.colorscheme.bg1,
+                border_width = dpi(2),
+                shape = beautiful.shape[4],
               },
               expand = 'none',
               layout = wibox.layout.align.horizontal,
@@ -1455,22 +1455,22 @@ end
 
 local function get_layouts()
   local layouts = {
-    ['cornerne']    = Theme.layout_cornerne,
-    ['cornernw']    = Theme.layout_cornernw,
-    ['cornerse']    = Theme.layout_cornerse,
-    ['cornersw']    = Theme.layout_cornersw,
-    ['dwindle']     = Theme.layout_dwindle,
-    ['fairh']       = Theme.layout_fairh,
-    ['fairv']       = Theme.layout_fairv,
-    ['floating']    = Theme.layout_floating,
-    ['fullscreen']  = Theme.layout_fullscreen,
-    ['magnifier']   = Theme.layout_magnifier,
-    ['max']         = Theme.layout_max,
-    ['spiral']      = Theme.layout_spiral,
-    ['tile bottom'] = Theme.layout_cornerse,
-    ['tile left']   = Theme.layout_cornernw,
-    ['tile top']    = Theme.layout_cornersw,
-    ['tile']        = Theme.layout_cornerne,
+    ['cornerne']    = beautiful.theme.layout_cornerne,
+    ['cornernw']    = beautiful.theme.layout_cornernw,
+    ['cornerse']    = beautiful.theme.layout_cornerse,
+    ['cornersw']    = beautiful.theme.layout_cornersw,
+    ['dwindle']     = beautiful.theme.layout_dwindle,
+    ['fairh']       = beautiful.theme.layout_fairh,
+    ['fairv']       = beautiful.theme.layout_fairv,
+    ['floating']    = beautiful.theme.layout_floating,
+    ['fullscreen']  = beautiful.theme.layout_fullscreen,
+    ['magnifier']   = beautiful.theme.layout_magnifier,
+    ['max']         = beautiful.theme.layout_max,
+    ['spiral']      = beautiful.theme.layout_spiral,
+    ['tile bottom'] = beautiful.theme.layout_cornerse,
+    ['tile left']   = beautiful.theme.layout_cornernw,
+    ['tile top']    = beautiful.theme.layout_cornersw,
+    ['tile']        = beautiful.theme.layout_cornerne,
   }
 
   local list = {}
@@ -1493,27 +1493,27 @@ local function get_layouts()
             margins = dpi(10),
             widget = wibox.container.margin,
           },
-          bg = Theme_config.setup.layout.bg,
-          shape = Theme_config.setup.layout.shape,
+          bg = beautiful.colorscheme.bg_red,
+          shape = beautiful.shape[8],
           widget = wibox.container.background,
         },
         margins = dpi(10),
         widget = wibox.container.margin,
       },
       widget = wibox.container.background,
-      border_color = Theme_config.setup.layout.border_color,
-      border_width = Theme_config.setup.layout.border_width,
-      shape = Theme_config.setup.layout.shape,
+      border_color = beautiful.colorscheme.bg1,
+      border_width = dpi(2),
+      shape = beautiful.shape[8],
       selected = false,
     }
 
     w:buttons(gtable.join {
       abutton({}, 1, function()
         if w.selected then
-          w.border_color = Theme_config.setup.layout.border_color
+          w.border_color = beautiful.colorscheme.bg1
           w.selected = false
         else
-          w.border_color = Theme_config.setup.layout.border_color_selected
+          w.border_color = beautiful.colorscheme.bg_red
           w.selected = true
         end
       end),
@@ -1546,7 +1546,7 @@ function setup:layouts_page()
         {
           widget = wibox.widget.textbox,
           text = 'Layouts',
-          font = User_config.font.specify .. ' Regular, 24',
+          font = beautiful.user_config.font .. ' Regular, 24',
           halign = 'center',
           valign = 'center',
         },
@@ -1614,7 +1614,7 @@ function setup:titlebar_page()
         {
           widget = wibox.widget.textbox,
           text = 'Layouts',
-          font = User_config.font.specify .. ' Regular, 24',
+          font = beautiful.user_config.font .. ' Regular, 24',
           halign = 'center',
           valign = 'center',
         },
@@ -1631,9 +1631,9 @@ function setup:titlebar_page()
                     widget = wibox.widget.checkbox,
                     checked = true,
                     id = 'top_tb_radio',
-                    shape = Theme_config.setup.titlebar.checkbox_shape,
-                    color = Theme_config.setup.titlebar.checkbox_color,
-                    paddings = Theme_config.setup.titlebar.checkbox_padding,
+                    shape = gshape.circle,
+                    color = beautiful.colorscheme.bg_teal,
+                    paddings = dpi(4),
                   },
                   width = dpi(45),
                   height = dpi(45),
@@ -1667,9 +1667,9 @@ function setup:titlebar_page()
                     widget = wibox.widget.checkbox,
                     checked = false,
                     id = 'left_tb_radio',
-                    shape = Theme_config.setup.titlebar.checkbox_shape,
-                    color = Theme_config.setup.titlebar.checkbox_color,
-                    paddings = Theme_config.setup.titlebar.checkbox_padding,
+                    shape = gshape.circle,
+                    color = beautiful.colorscheme.bg_teal,
+                    paddings = dpi(4),
                   },
                   width = dpi(45),
                   height = dpi(45),
@@ -1716,7 +1716,7 @@ function setup:titlebar_page()
           layout = wibox.layout.flex.vertical,
         },
         spacing_widget = wibox.widget.separator {
-          color = Theme_config.setup.titlebar.seperator_color,
+          color = beautiful.colorscheme.bg1,
         },
         spacing = dpi(5),
         layout = wibox.layout.flex.horizontal,
@@ -1805,7 +1805,7 @@ function setup.new(args)
                 },
                 widget = wibox.container.background,
                 id = 'page_left',
-                bg = Theme_config.setup.bg .. '88',
+                bg = beautiful.colorscheme.bg .. '88',
               },
               widget = wibox.container.constraint,
               width = dpi(64),
@@ -1826,7 +1826,7 @@ function setup.new(args)
                 },
                 widget = wibox.container.background,
                 id = 'page_right',
-                bg = Theme_config.setup.bg .. '88',
+                bg = beautiful.colorscheme.bg .. '88',
               },
               widget = wibox.container.constraint,
               width = dpi(64),
@@ -1858,9 +1858,9 @@ function setup.new(args)
       strategy = 'exact',
     },
     screen = screen,
-    bg = Theme_config.setup.bg,
-    border_color = Theme_config.setup.border_color,
-    border_width = Theme_config.setup.border_width,
+    bg = beautiful.colorscheme.bg,
+    border_color = beautiful.colorscheme.bg1,
+    border_width = dpi(2),
     placement = aplacement.centered,
     ontop = false, -- !CHANGE THIS TO TRUE WHEN DONE TESTING!
     visible = true,

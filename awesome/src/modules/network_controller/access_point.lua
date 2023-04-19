@@ -5,6 +5,7 @@
 -- Awesome Libs
 local abutton = require('awful.button')
 local awidget = require('awful.widget')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gtable = require('gears').table
 local gfilesystem = require('gears').filesystem
@@ -169,7 +170,7 @@ function access_point.new(args)
             {
               image = gcolor.recolor_image(
                 icondir .. 'wifi-strength-' .. math.floor(args.NetworkManagerAccessPoint.Strength / 25) + 1 .. '.svg',
-                Theme_config.network_manager.access_point.icon_color),
+                beautiful.colorscheme.bg_red),
               id = 'icon',
               resize = true,
               valign = 'center',
@@ -237,12 +238,12 @@ function access_point.new(args)
       margins = dpi(5),
       widget = wibox.container.margin,
     },
-    bg = Theme_config.network_manager.access_point.bg,
-    fg = Theme_config.network_manager.access_point.fg,
-    border_color = Theme_config.network_manager.access_point.border_color,
-    border_width = Theme_config.network_manager.access_point.border_width,
+    bg = beautiful.colorscheme.bg,
+    fg = beautiful.colorscheme.bg_red,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
     id = 'background',
-    shape = Theme_config.network_manager.access_point.device_shape,
+    shape = beautiful.shape[8],
     widget = wibox.container.background,
   })
 
@@ -270,31 +271,31 @@ function access_point.new(args)
       if ret.is_ap_active(ret.NetworkManagerAccessPoint.object_path) then
         ret:get_children_by_id('icon')[1].image = gcolor.recolor_image(
           icondir .. 'wifi-strength-' .. math.floor(data.Strength / 25) + 1 .. '.svg',
-          Theme_config.network_manager.access_point.icon_color2)
+          beautiful.colorscheme.bg)
       else
         ret:get_children_by_id('icon')[1].image = gcolor.recolor_image(
           icondir .. 'wifi-strength-' .. math.floor(data.Strength / 25) + 1 .. '.svg',
-          Theme_config.network_manager.access_point.icon_color)
+          beautiful.colorscheme.bg_red)
       end
     end
   end, 'PropertiesChanged')
 
   if ret:is_ap_active(ret.NetworkManagerAccessPoint) then
-    ret.bg = Theme_config.network_manager.access_point.fg
-    ret.fg = Theme_config.network_manager.access_point.bg
+    ret.bg = beautiful.colorscheme.bg_red
+    ret.fg = beautiful.colorscheme.bg
     ret:get_children_by_id('icon')[1].image = gcolor.recolor_image(
       icondir .. 'wifi-strength-' .. math.floor(ret.NetworkManagerAccessPoint.Strength / 25) + 1 .. '.svg',
-      Theme_config.network_manager.access_point.icon_color2)
+      beautiful.colorscheme.bg)
     ret:get_children_by_id('con')[1].image = gcolor.recolor_image(
-      icondir .. 'link.svg', Theme_config.network_manager.access_point.icon_color2)
+      icondir .. 'link.svg', beautiful.colorscheme.bg)
   else
-    ret.bg = Theme_config.network_manager.access_point.bg
-    ret.fg = Theme_config.network_manager.access_point.fg
+    ret.bg = beautiful.colorscheme.bg
+    ret.fg = beautiful.colorscheme.bg_red
     ret:get_children_by_id('icon')[1].image = gcolor.recolor_image(
       icondir .. 'wifi-strength-' .. math.floor(ret.NetworkManagerAccessPoint.Strength / 25) + 1 .. '.svg',
-      Theme_config.network_manager.access_point.icon_color)
+      beautiful.colorscheme.bg_red)
     ret:get_children_by_id('con')[1].image = gcolor.recolor_image(
-      icondir .. 'link.svg', Theme_config.network_manager.access_point.icon_color)
+      icondir .. 'link.svg', beautiful.colorscheme.bg_red)
   end
 
   ret.ap_form = ap_form {
@@ -338,7 +339,7 @@ function access_point.new(args)
         name = 'ret.device.Connected' and 'Disconnect' or 'Connect',
         icon = gcolor.recolor_image('ret.device.Connected' and icondir .. 'link-off.svg' or
           icondir .. 'link.svg',
-          Theme_config.network_manager.access_point.icon_color),
+          beautiful.colorscheme.bg_red),
         callback = function()
           ret:toggle_connection(ret.NetworkManagerAccessPoint)
         end,

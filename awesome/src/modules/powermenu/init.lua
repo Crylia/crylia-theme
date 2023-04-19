@@ -7,6 +7,7 @@ local abutton = require('awful.button')
 local akey = require('awful.key')
 local akeygrabber = require('awful.keygrabber')
 local aspawn = require('awful.spawn')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
@@ -31,27 +32,27 @@ local function get_button(type)
   if type == 'shutdown' then
     icon = icondir .. 'shutdown.svg'
     name = 'Shutdown'
-    bg_color = Theme_config.powermenu.shutdown_button_bg
+    bg_color = beautiful.colorscheme.bg_blue
     command = 'shutdown now'
   elseif type == 'reboot' then
     icon = icondir .. 'reboot.svg'
     name = 'Reboot'
-    bg_color = Theme_config.powermenu.reboot_button_bg
+    bg_color = beautiful.colorscheme.bg_red
     command = 'reboot'
   elseif type == 'logout' then
     icon = icondir .. 'logout.svg'
     name = 'Logout'
-    bg_color = Theme_config.powermenu.logout_button_bg
+    bg_color = beautiful.colorscheme.bg_yellow
     command = 'awesome-client "awesome.quit()"'
   elseif type == 'lock' then
     icon = icondir .. 'lock.svg'
     name = 'Lock'
-    bg_color = Theme_config.powermenu.lock_button_bg
+    bg_color = beautiful.colorscheme.bg_green
     command = 'dm-tool lock'
   elseif type == 'suspend' then
     icon = icondir .. 'suspend.svg'
     name = 'Suspend'
-    bg_color = Theme_config.powermenu.suspend_button_bg
+    bg_color = beautiful.colorscheme.bg_purple
     command = 'systemctl suspend'
   end
 
@@ -81,9 +82,9 @@ local function get_button(type)
         margins = dpi(10),
         widget = wibox.container.margin,
       },
-      fg = Theme_config.powermenu.button_fg,
+      fg = beautiful.colorscheme.bg,
       bg = bg_color,
-      shape = Theme_config.powermenu.button_shape,
+      shape = beautiful.shape[12],
       widget = wibox.container.background,
       id = 'background',
     },
@@ -117,7 +118,7 @@ function powermenu.new()
             {
               image = icondir .. 'defaultpfp.svg',
               resize = true,
-              clip_shape = Theme_config.powermenu.profile_picture_shape,
+              clip_shape = beautiful.shape[30],
               valign = 'center',
               halign = 'center',
               id = 'icon_role',
@@ -159,7 +160,7 @@ function powermenu.new()
     type = 'splash',
     visible = false,
     ontop = true,
-    bg = Theme_config.powermenu.container_bg,
+    bg = beautiful.colorscheme.bg .. '88',
     height = capi.screen.primary.geometry.height,
     width = capi.screen.primary.geometry.width,
     x = capi.screen.primary.geometry.x,
@@ -201,7 +202,7 @@ function powermenu.new()
     end
   end)
 
-  aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userName' '" .. User_config.namestyle .. "'", function(stdout)
+  aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userName' '" .. beautiful.user_config.namestyle .. "'", function(stdout)
     w:get_children_by_id('text_role')[1].text = stdout:gsub('\n', '')
   end)
 

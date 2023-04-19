@@ -4,6 +4,7 @@
 
 -- Awesome Libs
 local awful = require('awful')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gears = require('gears')
 local wibox = require('wibox')
@@ -39,8 +40,8 @@ return setmetatable({}, { __call = function()
           {
             {
               { --Bar
-                color = Theme_config.notification_center.status_bar.cpu_usage_color,
-                background_color = Theme_config.notification_center.status_bar.bar_bg_color,
+                color = beautiful.colorscheme.bg_teal,
+                background_color = beautiful.colorscheme.bg1,
                 max_value = 100,
                 value = 0,
                 forced_height = dpi(8),
@@ -99,13 +100,15 @@ return setmetatable({}, { __call = function()
 
       if widget == 'cpu_usage' then
         cpu_usage:connect_signal('update::cpu_usage', function(_, v)
+          if not v then return nil end
           tooltip.text = 'CPU Usage: ' .. v .. '%'
           rubato_timer.target = v
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(icondir .. 'cpu/cpu.svg',
-            Theme_config.notification_center.status_bar.cpu_usage_color)
+            beautiful.colorscheme.bg_teal)
         end)
       elseif widget == 'cpu_temp' then
         cpu_temp:connect_signal('update::cpu_temp', function(_, v)
+          if not v then return nil end
           local temp_icon
           if v < 50 then
             temp_icon = icondir .. 'cpu/thermometer-low.svg'
@@ -115,29 +118,31 @@ return setmetatable({}, { __call = function()
             temp_icon = icondir .. 'cpu/thermometer-high.svg'
           end
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(temp_icon,
-            Theme_config.notification_center.status_bar.cpu_temp_color)
+            beautiful.colorscheme.bg_blue)
           tooltip.text = 'CPU Temp: ' .. v .. '°C'
           rubato_timer.target = v
         end)
       elseif widget == 'ram_usage' then
         ram:connect_signal('update::ram_widget', function(_, MemTotal, _, MemAvailable)
+          if not MemTotal and MemAvailable then return nil end
           if not MemTotal or not MemAvailable then return end
           local ram_usage = math.floor(((MemTotal - MemAvailable) / MemTotal * 100) + 0.5)
           tooltip.text = 'RAM Usage: ' .. ram_usage .. '%'
           rubato_timer.target = ram_usage
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(icondir .. 'cpu/ram.svg',
-            Theme_config.notification_center.status_bar.ram_usage_color)
+            beautiful.colorscheme.bg_red)
         end)
       elseif widget == 'gpu_usage' then
         gpu_usage:connect_signal('update::gpu_usage', function(_, v)
-          if not v then return end
+          if not v then return nil end
           tooltip.text = 'GPU Usage: ' .. v .. '%'
           rubato_timer.target = tonumber(v)
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(icondir .. 'cpu/gpu.svg',
-            Theme_config.notification_center.status_bar.gpu_usage_color)
+            beautiful.colorscheme.bg_green)
         end)
       elseif widget == 'gpu_temp' then
         gpu_temp:connect_signal('update::gpu_temp', function(_, v)
+          if not v then return nil end
           local temp_icon, temp_num
 
           if v then
@@ -154,12 +159,13 @@ return setmetatable({}, { __call = function()
             temp_icon = icondir .. 'cpu/thermometer-low.svg'
           end
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(temp_icon,
-            Theme_config.notification_center.status_bar.gpu_temp_color)
+            beautiful.colorscheme.bg_green)
           tooltip.text = 'GPU Temp: ' .. temp_num .. '°C'
           rubato_timer.target = temp_num
         end)
       elseif widget == 'volume' then
         audio:connect_signal('sink::get', function(_, muted, volume)
+          if not volume and muted then return nil end
           local icon = icondir .. 'audio/volume'
           volume = tonumber(volume)
           if not volume then
@@ -179,12 +185,13 @@ return setmetatable({}, { __call = function()
             end
           end
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(icon .. '.svg',
-            Theme_config.notification_center.status_bar.volume_color)
+            beautiful.colorscheme.bg_yellow)
           tooltip.text = 'Volume: ' .. volume .. '%'
           rubato_timer.target = volume
         end)
       elseif widget == 'microphone' then
         audio:connect_signal('source::get', function(_, muted, volume)
+          if not volume and muted then return nil end
           if not volume then
             return
           end
@@ -197,12 +204,13 @@ return setmetatable({}, { __call = function()
             icon = icon .. '-off'
           end
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(icon .. '.svg',
-            Theme_config.notification_center.status_bar.microphone_color)
+            beautiful.colorscheme.bg_blue)
           tooltip.text = 'Microphone: ' .. volume .. '%'
           rubato_timer.target = volume
         end)
       elseif widget == 'backlight' then
         backlight:connect_signal('brightness::get', function(_, v)
+          if not v then return nil end
           local icon = icondir .. 'brightness'
           if v >= 0 and v < 34 then
             icon = icon .. '-low'
@@ -212,18 +220,19 @@ return setmetatable({}, { __call = function()
             icon = icon .. '-high'
           end
           w:get_children_by_id('image_role')[1]:set_image(gears.color.recolor_image(icon .. '.svg',
-            Theme_config.notification_center.status_bar.backlight_color))
+            beautiful.colorscheme.bg_purple))
           tooltip.text = 'Backlight: ' .. v .. '%'
           rubato_timer.target = v
         end)
       elseif widget == 'battery' then
         --[[ battery:connect_signal('update::battery_widget', function(battery, battery_icon)
           w:get_children_by_id('image_role')[1].image = gears.color.recolor_image(battery_icon,
-            Theme_config.notification_center.status_bar.battery_color)
+            beautiful.colorscheme.bg_purple)
           tooltip.text = 'Battery: ' .. battery .. '%'
           rubato_timer.target = battery
         end) ]]
       end
+
       table.insert(bar_layout, w)
     end
 
@@ -236,7 +245,7 @@ return setmetatable({}, { __call = function()
         {
           {
             {
-              create_bar_layout(User_config.status_bar_widgets),
+              create_bar_layout(beautiful.user_config.status_bar_widgets),
               width = dpi(480),
               strategy = 'exact',
               widget = wibox.container.constraint,
@@ -246,9 +255,9 @@ return setmetatable({}, { __call = function()
           magins = dpi(10),
           layout = wibox.container.margin,
         },
-        border_color = Theme_config.notification_center.status_bar.border_color,
-        border_width = Theme_config.notification_center.status_bar.border_width,
-        shape = Theme_config.notification_center.status_bar.shape,
+        border_color = beautiful.colorscheme.border_color,
+        border_width = dpi(2),
+        shape = beautiful.shape[12],
         widget = wibox.container.background,
       },
       widget = wibox.container.constraint,

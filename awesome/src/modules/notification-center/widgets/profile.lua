@@ -4,6 +4,7 @@
 
 -- Awesome Libs
 local aspawn = require('awful.spawn')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
@@ -30,9 +31,7 @@ if not instance then
                   image = gsurface.load_uncached(gfilesystem.get_configuration_dir() .. 'src/assets/userpfp/userpfp.png'),
                   valign = 'center',
                   halign = 'center',
-                  clip_shape = function(cr, width, height)
-                    gshape.rounded_rect(cr, width, height, dpi(12))
-                  end,
+                  clip_shape = beautiful.shape[12],
                   widget = wibox.widget.imagebox,
                 },
                 strategy = 'exact',
@@ -46,10 +45,11 @@ if not instance then
                 {
                   { -- Username
                     image = gcolor.recolor_image(icondir .. 'user.svg',
-                      Theme_config.notification_center.profile.username_icon_color),
+                      beautiful.colorscheme.bg_blue),
                     valign = 'center',
                     halign = 'left',
-                    resize = false,
+                    resize = true,
+                    width = dpi(20),
                     widget = wibox.widget.imagebox,
                   },
                   { -- Username
@@ -64,10 +64,11 @@ if not instance then
                 {
                   {
                     image = gcolor.recolor_image(icondir .. 'laptop.svg',
-                      Theme_config.notification_center.profile.os_prefix_icon_color),
+                      beautiful.colorscheme.bg_blue),
                     valign = 'center',
                     halign = 'left',
-                    resize = false,
+                    resize = true,
+                    width = dpi(20),
                     widget = wibox.widget.imagebox,
                   },
                   { -- OS
@@ -82,10 +83,11 @@ if not instance then
                 {
                   {
                     image = gcolor.recolor_image(icondir .. 'penguin.svg',
-                      Theme_config.notification_center.profile.kernel_icon_color),
+                      beautiful.colorscheme.bg_blue),
                     valign = 'center',
                     halign = 'left',
-                    resize = false,
+                    resize = true,
+                    width = dpi(20),
                     widget = wibox.widget.imagebox,
                   },
                   { -- Kernel
@@ -100,10 +102,11 @@ if not instance then
                 {
                   {
                     image = gcolor.recolor_image(icondir .. 'clock.svg',
-                      Theme_config.notification_center.profile.uptime_icon_color),
+                      beautiful.colorscheme.bg_blue),
                     valign = 'center',
                     halign = 'left',
-                    resize = false,
+                    resize = true,
+                    width = dpi(20),
                     widget = wibox.widget.imagebox,
                   },
                   { -- Uptime
@@ -124,10 +127,10 @@ if not instance then
             },
             widget = wibox.layout.fixed.vertical,
           },
-          fg = Theme_config.notification_center.profile.fg,
-          border_color = Theme_config.notification_center.profile.border_color,
-          border_width = Theme_config.notification_center.profile.border_width,
-          shape = Theme_config.notification_center.profile.shape,
+          fg = beautiful.colorscheme.bg_green,
+          border_color = beautiful.colorscheme.border_color,
+          border_width = dpi(2),
+          shape = beautiful.shape[12],
           widget = wibox.container.background,
         },
         strategy = 'exact',

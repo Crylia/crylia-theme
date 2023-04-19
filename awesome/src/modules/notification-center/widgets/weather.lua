@@ -3,6 +3,7 @@
 --------------------------------
 
 -- Awesome Libs
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local wibox = require('wibox')
 local gfilesystem = require('gears.filesystem')
@@ -82,12 +83,12 @@ if not instance then
                     widget = wibox.widget.textbox,
                     id = 'description',
                   },
-                  fg = Theme_config.notification_center.weather.description_fg,
+                  fg = beautiful.colorscheme.bg_blue,
                   widget = wibox.container.background,
                 },
                 { -- line
                   {
-                    bg = Theme_config.notification_center.weather.line_color,
+                    bg = beautiful.colorscheme.bg1,
                     widget = wibox.container.background,
                   },
                   widget = wibox.container.constraint,
@@ -99,7 +100,7 @@ if not instance then
                   { -- Speed
                     {
                       image = gcolor.recolor_image(icondir .. 'weather-windy.svg',
-                        Theme_config.notification_center.weather.speed_icon_color),
+                        beautiful.colorscheme.bg_red),
                       valign = 'center',
                       halign = 'center',
                       widget = wibox.widget.imagebox,
@@ -127,7 +128,7 @@ if not instance then
                         valign = 'center',
                         halign = 'center',
                         image = gcolor.recolor_image(icondir .. 'humidity.svg',
-                          Theme_config.notification_center.weather.humidity_icon_color),
+                          beautiful.colorscheme.bg_red),
                       },
                       widget = wibox.container.constraint,
                       width = dpi(24),
@@ -154,9 +155,9 @@ if not instance then
             },
             widget = wibox.container.place,
           },
-          border_color = Theme_config.notification_center.weather.border_color,
-          border_width = Theme_config.notification_center.weather.border_width,
-          shape = Theme_config.notification_center.weather.shape,
+          border_color = beautiful.colorscheme.border_color,
+          border_width = dpi(2),
+          shape = beautiful.shape[12],
           widget = wibox.container.background,
         },
         top = dpi(20),
@@ -176,7 +177,7 @@ if not instance then
       call_now = true,
       callback = function()
         aspawn.easy_async_with_shell("curl -sf 'http://api.openweathermap.org/data/2.5/weather?id=" ..
-          User_config.weather_secrets.city_id .. '&units=' .. User_config.weather_secrets.unit .. '&appid=' .. User_config.weather_secrets.key .. "'",
+          beautiful.user_config.weather_secrets.city_id .. '&units=' .. beautiful.user_config.weather_secrets.unit .. '&appid=' .. beautiful.user_config.weather_secrets.key .. "'",
           function(stdout)
             if not stdout:match('error') then
               local weather_metadata = json_lua:decode(stdout)

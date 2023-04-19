@@ -3,6 +3,7 @@
 ---------------------------
 
 -- Awesome Libs
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local wibox = require('wibox')
 local gfilesystem = require('gears.filesystem')
@@ -29,9 +30,7 @@ return setmetatable({}, { __call = function()
               {
                 image = icondir .. 'default_image.svg',
                 resize = true,
-                clip_shape = function(cr, width, height)
-                  gshape.rounded_rect(cr, width, height, dpi(8))
-                end,
+                clip_shape = beautiful.shape[8],
                 valign = 'center',
                 halign = 'center',
                 widget = wibox.widget.imagebox,
@@ -53,7 +52,7 @@ return setmetatable({}, { __call = function()
                       id = 'title',
                       widget = wibox.widget.textbox,
                     },
-                    fg = Theme_config.notification_center.song_info.title_fg,
+                    fg = beautiful.colorscheme.bg_red,
                     widget = wibox.container.background,
                   },
                   strategy = 'max',
@@ -72,7 +71,7 @@ return setmetatable({}, { __call = function()
                       text = 'Unknown Artist',
                       widget = wibox.widget.textbox,
                     },
-                    fg = Theme_config.notification_center.song_info.artist_fg,
+                    fg = beautiful.colorscheme.bg_blue,
                     widget = wibox.container.background,
                   },
                   strategy = 'max',
@@ -86,7 +85,7 @@ return setmetatable({}, { __call = function()
                   {
                     resize = false,
                     image = gcolor.recolor_image(icondir .. 'shuffle.svg',
-                      Theme_config.notification_center.song_info.shuffle_disabled),
+                      beautiful.colorscheme.bg1),
                     valign = 'center',
                     halign = 'center',
                     id = 'shuffle',
@@ -97,7 +96,7 @@ return setmetatable({}, { __call = function()
                     valign = 'center',
                     halign = 'center',
                     id = 'prev',
-                    image = gcolor.recolor_image(icondir .. 'skip-prev.svg', Theme_config.notification_center.song_info.prev_enabled),
+                    image = gcolor.recolor_image(icondir .. 'skip-prev.svg', beautiful.colorscheme.bg_teal),
                     widget = wibox.widget.imagebox,
                   },
                   {
@@ -106,7 +105,7 @@ return setmetatable({}, { __call = function()
                     halign = 'center',
                     id = 'play_pause',
                     image = gcolor.recolor_image(icondir .. 'play-pause.svg',
-                      Theme_config.notification_center.song_info.play_enabled),
+                      beautiful.colorscheme.bg_teal),
                     widget = wibox.widget.imagebox,
                   },
                   {
@@ -114,12 +113,12 @@ return setmetatable({}, { __call = function()
                     valign = 'center',
                     halign = 'center',
                     id = 'next',
-                    image = gcolor.recolor_image(icondir .. 'skip-next.svg', Theme_config.notification_center.song_info.next_enabled),
+                    image = gcolor.recolor_image(icondir .. 'skip-next.svg', beautiful.colorscheme.bg_teal),
                     widget = wibox.widget.imagebox,
                   },
                   {
                     resize = false,
-                    image = gcolor.recolor_image(icondir .. 'repeat.svg', Theme_config.notification_center.song_info.repeat_disabled),
+                    image = gcolor.recolor_image(icondir .. 'repeat.svg', beautiful.colorscheme.bg1),
                     widget = wibox.widget.imagebox,
                     valign = 'center',
                     halign = 'center',
@@ -146,7 +145,7 @@ return setmetatable({}, { __call = function()
                   valign = 'center',
                   halign = 'center',
                 },
-                fg = Theme_config.notification_center.song_info.duration_fg,
+                fg = beautiful.colorscheme.bg_teal,
                 widget = wibox.container.background,
               },
               right = dpi(10),
@@ -154,15 +153,13 @@ return setmetatable({}, { __call = function()
             },
             { -- Progressbar
               {
-                color = Theme_config.notification_center.song_info.progress_color,
-                background_color = Theme_config.notification_center.song_info.progress_background_color,
+                color = beautiful.colorscheme.bg_purple,
+                background_color = beautiful.colorscheme.bg1,
                 max_value = 100,
                 value = 0,
                 id = 'progress',
                 forced_height = dpi(5),
-                shape = function(cr, width)
-                  gshape.rounded_bar(cr, width, dpi(5))
-                end,
+                shape = beautiful.shape[4],
                 widget = wibox.widget.progressbar,
               },
               widget = wibox.container.place,
@@ -176,7 +173,7 @@ return setmetatable({}, { __call = function()
                   valign = 'center',
                   halign = 'center',
                 },
-                fg = Theme_config.notification_center.song_info.duration_fg,
+                fg = beautiful.colorscheme.bg_teal,
                 widget = wibox.container.background,
               },
               left = dpi(10),
@@ -189,9 +186,9 @@ return setmetatable({}, { __call = function()
         widget = wibox.container.margin,
         margins = dpi(10),
       },
-      border_color = Theme_config.notification_center.song_info.border_color,
-      border_width = Theme_config.notification_center.song_info.border_width,
-      shape = Theme_config.notification_center.song_info.shape,
+      border_color = beautiful.colorscheme.border_color,
+      border_width = dpi(2),
+      shape = beautiful.shape[12],
       widget = wibox.container.background,
     },
     widget = wibox.container.margin,

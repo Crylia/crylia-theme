@@ -14,7 +14,8 @@ local ruled = require('ruled')
 local config = require('src.tools.config')
 local audio_helper = require('src.tools.helpers.audio')
 local backlight_helper = require('src.tools.helpers.backlight')
-local powermenu = require('src.modules.powermenu.init')
+local beautiful = require('beautiful')
+local powermenu = require('src.modules.powermenu')
 local kb_helper = require('src.tools.helpers.kb_helper')
 
 local capi = {
@@ -23,7 +24,7 @@ local capi = {
   mouse = mouse,
 }
 
-local modkey = User_config.modkey
+local modkey = beautiful.user_config['modkey']
 
 akeygrabber {
   keybindings = {
@@ -138,7 +139,7 @@ return gtable.join(
     { modkey },
     '#36',
     function()
-      aspawn(User_config.terminal)
+      aspawn(beautiful.user_config.terminal)
     end,
     { description = 'Open terminal', group = 'Applications' }
   ),
@@ -208,7 +209,7 @@ return gtable.join(
     { modkey },
     '#26',
     function()
-      aspawn(User_config.file_manager)
+      aspawn(beautiful.user_config.file_manager)
     end,
     { descripton = 'Open file manager', group = 'System' }
   ),
@@ -224,7 +225,7 @@ return gtable.join(
     {},
     '#107',
     function()
-      aspawn(User_config.screenshot_program)
+      aspawn(beautiful.user_config.screenshot_program)
     end,
     { description = 'Screenshot', group = 'Applications' }
   ),
@@ -256,7 +257,7 @@ return gtable.join(
     {},
     'XF86MonBrightnessUp',
     function(c)
-      backlight_helper.brightness_increase()
+      backlight_helper:brightness_increase()
     end,
     { description = 'Raise backlight brightness', group = 'System' }
   ),
@@ -264,7 +265,7 @@ return gtable.join(
     {},
     'XF86MonBrightnessDown',
     function(c)
-      backlight_helper.brightness_decrease()
+      backlight_helper:brightness_decrease()
     end,
     { description = 'Lower backlight brightness', group = 'System' }
   ),

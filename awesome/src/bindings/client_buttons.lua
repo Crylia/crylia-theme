@@ -2,8 +2,10 @@
 local abutton = require('awful.button')
 local gtable = require('gears.table')
 local amouse = require('awful.mouse')
+local beautiful = require('beautiful')
 
-local modkey = User_config.modkey
+
+local modkey = beautiful.user_config['modkey']
 
 return gtable.join {
   abutton({}, 1, function(c)

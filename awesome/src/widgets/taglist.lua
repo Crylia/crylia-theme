@@ -1,13 +1,13 @@
---------------------------------
--- This is the taglist widget --
---------------------------------
+local ipairs = ipairs
+local setmetatable = setmetatable
 
 -- Awesome Libs
 local abutton = require('awful.button')
 local ascreen = require('awful.screen')
 local atag = require('awful.tag')
 local awidget = require('awful.widget')
-local dpi = require('beautiful').xresources.apply_dpi
+local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
 local gtable = require('gears.table')
 local wibox = require('wibox')
 
@@ -16,7 +16,7 @@ local hover = require('src.tools.hover')
 
 local capi = { client = client }
 
-local modkey = User_config.modkey
+local modkey = beautiful.user_config.modkey
 
 local tag_text = {
   [1] = '一',
@@ -40,7 +40,6 @@ return setmetatable({}, { __call = function(_, screen)
       widget:reset()
       -- Create a tag widget for each tag
       for _, tag in ipairs(tags) do
-
         local tag_widget = wibox.widget {
           {
             {
@@ -59,9 +58,9 @@ return setmetatable({}, { __call = function(_, screen)
             right = dpi(10),
             widget = wibox.container.margin,
           },
-          fg = Theme_config.taglist.fg,
-          bg = Theme_config.taglist.bg,
-          shape = Theme_config.taglist.shape,
+          fg = beautiful.colorscheme.fg,
+          bg = beautiful.colorscheme.bg1,
+          shape = beautiful.shape[6],
           widget = wibox.container.background,
         }
 
@@ -100,14 +99,14 @@ return setmetatable({}, { __call = function(_, screen)
 
         -- Change the taglist colors depending on the state of the tag
         if tag == ascreen.focused().selected_tag then
-          tag_widget:set_bg(Theme_config.taglist.bg_focus)
-          tag_widget:set_fg(Theme_config.taglist.fg_focus)
+          tag_widget:set_bg(beautiful.colorscheme.fg)
+          tag_widget:set_fg(beautiful.colorscheme.bg)
         elseif tag.urgent == true then
-          tag_widget:set_bg(Theme_config.taglist.bg_urgent)
-          tag_widget:set_fg(Theme_config.taglist.fg_urgent)
+          tag_widget:set_bg(beautiful.colorscheme.bg_red)
+          tag_widget:set_fg(beautiful.colorscheme.bg)
         else
-          tag_widget:set_bg(Theme_config.taglist.bg)
-          tag_widget:set_fg(Theme_config.taglist.fg)
+          tag_widget:set_bg(beautiful.colorscheme.bg1)
+          tag_widget:set_fg(beautiful.colorscheme.fg)
         end
 
         -- Add the client icons to the tag widget

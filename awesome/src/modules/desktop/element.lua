@@ -1,4 +1,5 @@
 local base = require('wibox.widget.base')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
 local gshape = require('gears.shape')
@@ -6,6 +7,8 @@ local gtable = require('gears.table')
 local lgi = require('lgi')
 local cairo = lgi.cairo
 local wibox = require('wibox')
+
+local input = require('src.modules.inputbox')
 
 local element = { mt = {} }
 
@@ -196,6 +199,12 @@ function element.new(args)
 
   local text_img, size = outlined_text(args.label, args.width)
 
+  local inputbox = input {
+    font = 'JetBrainsMono Nerd Font 12 Regular',
+    mouse_focus = false,
+    text = args.label,
+  }
+
   local w = base.make_widget_from_value(wibox.widget {
     {
       {
@@ -231,7 +240,7 @@ function element.new(args)
       halign = 'center',
       widget = wibox.container.place,
     },
-    fg = '#ffffff',
+    fg = beautiful.colorscheme.fg,
     bg = gcolor.transparent,
     border_color = gcolor.transparent,
     border_width = dpi(2),

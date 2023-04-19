@@ -1,15 +1,15 @@
------------------------------
--- This is the date widget --
------------------------------
+local setmetatable = setmetatable
 
 -- Awesome Libs
-local apopup = require('awful.popup')
-local dpi = require('beautiful').xresources.apply_dpi
-local wibox = require('wibox')
 local abutton = require('awful.button')
+local apopup = require('awful.popup')
+local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
+local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
-local gcolor = require('gears.color')
+local gtimer = require('gears.timer')
+local wibox = require('wibox')
 
 -- Local libs
 local cal = require('src.modules.calendar.init') {}
@@ -27,7 +27,7 @@ return setmetatable({}, { __call = function(_, screen)
       {
         {
           {
-            image = gcolor.recolor_image(icondir .. 'calendar.svg', Theme_config.date.fg),
+            image = gcolor.recolor_image(icondir .. 'calendar.svg', beautiful.colorscheme.bg),
             widget = wibox.widget.imagebox,
             valign = 'center',
             halign = 'center',
@@ -51,9 +51,9 @@ return setmetatable({}, { __call = function(_, screen)
       right = dpi(8),
       widget = wibox.container.margin,
     },
-    bg = Theme_config.date.bg,
-    fg = Theme_config.date.fg,
-    shape = Theme_config.date.shape,
+    bg = beautiful.colorscheme.bg_teal,
+    fg = beautiful.colorscheme.bg,
+    shape = beautiful.shape[6],
     widget = wibox.container.background,
   }
 
@@ -61,15 +61,20 @@ return setmetatable({}, { __call = function(_, screen)
     widget = cal:get_widget(),
     screen = screen,
     ontop = true,
-    visible = false,
+    visible = true,
   }
+
+  -- Delayed call so the popup can eval its dimensions
+  gtimer.delayed_call(function()
+    calendar_popup.visible = false
+  end)
 
   hover.bg_hover { widget = date_widget }
 
   date_widget:buttons { gtable.join(
     abutton({}, 1, function()
       local geo = capi.mouse.coords()
-      calendar_popup.y = dpi(65)
+      calendar_popup.y = dpi(70)
       if geo.x + (calendar_popup.width / 2) > capi.mouse.screen.geometry.width then
         calendar_popup.x = capi.mouse.screen.geometry.x + capi.mouse.screen.geometry.width - calendar_popup.width
       else

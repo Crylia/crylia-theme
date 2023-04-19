@@ -1,25 +1,28 @@
---------------------------------------------------------------------------------------------------------------
--- This is the statusbar, every widget, module and so on is combined to all the stuff you see on the screen --
---------------------------------------------------------------------------------------------------------------
+local setmetatable = setmetatable
+local table = table
+local ipairs = ipairs
+local pairs = pairs
+
 -- Awesome Libs
-local lgi = require('lgi')
-local Gio = lgi.Gio
 local abutton = require('awful.button')
+local aplacement = require('awful.placement')
 local apopup = require('awful.popup')
+local awidget = require('awful.widget')
+local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
+local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
-local wibox = require('wibox')
-local gcolor = require('gears.color')
-local awidget = require('awful.widget')
-local aplacement = require('awful.placement')
 local gtimer = require('gears.timer')
-local amenu = require('awful.menu')
+local lgi = require('lgi')
+local Gio = lgi.Gio
+local wibox = require('wibox')
 
 -- Local libs
 local config = require('src.tools.config')
-local context_menu = require('src.modules.context_menu.init')
+local context_menu = require('src.modules.context_menu')
 local hover = require('src.tools.hover')
+local icon_lookup = require('src.tools.gio_icon_lookup')()
 
 local capi = {
   awesome = awesome,
@@ -102,8 +105,8 @@ function dock:get_element_widget(desktop_file)
 
   local GDesktopAppInfo = Gio.DesktopAppInfo.new_from_filename(desktop_file)
 
-  local icon = Get_gicon_path(nil, GDesktopAppInfo.get_string(GDesktopAppInfo, 'Icon')) or
-      Get_gicon_path(nil, Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'X-AppImage-Old-Icon')) or ''
+  local icon = icon_lookup:get_gicon_path(nil, GDesktopAppInfo.get_string(GDesktopAppInfo, 'Icon')) or
+      icon_lookup:get_gicon_path(nil, Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'X-AppImage-Old-Icon')) or ''
 
   local widget = wibox.widget {
     {
@@ -118,19 +121,19 @@ function dock:get_element_widget(desktop_file)
             id = 'icon_role',
           },
           widget = wibox.container.constraint,
-          width = User_config.dock_icon_size,
-          height = User_config.dock_icon_size,
+          width = beautiful.user_config.dock_icon_size,
+          height = beautiful.user_config.dock_icon_size,
         },
         widget = wibox.container.margin,
         margins = dpi(5),
       },
       widget = wibox.container.constraint,
-      width = User_config.dock_icon_size + dpi(10), -- + margins
-      height = User_config.dock_icon_size + dpi(10),
+      width = beautiful.user_config.dock_icon_size + dpi(10), -- + margins
+      height = beautiful.user_config.dock_icon_size + dpi(10),
       strategy = 'exact',
     },
-    bg = Theme_config.dock.element.bg,
-    shape = Theme_config.dock.element.shape,
+    bg = beautiful.colorscheme.bg1,
+    shape = beautiful.shape[8],
     widget = wibox.container.background,
   }
 
@@ -138,9 +141,9 @@ function dock:get_element_widget(desktop_file)
   for _, action in ipairs(Gio.DesktopAppInfo.list_actions(GDesktopAppInfo)) do
     table.insert(action_entries, {
       name = Gio.DesktopAppInfo.get_action_name(GDesktopAppInfo, action) or '',
-      icon = Get_gicon_path(nil, GDesktopAppInfo.get_string(GDesktopAppInfo, 'Icon')) or
-          Get_gicon_path(nil, Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'X-AppImage-Old-Icon')) or
-          gcolor.recolor_image(icondir .. 'entry.svg', Theme_config.dock.cm_icon),
+      icon = icon_lookup:get_gicon_path(nil, GDesktopAppInfo.get_string(GDesktopAppInfo, 'Icon')) or
+          icon_lookup:get_gicon_path(nil, Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'X-AppImage-Old-Icon')) or
+          gcolor.recolor_image(icondir .. 'entry.svg', beautiful.colorscheme.bg_yellow),
       callback = function()
         Gio.DesktopAppInfo.launch_action(GDesktopAppInfo, action)
       end,
@@ -149,7 +152,7 @@ function dock:get_element_widget(desktop_file)
 
   table.insert(action_entries, {
     name = 'Remove from Dock',
-    icon = gcolor.recolor_image(icondir .. 'context_menu/entry.svg', Theme_config.dock.cm_icon),
+    icon = gcolor.recolor_image(icondir .. 'context_menu/entry.svg', beautiful.colorscheme.bg_yellow),
     callback = function()
       local data = config.read_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json')
       for i, v in ipairs(data) do
@@ -243,10 +246,7 @@ end
 ---@param args {desktop_file: string} The path to the .desktop file
 function dock:pin_element(args)
   if not args then return end
-
   local e = args.desktop_file
-
-  assert(e, 'No desktop file provided')
 
   self:emit_signal('dock::pin_element', e)
 
@@ -267,19 +267,19 @@ function dock:add_start_element()
             id = 'icon_role',
           },
           widget = wibox.container.constraint,
-          width = User_config.dock_icon_size,
-          height = User_config.dock_icon_size,
+          width = beautiful.user_config.dock_icon_size,
+          height = beautiful.user_config.dock_icon_size,
         },
         widget = wibox.container.margin,
         margins = dpi(5),
       },
       widget = wibox.container.constraint,
-      width = User_config.dock_icon_size + dpi(10), -- + margins
-      height = User_config.dock_icon_size + dpi(10),
+      width = beautiful.user_config.dock_icon_size + dpi(10), -- + margins
+      height = beautiful.user_config.dock_icon_size + dpi(10),
       strategy = 'exact',
     },
-    bg = Theme_config.dock.element.bg,
-    shape = Theme_config.dock.element.shape,
+    bg = beautiful.colorscheme.bg1,
+    shape = beautiful.shape[8],
     widget = wibox.container.background,
   }
 
@@ -297,9 +297,6 @@ function dock:add_start_element()
   return widget
 end
 
----Unpins an element from the dock by removing it from the pinned table, then writes the table to the file
----emits the signal `dock::unpin_element` then successfully removed from the table
----@param args {desktop_file: string} The path to the .desktop file
 function dock:unpin_element(args)
   if not args then return end
 
@@ -367,7 +364,7 @@ local function check_for_dock_hide(self, a_popup)
         minimized = false
         local y = c:geometry().y
         local h = c.height
-        if (y + h) >= self.screen.geometry.height - User_config.dock_icon_size - 35 then
+        if (y + h) >= self.screen.geometry.height - beautiful.user_config.dock_icon_size - 35 then
           self.visible = false
           return
         else
@@ -451,7 +448,7 @@ function dock.new(args)
           forced_width = dpi(2),
           forced_height = dpi(20),
           thickness = dpi(2),
-          color = Theme_config.dock.element.border,
+          color = beautiful.colorscheme.border_color,
         },
         {
           spacing = dpi(5),
@@ -473,7 +470,7 @@ function dock.new(args)
     ontop = true,
     visible = true,
     placement = function(c) aplacement.bottom(c, { margins = dpi(10) }) end,
-    bg = Theme_config.dock.bg,
+    bg = beautiful.colorscheme.bg,
     screen = args.screen,
   }
 
@@ -500,7 +497,7 @@ function dock.new(args)
           forced_height = dpi(20),
           forced_width = dpi(2),
           thickness = dpi(2),
-          color = Theme_config.dock.element.border,
+          color = beautiful.colorscheme.border_color,
         },
         widget = wibox.container.margin,
         right = dpi(5),
@@ -520,19 +517,19 @@ function dock.new(args)
                   id = 'icon_role',
                 },
                 widget = wibox.container.constraint,
-                width = User_config.dock_icon_size,
-                height = User_config.dock_icon_size,
+                width = beautiful.user_config.dock_icon_size,
+                height = beautiful.user_config.dock_icon_size,
               },
               widget = wibox.container.margin,
               margins = dpi(5),
             },
             widget = wibox.container.constraint,
-            width = User_config.dock_icon_size + dpi(10), -- + margins
-            height = User_config.dock_icon_size + dpi(10),
+            width = beautiful.user_config.dock_icon_size + dpi(10), -- + margins
+            height = beautiful.user_config.dock_icon_size + dpi(10),
             strategy = 'exact',
           },
-          bg = Theme_config.dock.element.bg,
-          shape = Theme_config.dock.element.shape,
+          bg = beautiful.colorscheme.bg1,
+          shape = beautiful.shape[8],
           widget = wibox.container.background,
         }
 
@@ -543,15 +540,19 @@ function dock.new(args)
         }
 
         element:buttons(gtable.join(
-          abutton({}, 1, function(c)
-            if c == client.focus then
-              c.minimized = true
+          abutton({}, 1, function()
+            if client == client.focus then
+              client.minimized = true
             else
-              c:emit_signal('request::activate', 'tasklist', { raise = true })
+              if client.first_tag then
+                client.first_tag:view_only()
+              end
+              client:emit_signal('request::activate')
+              client:raise()
             end
           end),
           abutton({}, 3, function()
-            amenu.client_list { theme = { width = dpi(250) } }
+            --TODO: Add context menu with options
           end)
         ))
 

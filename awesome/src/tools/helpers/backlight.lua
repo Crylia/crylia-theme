@@ -13,12 +13,12 @@ function backlight.brightness_get_async(callback)
 end
 
 function backlight:brightness_increase()
-  aspawn('brightnessctl set +2%')
+  aspawn('brightnessctl set 2+%')
   self:emit_signal('brightness_changed')
 end
 
 function backlight:brightness_decrease()
-  aspawn('brightnessctl set -2%')
+  aspawn('brightnessctl set 2-%')
   self:emit_signal('brightness_changed')
 end
 

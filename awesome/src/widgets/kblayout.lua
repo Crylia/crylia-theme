@@ -1,19 +1,21 @@
-------------------------------
--- This is the audio widget --
-------------------------------
+local pairs = pairs
+local setmetatable = setmetatable
+local tunpack = table.unpack
 
 -- Awesome Libs
-local dpi = require('beautiful').xresources.apply_dpi
-local wibox = require('wibox')
+local abutton = require('awful.button')
+local apopup = require('awful.popup')
+local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
-local abutton = require('awful.button')
-local apopup = require('awful.popup')
+local gtimer = require('gears.timer')
+local wibox = require('wibox')
 
 -- Local libs
-local kb_helper = require('src.tools.helpers.kb_helper')
 local hover = require('src.tools.hover')
+local kb_helper = require('src.tools.helpers.kb_helper')
 
 local capi = {
   mouse = mouse,
@@ -36,11 +38,11 @@ local function create_kb_layout_list()
       margins = dpi(10),
     },
     widget = wibox.container.background,
-    bg = Theme_config.kblayout.bg_container,
+    bg = beautiful.colorscheme.bg,
   }
 
   local list = widget:get_children_by_id('list')[1]
-  for _, keymap in pairs(User_config.kblayout) do
+  for _, keymap in pairs(beautiful.user_config.kblayout) do
     -- TODO: Add more, too lazy rn
     local xkeyboard_country_code = {
       ['af'] = { 'أفغانيش(Afghanistan)', 'AFG' }, -- Afghanistan
@@ -136,23 +138,23 @@ local function create_kb_layout_list()
       ['za'] = { '', 'ZAF' }, -- South Africa
     }
 
-    local longname, shortname = table.unpack(xkeyboard_country_code[keymap])
+    local longname, shortname = tunpack(xkeyboard_country_code[keymap])
 
     local kb_layout_item = wibox.widget {
       {
         {
           {
             id = 'shortname',
-            markup = '<span foreground="' .. Theme_config.kblayout.item.fg_short .. '">' .. shortname .. '</span>',
+            markup = '<span foreground="' .. beautiful.colorscheme.bg_purple .. '">' .. shortname .. '</span>',
             widget = wibox.widget.textbox,
             valign = 'center',
             halign = 'center',
           },
           {
             id = 'longname',
-            markup = '<span foreground="' .. Theme_config.kblayout.item.fg_long .. '">' .. longname .. '</span>',
+            markup = '<span foreground="' .. beautiful.colorscheme.bg_red .. '">' .. longname .. '</span>',
             widget = wibox.widget.textbox,
-            font = User_config.font.bold,
+            font = beautiful.user_config.font.bold,
           },
           spacing = dpi(15),
           layout = wibox.layout.fixed.horizontal,
@@ -161,38 +163,38 @@ local function create_kb_layout_list()
         widget = wibox.container.margin,
       },
       id = 'hover',
-      shape = Theme_config.kblayout.item.shape,
-      border_width = Theme_config.kblayout.item.border_width,
-      border_color = Theme_config.kblayout.item.border_color,
-      bg = Theme_config.kblayout.item.bg,
+      shape = beautiful.shape[6],
+      border_width = dpi(2),
+      border_color = beautiful.colorscheme.border_color,
+      bg = beautiful.colorscheme.bg,
       widget = wibox.container.background,
     }
 
     kb_helper:connect_signal('KB::layout_changed', function(_, k)
       if keymap == k then
-        kb_layout_item.bg = Theme_config.kblayout.item.bg_selected
-        kb_layout_item.border_color = Theme_config.kblayout.item.bg_selected
-        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_selected .. '">' .. shortname .. '</span>'
-        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_selected .. '">' .. longname .. '</span>'
+        kb_layout_item.bg = beautiful.colorscheme.bg_purple
+        kb_layout_item.border_color = beautiful.colorscheme.bg_purple
+        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg .. '">' .. shortname .. '</span>'
+        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg .. '">' .. longname .. '</span>'
       else
-        kb_layout_item.bg = Theme_config.kblayout.item.bg
-        kb_layout_item.border_color = Theme_config.kblayout.item.border_color
-        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_short .. '">' .. shortname .. '</span>'
-        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_long .. '">' .. longname .. '</span>'
+        kb_layout_item.bg = beautiful.colorscheme.bg
+        kb_layout_item.border_color = beautiful.colorscheme.border_color
+        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg_purple .. '">' .. shortname .. '</span>'
+        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg_red .. '">' .. longname .. '</span>'
       end
     end)
 
     kb_helper:get_layout_async(function(k)
       if keymap == k then
-        kb_layout_item.bg = Theme_config.kblayout.item.bg_selected
-        kb_layout_item.border_color = Theme_config.kblayout.item.bg_selected
-        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_selected .. '">' .. shortname .. '</span>'
-        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_selected .. '">' .. longname .. '</span>'
+        kb_layout_item.bg = beautiful.colorscheme.bg_purple
+        kb_layout_item.border_color = beautiful.colorscheme.bg_purple
+        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg .. '">' .. shortname .. '</span>'
+        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg .. '">' .. longname .. '</span>'
       else
-        kb_layout_item.bg = Theme_config.kblayout.item.bg
-        kb_layout_item.border_color = Theme_config.kblayout.item.border_color
-        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_short .. '">' .. shortname .. '</span>'
-        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. Theme_config.kblayout.item.fg_long .. '">' .. longname .. '</span>'
+        kb_layout_item.bg = beautiful.colorscheme.bg
+        kb_layout_item.border_color = beautiful.colorscheme.border_color
+        kb_layout_item:get_children_by_id('shortname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg_purple .. '">' .. shortname .. '</span>'
+        kb_layout_item:get_children_by_id('longname')[1].markup = '<span foreground="' .. beautiful.colorscheme.bg_red .. '">' .. longname .. '</span>'
       end
     end)
 
@@ -201,7 +203,6 @@ local function create_kb_layout_list()
     kb_layout_item:buttons { gtable.join(
       abutton({}, 1, function()
         kb_helper:set_layout(keymap)
-        --kb_layout_popup.visible = not kb_layout_popup.visible
       end)
     ), }
 
@@ -221,7 +222,7 @@ return setmetatable({}, { __call = function(_, screen)
             resize = true,
             valign = 'center',
             halign = 'center',
-            image = gcolor.recolor_image(icondir .. 'keyboard.svg', Theme_config.kblayout.fg),
+            image = gcolor.recolor_image(icondir .. 'keyboard.svg', beautiful.colorscheme.bg),
           },
           widget = wibox.container.constraint,
           width = dpi(24),
@@ -241,9 +242,9 @@ return setmetatable({}, { __call = function(_, screen)
       right = dpi(8),
       widget = wibox.container.margin,
     },
-    bg = Theme_config.kblayout.bg,
-    fg = Theme_config.kblayout.fg,
-    shape = Theme_config.kblayout.shape,
+    bg = beautiful.colorscheme.bg_green,
+    fg = beautiful.colorscheme.bg,
+    shape = beautiful.shape[6],
     widget = wibox.container.background,
   }
 
@@ -259,18 +260,24 @@ return setmetatable({}, { __call = function(_, screen)
 
   kb_layout_popup = apopup {
     widget = create_kb_layout_list(),
-    border_color = Theme_config.kblayout.border_color,
-    border_width = Theme_config.kblayout.border_width,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
     screen = screen,
     ontop = true,
-    visible = false,
-    bg = Theme_config.kblayout.bg_container,
+    visible = true,
+    bg = beautiful.colorscheme.bg,
   }
+
+  -- Delayed call to make the popup invisible,
+  -- needed to give it time to evaluate its dimensions
+  gtimer.delayed_call(function()
+    kb_layout_popup.visible = false
+  end)
 
   kblayout_widget:buttons { gtable.join(
     abutton({}, 1, function()
       local geo = capi.mouse.coords()
-      kb_layout_popup.y = dpi(65)
+      kb_layout_popup.y = dpi(70)
       kb_layout_popup.x = geo.x - kb_layout_popup.width / 2
       kb_layout_popup.visible = not kb_layout_popup.visible
     end)
