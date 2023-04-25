@@ -1,3 +1,11 @@
+local ipairs = ipairs
+local math = math
+local pairs = pairs
+local setmetatable = setmetatable
+local table = table
+
+-- Awesome Libs
+local Gio = require('lgi').Gio
 local abutton = require('awful.button')
 local akey = require('awful.key')
 local akeygrabber = require('awful.keygrabber')
@@ -5,22 +13,22 @@ local aplacement = require('awful.placement')
 local apopup = require('awful.popup')
 local beautiful = require('beautiful')
 local dpi = beautiful.xresources.apply_dpi
+local gcolor = require('gears.color')
+local gfilesystem = require('gears.filesystem')
+local gobject = require('gears.object')
 local gtable = require('gears.table')
 local gtimer = require('gears.timer')
 local wibox = require('wibox')
-local gobject = require('gears.object')
-local Gio = require('lgi').Gio
-local gfilesystem = require('gears.filesystem')
-local gcolor = require('gears.color')
 
+-- Third Party Libs
 local fzy = require('fzy')
 
-local hover = require('src.tools.hover')
-local inputbox = require('src.modules.inputbox')
+-- Local Libs
 local context_menu = require('src.modules.context_menu')
-local config = require('src.tools.config')
-local icon_lookup = require('src.tools.gio_icon_lookup')
 local dock = require('src.modules.crylia_bar.dock')
+local hover = require('src.tools.hover')
+local icon_lookup = require('src.tools.gio_icon_lookup')
+local inputbox = require('src.modules.inputbox')
 
 local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/context_menu/'
 
@@ -31,6 +39,12 @@ local capi = {
 
 local launcher = gobject {}
 
+--- Fetches all applications and their information from Gio.AppInfo.get_all()
+--- and generates a wibox widget for each application, containing the application's icon, name and launch command.
+--- The generated wibox widget also includes a context menu that allows the user to launch,
+--- add to desktop, or pin the application to the dock.
+--- @param self The launcher table.
+---
 function launcher:fetch_apps()
   for _, app in ipairs(Gio.AppInfo.get_all()) do
     local app_id = app:get_id()
@@ -190,54 +204,15 @@ function launcher:fetch_apps()
   end
 end
 
-local function levenshtein_distance(str1, str2)
-  local len1 = string.len(str1)
-  local len2 = string.len(str2)
-  local matrix = {}
-  local cost = 0
-
-  if (len1 == 0) then
-    return len2
-  elseif (len2 == 0) then
-    return len1
-  elseif (str1 == str2) then
-    return 0
-  end
-
-  for i = 0, len1, 1 do
-    matrix[i] = {}
-    matrix[i][0] = i
-  end
-  for j = 0, len2, 1 do
-    matrix[0][j] = j
-  end
-
-  for i = 1, len1, 1 do
-    for j = 1, len2, 1 do
-      if str1:byte(i) == str2:byte(j) then
-        cost = 0
-      else
-        cost = 1
-      end
-
-      matrix[i][j] = math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost
-      )
-    end
-  end
-
-  return matrix[len1][len2]
-end
-
+---Reset the grid and add all apps that match to a filter using fzy scoring
+---@param filter string Filter for the name, category and keywords
 function launcher:filter_apps(filter)
   filter = filter or ''
   self.grid:reset()
   local app_list = {}
   for _, app in pairs(self.app_table) do
     if filter == ''
-        or fzy.has_match(filter, app.name)
+        or fzy.has_match(filter, app.name or '')
         or fzy.has_match(filter, app.category or '')
         or fzy.has_match(filter, app.keywords or '')
     then
@@ -245,17 +220,22 @@ function launcher:filter_apps(filter)
     end
   end
   table.sort(app_list, function(a, b)
-    return a.name < b.name
-  end)
-  --sort by lowest levenshtein distance
-  table.sort(app_list, function(a, b)
-    return levenshtein_distance(filter, a.name) < levenshtein_distance(filter, b.name)
+    local score_a = fzy.score(filter, a.name)
+    local score_b = fzy.score(filter, b.name)
+
+    if score_a ~= score_b then
+      return score_a > score_b
+    else
+      return a.name < b.name
+    end
   end)
   for _, app in ipairs(app_list) do
     self.grid:add(app)
   end
 end
 
+--- Toggle the visibility of the application launcher popup window.
+--- @param screen number The screen where the launcher will be displayed.
 function launcher:toggle(screen)
   if not self.popup.visible then
     self.popup.screen = screen
@@ -268,13 +248,20 @@ function launcher:toggle(screen)
       x = 1, y = 1,
     }
     self.popup.visible = false
+    collectgarbage('collect')
   end
 end
 
+---Reset the border color of a widget at x,y
+---@param x number Grid column
+---@param y number Grid row
 function launcher:selection_remove(x, y)
   self.grid:get_widgets_at(y, x)[1].border_color = beautiful.colorscheme.border_color
 end
 
+---Update the border color of a widget at x,y
+---@param x number Grid column
+---@param y number Grid row
 function launcher:selection_update(x, y)
   local w_old = self.grid:get_widgets_at(y, x)[1]
   local w_new = self.grid:get_widgets_at(self.cursor.y, self.cursor.x)[1]
@@ -282,7 +269,10 @@ function launcher:selection_update(x, y)
   w_new.border_color = beautiful.colorscheme.bg_teal
 end
 
+-- Offset to know when to scroll up/down
 local up_offset = 0
+
+--- Move the cursor down
 function launcher:move_down()
   local row, _ = self.grid:get_dimension()
   if self.cursor.y < row then
@@ -303,6 +293,7 @@ function launcher:move_down()
   end
 end
 
+--- Move the cursor up
 function launcher:move_up()
   local row, _ = self.grid:get_dimension()
   if self.cursor.y > 1 then
@@ -320,6 +311,7 @@ function launcher:move_up()
   end
 end
 
+--- Move the cursor left
 function launcher:move_left()
   if self.cursor.x > 1 then
     self.cursor.x = self.cursor.x - 1
@@ -327,6 +319,7 @@ function launcher:move_left()
   end
 end
 
+--- Move the cursor right
 function launcher:move_right()
   local _, col = self.grid:get_dimension()
   if self.cursor.x < col then
@@ -336,11 +329,13 @@ function launcher:move_right()
   end
 end
 
+--- Wrapper to focus the searchbar
 function launcher:focus_searchbar()
   self.searchbar:focus()
   self.popup.widget:get_children_by_id('searchbar_bg')[1].border_color = beautiful.colorscheme.bg_teal
 end
 
+--- Wrapper to unfocus the searchbar
 function launcher:unfocus_searchbar()
   self.searchbar:unfocus()
   self.popup.widget:get_children_by_id('searchbar_bg')[1].border_color = beautiful.colorscheme.border_color
@@ -450,6 +445,7 @@ if not instance then
           self:toggle(capi.mouse.screen)
           self.grid:get_widgets_at(self.cursor.x, self.cursor.y)[1].execute()
           self:filter_apps('')
+          self.searchbar:set_text('')
         elseif key == 'Down' then
           if not (self.keygrabber.running == akeygrabber.current_instance) then
             self:selection_update(1, 1)

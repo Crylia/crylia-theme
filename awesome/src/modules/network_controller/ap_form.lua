@@ -43,7 +43,7 @@ function ap_form.new(args)
               {
                 widget = wibox.widget.textbox,
                 text = NM.utils_ssid_to_utf8(args.NetworkManagerAccessPoint.Ssid),
-                font = beautiful.user_config.font.specify .. ',extra bold 16',
+                font = beautiful.user_config.font .. ' extra bold 16',
                 halign = 'center',
                 valign = 'center',
               },

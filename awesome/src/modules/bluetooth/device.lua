@@ -15,7 +15,7 @@ local lgi = require('lgi')
 local wibox = require('wibox')
 
 -- Own libs
-local context_menu = require('src.modules.context_menu.init')
+local context_menu = require('src.modules.context_menu')
 local hover = require('src.tools.hover')
 local input = require('src.modules.inputbox')
 

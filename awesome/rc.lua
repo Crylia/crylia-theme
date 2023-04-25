@@ -11,7 +11,7 @@
 ╰─────────────────────────────────────────────────────────────────╯
 
 ]]
---#region prints
+--#region s
 io.stdout:write([[
 ]] .. '\n\27[32m' .. [[╭─────────────────────────────────────────────────────────────────╮
 ]] .. '\27[32m' .. [[│]] .. '\27[1;36m' .. [[    ______           ___          ________                       ]] .. '\27[32m' .. [[│
@@ -35,16 +35,13 @@ io.stderr:write([[
 ]] .. '\27[0m\n')
 --#endregion
 
-require('src.core.error_handling')
-require('src.theme')
-require('src.core.signals')
-require('src.core.notifications')
-require('src.core.rules')
+require('src.core.error_handling') {}
+require('src.theme') {}
+require('src.core.signals') {}
+require('src.core.notifications') {}
+require('src.core.rules') {}
 require('src.bindings.global_buttons')
 require('src.bindings.bind_to_tags')
-require('src.modules')()
+require('src.modules') {}
 require('src.tools.auto_starter') {}
-
 --require('src.core.setup')()
-
---require('src.tools.helpers.pulseaudio')()

@@ -8,7 +8,7 @@ local beautiful = require('beautiful')
 local cairo = require('lgi').cairo
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
-local gdk = require('lgi').Gdk
+local gdk = require('lgi').require('Gdk', '3.0')
 local gfilesystem = require('gears.filesystem')
 local gsurface = require('gears.surface')
 local gtimer = require('gears.timer')
@@ -497,8 +497,6 @@ local function create_titlebar_items(c, group)
   return layout
 end
 
----Adds the titlebar to the left of a client
----@param c client
 function add_titlebar(c)
   if titlebar_position == 'top' then
     atitlebar(c, {

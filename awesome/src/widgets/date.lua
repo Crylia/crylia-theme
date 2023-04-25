@@ -81,6 +81,7 @@ return setmetatable({}, { __call = function(_, screen)
         calendar_popup.x = geo.x - (calendar_popup.width / 2)
       end
       calendar_popup.visible = not calendar_popup.visible
+      collectgarbage('collect')
     end)
   ), }
 

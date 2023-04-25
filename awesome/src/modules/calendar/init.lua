@@ -478,12 +478,14 @@ function calendar:create_calendar_widget()
                   task_popup.x = capi.mouse.coords().x
                   task_popup.y = capi.mouse.coords().y
                   task_popup.visible = not task_popup.visible
+                  collectgarbage('collect')
                 end)
               )
             )
 
             tw:connect_signal('mouse::leave', function()
               task_popup.visible = false
+              collectgarbage('collect')
             end)
 
             hover.bg_hover { widget = tw }
@@ -754,7 +756,7 @@ function calendar.new(args)
                 {
                   widget = wibox.widget.imagebox,
                   resize = false,
-                  image = gcolor.recolor_image(icondir .. 'add_ical.svg', beautiful.colorscheme.bg_red),
+                  image = gcolor.recolor_image(icondir .. 'add_ical.svg', beautiful.colorscheme.bg),
                   halign = 'center',
                   valign = 'center',
                 },
@@ -883,7 +885,7 @@ function calendar.new(args)
     border_width = dpi(2),
     border_strategy = 'inner',
     fg = beautiful.colorscheme.fg,
-    shape = beautiful.shape,
+    shape = beautiful.shape[12],
   })
 
   ret:get_tasks()

@@ -11,7 +11,7 @@ local wibox = require('wibox')
 
 local config = require('src.tools.config')
 local element = require('src.modules.desktop.element')
-local cm = require('src.modules.context_menu.init')
+local cm = require('src.modules.context_menu')
 
 local capi = {
   mouse = mouse,

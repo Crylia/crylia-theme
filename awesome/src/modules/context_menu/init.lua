@@ -104,7 +104,7 @@ function context_menu:make_entries(wtemplate, entries, spacing)
         widget = wibox.container.margin,
       },
       bg = beautiful.colorscheme.bg,
-      fg = beautiful.colorscheme.bg_red,
+      fg = beautiful.colorscheme.fg,
       widget = wibox.container.background,
     }
 

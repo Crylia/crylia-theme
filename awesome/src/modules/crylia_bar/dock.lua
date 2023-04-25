@@ -74,26 +74,23 @@ function dock:toggle()
   self.popup.visible = not self.popup.visible
 end
 
-function dock:write_elements_to_file_async(callback)
+function dock:write_elements_to_file_async()
   --create a local copy of the elements["pinned"] table and only set the desktop_file key from its children
   local elements_copy = { pinned = {} }
   for _, element in ipairs(elements['pinned']) do
     table.insert(elements_copy['pinned'], { desktop_file = element.desktop_file })
   end
-  config.write_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json', elements_copy['pinned'], callback)
+
+  config.write_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json', elements_copy['pinned'])
 end
 
 ---Read the content of dock.json and get the content as a table
----@param callback function Called after the elements have been set, no values are passed
-function dock:read_elements_from_file_async(callback)
+function dock:read_elements_from_file_async()
   local data = config.read_json(gfilesystem.get_configuration_dir() .. 'src/config/dock_' .. self.screen.index .. '.json')
   -- Make sure to not set the running key to nil on accident
   for _, v in ipairs(data) do
     local w = self:get_element_widget(v.desktop_file)
     table.insert(elements['pinned'], w)
-  end
-  if callback then
-    callback()
   end
 end
 
@@ -135,6 +132,7 @@ function dock:get_element_widget(desktop_file)
     bg = beautiful.colorscheme.bg1,
     shape = beautiful.shape[8],
     widget = wibox.container.background,
+    desktop_file = desktop_file,
   }
 
   local action_entries = {}

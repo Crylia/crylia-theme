@@ -8,18 +8,17 @@ local ical_calendar_cache = {}
 local date_time = {}
 
 setmetatable(date_time, {
-  __call = function(args)
-    local dt = table.copy(date_time)
+  __call = function(self, args)
 
-    dt.day = args.day or 1
-    dt.month = args.month or 1
-    dt.year = args.year or 1970
+    self.day = args.day or 1
+    self.month = args.month or 1
+    self.year = args.year or 1970
 
-    dt.hour = args.hour or 0
-    dt.minute = args.minute or 0
-    dt.second = args.second or 0
+    self.hour = args.hour or 0
+    self.minute = args.minute or 0
+    self.second = args.second or 0
 
-    return dt
+    return self
   end,
   __newindex = function(self, ...)
     if ... == 'weeknum' then
@@ -29,53 +28,135 @@ setmetatable(date_time, {
       return self.weeknum
     end
   end,
-  __add = function(a, b)
-    local dt = table.copy(date_time)
-    if type(a) == 'table' and type(b) == 'table' then
-
-    elseif type(a) == 'table' and type(b) == 'number' then
-
-    else
-      error('Cannot add number with date')
-    end
-  end,
-  __sub = function(a, b)
-
-  end,
-  __mul = function(a, b)
-
-  end,
-  __div = function(a, b)
-
+  __tostring = function(self)
+    return string.format('%d-%d-%d %d:%d:%d', self.year, self.month, self.day, self.hour, self.minute, self.second)
   end,
 });
 
 local parser = {}
 
-local instance = nil
+function parser.VCALENDAR(handler)
+  local parse = {}
+  local line
+  while true do
+    line = handler:read('*l')
+    if not line then break end
+    local key, value = line:match('^(%w+):(.*)$')
 
-function parser:VEVENT()
+    if key == 'END' then
+      return parse
+    end
 
+    if key == 'BEGIN' then
+      if value == 'VEVENT' then
+        parse[value] = parser.VEVENT(handler)
+      elseif value == 'VTIMEZONE' then
+        parse[value] = parser.VTIMEZONE(handler)
+      end
+    elseif key == 'VERSION' then
+      parse[key] = value
+    elseif key == 'PRODID' then
+      parse[key] = value
+    elseif key == 'CALSCALE' then
+      parse[key] = value
+    elseif key == 'METHOD' then
+      parse[key] = value
+    elseif key == 'X-WR-CALNAME' then
+      parse[key] = value
+    elseif key == 'X-WR-TIMEZONE' then
+      parse[key] = value
+    elseif key == 'X-WR-CALDESC' then
+      parse[key] = value
+    end
+  end
 end
 
----Start parsing a new calendar
----@param path string path to .ical file
-function parser.parse(path)
+function parser.VTIMEZONE(handler)
+  local parse = {}
+  local line
+  while true do
+    line = handler:read('*l')
+    if not line then break end
+    local key, value = line:match('^(%w+):(.*)$')
 
-  local ical_name = path
+    if key == 'END' then
+      return parse
+    end
 
-  -- Check if the calendar has been parsed previously
-  if ical_calendar_cache[ical_name] then
-    return ical_calendar_cache[ical_name]
-  else
-    -- If not create a new one in the cache
-    ical_calendar_cache[ical_name] = {}
+    if key == 'BEGIN' then
+      if value == 'DAYLIGHT' or value == 'STANDARD' then
+        parse[value] = parser.TZ(handler)
+      end
+    elseif key == 'TZID' then
+      parse[key] = value
+    elseif key == 'LAST-MODIFIED' then
+      parse[key] = value
+    elseif key == 'X-LIC-LOCATION' then
+      parse[key] = value
+    end
   end
+end
 
-  return ical_calendar_cache[ical_name]
+function parser.TZ(handler)
+  local parse = {}
+  local line
+  while true do
+    line = handler:read('*l')
+    if not line then break end
+    local key, value = line:match('^(%w+):(.*)$')
+
+    if key == 'END' then
+      return parse
+    end
+
+    if key == 'TZNAME' then
+      parse[key] = value
+    elseif key == 'TZOFFSETFROM' then
+      parse[key] = value
+    elseif key == 'TZOFFSETTO' then
+      parse[key] = value
+    elseif key == 'DTSTART' then
+      parse[key] = parse.DT(value)
+    elseif key == 'RRULE' then
+      parse[key] = parse.RRULE(value)
+    end
+  end
+end
+
+function parser.VEVENT(handler)
+  local parse = {}
+  local line
+
+  while true do
+    line = handler:read('*l')
+    if not line then break end
+    local key, value = line:match('^(%w+):(.*)$')
+
+    if key == 'END' then
+      return parse
+    end
+
+    if key == 'UID' then
+      parse[key] = value
+    elseif key == 'SEQUENCE' then
+      parse[key] = value
+    elseif key == 'SUMMARY' then
+      parse[key] = value
+    elseif key == 'LOCATION' then
+      parse[key] = value
+    elseif key == 'STATUS' then
+      parse[key] = value
+    elseif key == 'RRULE' then
+      parse[key] = parser.RRULE(value)
+    end
+
+
+
+  end
 end
 
 function parser.new(path)
+  local cal = {}
 
   -- Get the file from the path
   local ical_name = path
@@ -85,12 +166,27 @@ function parser.new(path)
     return ical_calendar_cache[ical_name]
   end
 
-  -- If not create a new one in the cache
-  ical_calendar_cache[ical_name] = { mt = {} }
+  local handler = io.open(path, 'r')
+  if not handler then return end
+
+  while true do
+    local line = handler:read('*l')
+    if not line then break end
+
+    local key, value = line:match('^(%w+):(.*)$')
+    if key and value then
+      if key == 'BEGIN' and value == 'VCALENDAR' then
+        cal[value] = parser.VCALENDAR(handler)
+      end
+    end
+  end
+
+  handler:close()
 
   return ical_calendar_cache[ical_name]
 end
 
+local instance = nil
 if not instance then
   instance = setmetatable(parser, {
     -- If this module is called load all cached calendars from the cache

@@ -1,23 +1,24 @@
--------------------------------------
--- This is the notification-center --
--------------------------------------
+local os = os
+local setmetatable = setmetatable
 
 -- Awesome Libs
-local dpi = require('beautiful').xresources.apply_dpi
-local wibox = require('wibox')
-local naughty = require('naughty')
-local gtimer = require('gears.timer')
+local abutton = require('awful.button')
 local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
-local abutton = require('awful.button')
+local gtimer = require('gears.timer')
+local naughty = require('naughty')
+local wibox = require('wibox')
 
+-- Local Libs
 local hover = require('src.tools.hover')
 
 local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/notifications/'
 
-return setmetatable({}, {
+local instance = nil
+instance = setmetatable({}, {
   __call = function()
     local ret = wibox.widget {
       layout = require('src.lib.overflow_widget.overflow').vertical,
@@ -61,13 +62,13 @@ return setmetatable({}, {
                           notification = n,
                           widget = naughty.widget.title,
                           markup = [[<span foreground="]] ..
-                              beautiful.colorscheme.bg .. [[" font="JetBrainsMono Nerd Font, Bold 16">]] .. (n.app_name or
-                                  'Unknown App') .. [[</span> | <span font="JetBrainsMono Nerd Font, Regular 16">]] .. (n.title or 'System Notification') .. [[</span>]],
+                              beautiful.colorscheme.bg .. [[" font="]] .. beautiful.user_config.font .. ' bold 12' .. [[">]] .. (n.app_name or
+                                  'Unknown App') .. [[</span> | <span font="]] .. beautiful.user_config.font .. ' regular 12' .. [[">]] .. (n.title or 'System Notification') .. [[</span>]],
                           halign = 'left',
                           valign = 'center',
                         },
                         widget = wibox.container.constraint,
-                        width = dpi(430),
+                        width = dpi(250),
                         height = dpi(35),
                         strategy = 'max',
                       },
@@ -83,7 +84,7 @@ return setmetatable({}, {
                       { -- Clock
                         widget = wibox.widget.textbox,
                         test = 'now',
-                        font = 'JetBrainsMono Nerd Font, Bold 12',
+                        font = beautiful.user_config.font .. ' bold 12',
                         fg = beautiful.colorscheme.bg,
                         halign = 'center',
                         valign = 'center',
@@ -159,7 +160,7 @@ return setmetatable({}, {
                   {
                     notification = n,
                     widget = naughty.widget.message,
-                    font = 'JetBrainsMono Nerd Font, Regular 10',
+                    font = beautiful.user_config.font .. ' regular 10',
                     halign = 'left',
                     valign = 'center',
                   },
@@ -169,15 +170,6 @@ return setmetatable({}, {
                 },
                 spacing = dpi(15),
                 layout = wibox.layout.fixed.horizontal,
-              },
-              { -- Spacer
-                {
-                  widget = wibox.container.background,
-                  bg = beautiful.colorscheme.bg,
-                },
-                widget = wibox.container.constraint,
-                strategy = 'exact',
-                height = dpi(2),
               },
               spacing = dpi(15),
               id = 'main_layout',
@@ -244,3 +236,4 @@ return setmetatable({}, {
     return ret
   end,
 })
+return instance

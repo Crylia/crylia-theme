@@ -18,6 +18,8 @@ local gshape = require('gears.shape')
 local gobject = require('gears.object')
 local mousegrabber = mousegrabber
 
+local rubato = require('src.lib.rubato')
+
 local overflow = { mt = {} }
 
 -- Determine the required space to draw the layout's children and, if necessary,
@@ -33,7 +35,7 @@ function overflow:fit(context, orig_width, orig_height)
   local scrollbar_width = self._private.scrollbar_width
   local scrollbar_enabled = self._private.scrollbar_enabled
   local used_in_dir, used_max = 0, 0
-  local is_y = self._private.dir == "y"
+  local is_y = self._private.dir == 'y'
   local avail_in_dir = is_y and orig_height or orig_width
 
   -- Set the direction covered by scrolling to the maximum value
@@ -81,7 +83,7 @@ end
 -- Only those widgets that are currently visible will be placed.
 function overflow:layout(context, orig_width, orig_height)
   local result = {}
-  local is_y = self._private.dir == "y"
+  local is_y = self._private.dir == 'y'
   local widgets = self._private.widgets
   local avail_in_dir = is_y and orig_height or orig_width
   local scrollbar_width = self._private.scrollbar_width
@@ -140,9 +142,9 @@ function overflow:layout(context, orig_width, orig_height)
       bar_w, bar_h = base.fit_widget(self, context, scrollbar_widget, scrollbar_width, bar_length)
       bar_y = bar_pos
 
-      if scrollbar_position == "left" then
+      if scrollbar_position == 'left' then
         widget_x = widget_x + bar_w
-      elseif scrollbar_position == "right" then
+      elseif scrollbar_position == 'right' then
         bar_x = orig_width - bar_w
       end
 
@@ -153,9 +155,9 @@ function overflow:layout(context, orig_width, orig_height)
       bar_w, bar_h = base.fit_widget(self, context, scrollbar_widget, bar_length, scrollbar_width)
       bar_x = bar_pos
 
-      if scrollbar_position == "top" then
+      if scrollbar_position == 'top' then
         widget_y = widget_y + bar_h
-      elseif scrollbar_position == "bottom" then
+      elseif scrollbar_position == 'bottom' then
         bar_y = orig_height - bar_h
       end
 
@@ -305,6 +307,13 @@ end
 -- @tparam number scroll_factor The scroll factor.
 -- @propemits true false
 
+overflow.rubato_timed = rubato.timed {
+  duration = 0.5,
+  rate = 24,
+  clamp_position = true,
+}
+
+local first_call = true
 function overflow:set_scroll_factor(factor)
   local current = self._private.scroll_factor
   local interval = self._private.used_in_dir - self._private.avail_in_dir
@@ -318,10 +327,22 @@ function overflow:set_scroll_factor(factor)
     return
   end
 
-  self._private.scroll_factor = math.min(1, math.max(factor, 0))
+  local function update_scroll()
+    self._private.scroll_factor = self.rubato_timed.pos
+    self:emit_signal('widget::layout_changed')
+    self:emit_signal('property::scroll_factor', factor)
+  end
 
-  self:emit_signal("widget::layout_changed")
-  self:emit_signal("property::scroll_factor", factor)
+  if first_call then
+    self.rubato_timed:subscribe(update_scroll)
+  end
+
+  self.rubato_timed.target = math.min(1, math.max(factor + (self.rubato_timed.target - self.rubato_timed.pos), 0))
+  print(self.rubato_timed.target)
+  --self._private.scroll_factor = math.min(1, math.max(factor, 0))
+
+  --self:emit_signal('widget::layout_changed')
+  --self:emit_signal('property::scroll_factor', factor)
 end
 
 function overflow:get_scroll_factor()
@@ -347,8 +368,8 @@ function overflow:set_scrollbar_width(width)
 
   self._private.scrollbar_width = width
 
-  self:emit_signal("widget::layout_changed")
-  self:emit_signal("property::scrollbar_width", width)
+  self:emit_signal('widget::layout_changed')
+  self:emit_signal('property::scrollbar_width', width)
 end
 
 --- The scrollbar position.
@@ -370,8 +391,8 @@ function overflow:set_scrollbar_position(position)
 
   self._private.scrollbar_position = position
 
-  self:emit_signal("widget::layout_changed")
-  self:emit_signal("property::scrollbar_position", position)
+  self:emit_signal('widget::layout_changed')
+  self:emit_signal('property::scrollbar_position', position)
 end
 
 function overflow:get_scrollbar_position()
@@ -396,8 +417,8 @@ function overflow:set_scrollbar_enabled(enabled)
 
   self._private.scrollbar_enabled = enabled
 
-  self:emit_signal("widget::layout_changed")
-  self:emit_signal("property::scrollbar_enabled", enabled)
+  self:emit_signal('widget::layout_changed')
+  self:emit_signal('property::scrollbar_enabled', enabled)
 end
 
 function overflow:get_scrollbar_enabled()
@@ -407,7 +428,7 @@ end
 -- Wraps a callback function for `mousegrabber` that is capable of
 -- updating the scroll factor.
 local function build_grabber(container, initial_x, initial_y, geo)
-  local is_y = container._private.dir == "y"
+  local is_y = container._private.dir == 'y'
   local bar_interval = container._private.avail_in_dir - container._private.bar_length
   local start_pos = container._private.scroll_factor * bar_interval
   local start = is_y and initial_y or initial_x
@@ -439,7 +460,7 @@ local function apply_scrollbar_mouse_signal(container, w)
     if button_id ~= 1 then
       return
     end
-    mousegrabber.run(build_grabber(container, x, y, geo), "fleur")
+    mousegrabber.run(build_grabber(container, x, y, geo), 'fleur')
   end)
 end
 
@@ -461,8 +482,8 @@ function overflow:set_scrollbar_widget(widget)
 
   self._private.scrollbar_widget = w
 
-  self:emit_signal("widget::layout_changed")
-  self:emit_signal("property::scrollbar_widget", widget)
+  self:emit_signal('widget::layout_changed')
+  self:emit_signal('property::scrollbar_widget', widget)
 end
 
 function overflow:get_scrollbar_widget()
@@ -473,13 +494,13 @@ function overflow:reset()
   self._private.widgets = {}
   self._private.scroll_factor = 0
 
-  local scrollbar_widget = separator({ shape = gshape.rectangle })
+  local scrollbar_widget = separator { shape = gshape.rectangle }
   apply_scrollbar_mouse_signal(self, scrollbar_widget)
   self._private.scrollbar_widget = scrollbar_widget
 
-  self:emit_signal("widget::layout_changed")
-  self:emit_signal("widget::reset")
-  self:emit_signal("widget::reseted")
+  self:emit_signal('widget::layout_changed')
+  self:emit_signal('widget::reset')
+  self:emit_signal('widget::reseted')
 end
 
 local function new(dir, ...)
@@ -500,9 +521,9 @@ local function new(dir, ...)
   ret._private.fill_space = true
   ret._private.scrollbar_width = 5
   ret._private.scrollbar_enabled = true
-  ret._private.scrollbar_position = dir == "vertical" and "right" or "bottom"
+  ret._private.scrollbar_position = dir == 'vertical' and 'right' or 'bottom'
 
-  local scrollbar_widget = separator({ shape = gshape.rectangle })
+  local scrollbar_widget = separator { shape = gshape.rectangle }
   apply_scrollbar_mouse_signal(ret, scrollbar_widget)
   ret._private.scrollbar_widget = scrollbar_widget
 
@@ -525,7 +546,7 @@ end
 -- @tparam widget ... Widgets that should be added to the layout.
 -- @constructorfct wibox.layout.overflow.horizontal
 function overflow.horizontal(...)
-  return new("horizontal", ...)
+  return new('horizontal', ...)
 end
 
 --- Returns a new vertical overflow layout.
@@ -536,7 +557,7 @@ end
 -- @tparam widget ... Widgets that should be added to the layout.
 -- @constructorfct wibox.layout.overflow.vertical
 function overflow.vertical(...)
-  return new("vertical", ...)
+  return new('vertical', ...)
 end
 
 return setmetatable(overflow, overflow.mt)

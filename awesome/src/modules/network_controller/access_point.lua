@@ -20,7 +20,7 @@ local dbus_proxy = require('src.lib.lua-dbus_proxy.src.dbus_proxy')
 
 -- Own libs
 local ap_form = require('src.modules.network_controller.ap_form')
-local cm = require('src.modules.context_menu.init')
+local cm = require('src.modules.context_menu')
 local hover = require('src.tools.hover')
 
 local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/network/'
@@ -268,7 +268,7 @@ function access_point.new(args)
   ret.NetworkManagerAccessPointProperties:connect_signal(function(_, properties, data)
     if data.Strength then
       awesome.emit_signal('NM::AccessPointStrength', data.Strength)
-      if ret.is_ap_active(ret.NetworkManagerAccessPoint.object_path) then
+      if ret.is_ap_active(ret.NetworkManagerAccessPoint) then
         ret:get_children_by_id('icon')[1].image = gcolor.recolor_image(
           icondir .. 'wifi-strength-' .. math.floor(data.Strength / 25) + 1 .. '.svg',
           beautiful.colorscheme.bg)

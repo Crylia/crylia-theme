@@ -413,84 +413,6 @@ function bluetooth.new(args)
     widget = wibox.container.margin,
   }
 
-  assert(type(ret) == 'table', 'bluetooth_controller: ret is not a table')
-
-  -- Get a reference to the dnd button
-  local dnd = ret:get_children_by_id('dnd')[1]:get_widget()
-
-  -- Toggle bluetooth on or off
-  dnd:connect_signal('dnd::toggle', function()
-    ret:toggle()
-  end)
-
-  gtable.crush(ret, bluetooth, true)
-
-  --#region Bluetooth Proxies
-  -- Create a proxy for the freedesktop ObjectManager
-  ret._private.ObjectManager = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.freedesktop.DBus.ObjectManager',
-    path = '/',
-  }
-
-  -- Create a proxy for the bluez Adapter1 interface
-  ret._private.Adapter1 = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.bluez.Adapter1',
-    path = '/org/bluez/hci0',
-  }
-
-  if not ret._private.Adapter1.Powered then return end
-
-  -- Create a proxy for the bluez Adapter1 Properties interface
-  ret._private.Adapter1Properties = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.freedesktop.DBus.Properties',
-    path = '/org/bluez/hci0',
-  }
-
-  -- Connect to the ObjectManager's InterfacesAdded signal
-  ret._private.ObjectManager:connect_signal(function(_, interface)
-    ret:get_device_info(interface)
-  end, 'InterfacesAdded')
-
-  -- Connect to the ObjectManager's InterfacesRemoved signal
-  ret._private.ObjectManager:connect_signal(function(_, interface)
-    ret:remove_device(interface)
-  end, 'InterfacesRemoved')
-
-  -- Connect to the Adapter1's PropertiesChanged signal
-  ret._private.Adapter1Properties:connect_signal(function(_, _, data)
-    if data.Powered ~= nil then
-      send_state_notification(data.Powered)
-      if data.Powered then
-        dnd:set_enabled()
-        ret:scan()
-      else
-        dnd:set_disabled()
-      end
-      ret:emit_signal('bluetooth::status', data.Powered)
-    end
-  end, 'PropertiesChanged')
-
-  gtimer.delayed_call(function()
-    for path, _ in pairs(ret._private.ObjectManager:GetManagedObjects()) do
-      ret:get_device_info(path)
-    end
-    if ret._private.Adapter1.Powered then
-      dnd:set_enabled()
-      ret:scan()
-    else
-      dnd:set_disabled()
-    end
-    ret:emit_signal('bluetooth::status', ret._private.Adapter1.Powered)
-    send_state_notification(ret._private.Adapter1.Powered)
-  end)
-  --#endregion
-
   --#region Dropdown logic
   local connected_margin = ret:get_children_by_id('connected_margin')[1]
   local connected_list = ret:get_children_by_id('connected_list')[1]
@@ -626,6 +548,14 @@ function bluetooth.new(args)
   end)
   --#endregion
 
+  -- Get a reference to the dnd button
+  local dnd = ret:get_children_by_id('dnd')[1]:get_widget()
+
+  -- Toggle bluetooth on or off
+  dnd:connect_signal('dnd::toggle', function()
+    ret:toggle()
+  end)
+
   -- Add buttons to the scan button
   ret:get_children_by_id('scan')[1]:buttons {
     abutton({}, 1, function()
@@ -636,6 +566,74 @@ function bluetooth.new(args)
   hover.bg_hover { widget = ret:get_children_by_id('scan')[1] }
   hover.bg_hover { widget = connected_margin.connected_bg }
   hover.bg_hover { widget = discovered_bg }
+
+  gtable.crush(ret, bluetooth, true)
+
+  --#region Bluetooth Proxies
+  -- Create a proxy for the freedesktop ObjectManager
+  ret._private.ObjectManager = dbus_proxy.Proxy:new {
+    bus = dbus_proxy.Bus.SYSTEM,
+    name = 'org.bluez',
+    interface = 'org.freedesktop.DBus.ObjectManager',
+    path = '/',
+  }
+
+  -- Create a proxy for the bluez Adapter1 interface
+  ret._private.Adapter1 = dbus_proxy.Proxy:new {
+    bus = dbus_proxy.Bus.SYSTEM,
+    name = 'org.bluez',
+    interface = 'org.bluez.Adapter1',
+    path = '/org/bluez/hci0',
+  }
+
+  if not ret._private.Adapter1.Powered then return ret end
+
+  -- Create a proxy for the bluez Adapter1 Properties interface
+  ret._private.Adapter1Properties = dbus_proxy.Proxy:new {
+    bus = dbus_proxy.Bus.SYSTEM,
+    name = 'org.bluez',
+    interface = 'org.freedesktop.DBus.Properties',
+    path = '/org/bluez/hci0',
+  }
+
+  -- Connect to the Adapter1's PropertiesChanged signal
+  ret._private.Adapter1Properties:connect_signal(function(_, _, data)
+    if data.Powered ~= nil then
+      send_state_notification(data.Powered)
+      if data.Powered then
+        dnd:set_enabled()
+        ret:scan()
+      else
+        dnd:set_disabled()
+      end
+      ret:emit_signal('bluetooth::status', data.Powered)
+    end
+  end, 'PropertiesChanged')
+
+  -- Connect to the ObjectManager's InterfacesAdded signal
+  ret._private.ObjectManager:connect_signal(function(_, interface)
+    ret:get_device_info(interface)
+  end, 'InterfacesAdded')
+
+  -- Connect to the ObjectManager's InterfacesRemoved signal
+  ret._private.ObjectManager:connect_signal(function(_, interface)
+    ret:remove_device(interface)
+  end, 'InterfacesRemoved')
+
+  gtimer.delayed_call(function()
+    for path, _ in pairs(ret._private.ObjectManager:GetManagedObjects()) do
+      ret:get_device_info(path)
+    end
+    if ret._private.Adapter1.Powered then
+      dnd:set_enabled()
+      ret:scan()
+    else
+      dnd:set_disabled()
+    end
+    ret:emit_signal('bluetooth::status', ret._private.Adapter1.Powered)
+    send_state_notification(ret._private.Adapter1.Powered)
+  end)
+  --#endregion
 
   return ret
 end

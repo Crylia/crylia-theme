@@ -1,3 +1,6 @@
+local table = table
+local ipairs = ipairs
+
 -- Awesome libs
 local akeygrabber = require('awful.keygrabber')
 local akey = require('awful.key')
@@ -15,8 +18,8 @@ local config = require('src.tools.config')
 local audio_helper = require('src.tools.helpers.audio')
 local backlight_helper = require('src.tools.helpers.backlight')
 local beautiful = require('beautiful')
-local powermenu = require('src.modules.powermenu')
 local kb_helper = require('src.tools.helpers.kb_helper')
+local window_switcher = require('src.modules.window_switcher')
 
 local capi = {
   awesome = awesome,
@@ -26,13 +29,26 @@ local capi = {
 
 local modkey = beautiful.user_config['modkey']
 
+
+local awful = require('awful')
+local f = 1
 akeygrabber {
   keybindings = {
     akey {
       modifiers = { 'Mod1' },
       key = 'Tab',
       on_press = function()
-        capi.awesome.emit_signal('window_switcher::select_next')
+        local clients = awful.screen.focused():get_all_clients()
+        if f == #clients then
+          f = 1
+        end
+        f = f + 1
+        clients[f].minimized = false
+        if not clients[f]:isvisible() and clients[f].first_tag then
+          clients[f].first_tag:view_only()
+        end
+        clients[f]:emit_signal('request::activate')
+        clients[f]:raise()
       end,
     },
   },
@@ -47,11 +63,13 @@ akeygrabber {
   stop_key = 'Mod1',
   stop_event = 'release',
   start_callback = function()
-    capi.awesome.emit_signal('toggle_window_switcher')
+    aclient.focus.history.disable_tracking()
+    window_switcher.popup.visible = true
   end,
   stop_callback = function()
-    capi.awesome.emit_signal('window_switcher::raise')
-    capi.awesome.emit_signal('toggle_window_switcher')
+    aclient.focus.history.enable_tracking()
+    window_switcher.popup.visible = false
+    collectgarbage('collect')
   end,
   export_keybindings = true,
 }
@@ -63,18 +81,6 @@ return gtable.join(
     hotkeys_popup.show_help,
     { description = 'Cheat sheet', group = 'Awesome' }
   ),
-  --[[   akey(
-    { modkey },
-    '#113',
-    atag.viewprev,
-    { description = 'View previous tag', group = 'Tag' }
-  ),
-  akey(
-    { modkey },
-    '#114',
-    atag.viewnext,
-    { description = 'View next tag', group = 'Tag' }
-  ), ]]
   akey(
     { modkey },
     '#66',
@@ -201,7 +207,7 @@ return gtable.join(
     { modkey },
     '#40',
     function()
-      capi.awesome.emit_signal('application_launcher::show')
+      require('src.modules.app_launcher'):toggle(capi.mouse.screen)
     end,
     { descripton = 'Application launcher', group = 'Application' }
   ),
@@ -217,7 +223,7 @@ return gtable.join(
     { modkey, 'Shift' },
     '#26',
     function()
-      powermenu:toggle()
+      require('src.modules.powermenu'):toggle()
     end,
     { descripton = 'Session options', group = 'System' }
   ),

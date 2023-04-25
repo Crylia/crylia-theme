@@ -1,6 +1,6 @@
-local tinsert = table.insert
-local load = load
 local ipairs = ipairs
+local load = load
+local tinsert = table.insert
 
 -- Awesome Libs
 local awful = require('awful')
@@ -20,12 +20,16 @@ if not instance then
         awful.tag({ '1', '2', '3', '4', '5', '6', '7', '8', '9' }, s, layouts[1])
 
         require('src.modules.desktop.desktop') { screen = s }
-        require('src.modules.crylia_bar')(s)
-        --require('src.modules.crylia_wibox.init')(s)
+        if beautiful.user_config.crylia_bar then
+          require('src.modules.crylia_bar')(s)
+        else
+          require('src.modules.crylia_wibox.init')(s)
+        end
         require('src.modules.notification-center') { screen = s }
-        --require('src.modules.window_switcher.init') { screen = s }
-        require('src.modules.application_launcher') { screen = s }
+        require('src.modules.window_switcher')(s)
+        require('src.modules.app_launcher')(s)
       end)
+      require('src.modules.powermenu')()
     end,
   })
 end

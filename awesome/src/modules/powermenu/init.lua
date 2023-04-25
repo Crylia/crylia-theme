@@ -1,6 +1,4 @@
---------------------------------
--- This is the network widget --
---------------------------------
+local setmetatable = setmetatable
 
 -- Awesome Libs
 local abutton = require('awful.button')
@@ -106,110 +104,106 @@ end
 
 function powermenu:toggle()
   self.keygrabber:start()
-  self.visible = not self.visible
-end
-
-function powermenu.new()
-  local w = wibox {
-    widget = {
-      {
-        {
-          {
-            {
-              image = icondir .. 'defaultpfp.svg',
-              resize = true,
-              clip_shape = beautiful.shape[30],
-              valign = 'center',
-              halign = 'center',
-              id = 'icon_role',
-              widget = wibox.widget.imagebox,
-            },
-            widget = wibox.container.constraint,
-            width = dpi(200),
-            height = dpi(200),
-            strategy = 'exact',
-          },
-          {
-            halign = 'center',
-            valign = 'center',
-            font = 'JetBrains Mono Bold 30',
-            id = 'text_role',
-            widget = wibox.widget.textbox,
-          },
-          spacing = dpi(50),
-          layout = wibox.layout.fixed.vertical,
-        },
-        {
-          {
-            get_button('shutdown'),
-            get_button('reboot'),
-            get_button('logout'),
-            get_button('lock'),
-            get_button('suspend'),
-            spacing = dpi(30),
-            layout = wibox.layout.fixed.horizontal,
-          },
-          widget = wibox.container.place,
-        },
-        spacing = dpi(50),
-        layout = wibox.layout.fixed.vertical,
-      },
-      widget = wibox.container.place,
-    },
-    screen = capi.screen.primary,
-    type = 'splash',
-    visible = false,
-    ontop = true,
-    bg = beautiful.colorscheme.bg .. '88',
-    height = capi.screen.primary.geometry.height,
-    width = capi.screen.primary.geometry.width,
-    x = capi.screen.primary.geometry.x,
-    y = capi.screen.primary.geometry.y,
-  }
-
-  gtable.crush(w, powermenu, true)
-
-  w:buttons { gtable.join(
-    abutton({}, 3, function()
-      w:toggle()
-      w.keygrabber:stop()
-    end)
-  ), }
-
-  w.keygrabber = akeygrabber {
-    autostart = false,
-    stop_event = 'release',
-    stop_key = 'Escape',
-    keybindings = {
-      akey {
-        modifiers = {},
-        key = 'Escape',
-        on_press = function()
-          w:toggle()
-        end,
-      },
-    },
-  }
-
-  -- Get the profile script from /var/lib/AccountsService/icons/${USER}
-  -- and copy it to the assets folder
-  -- TODO: If the user doesnt have AccountsService look into $HOME/.faces
-  aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userPfp'", function(stdout)
-    if stdout then
-      w:get_children_by_id('icon_role')[1].image = stdout:gsub('\n', '')
-    else
-      w:get_children_by_id('icon_role')[1].image = icondir .. 'defaultpfp.svg'
-    end
-  end)
-
-  aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userName' '" .. beautiful.user_config.namestyle .. "'", function(stdout)
-    w:get_children_by_id('text_role')[1].text = stdout:gsub('\n', '')
-  end)
-
-  return w
+  self.w.visible = not self.w.visible
 end
 
 if instance == nil then
-  instance = powermenu.new()
+  instance = setmetatable(powermenu, {
+    __call = function(self)
+      self.w = wibox {
+        widget = {
+          {
+            {
+              {
+                {
+                  image = icondir .. 'defaultpfp.svg',
+                  resize = true,
+                  clip_shape = beautiful.shape[30],
+                  valign = 'center',
+                  halign = 'center',
+                  id = 'icon_role',
+                  widget = wibox.widget.imagebox,
+                },
+                widget = wibox.container.constraint,
+                width = dpi(200),
+                height = dpi(200),
+                strategy = 'exact',
+              },
+              {
+                halign = 'center',
+                valign = 'center',
+                font = 'JetBrains Mono Bold 30',
+                id = 'text_role',
+                widget = wibox.widget.textbox,
+              },
+              spacing = dpi(50),
+              layout = wibox.layout.fixed.vertical,
+            },
+            {
+              {
+                get_button('shutdown'),
+                get_button('reboot'),
+                get_button('logout'),
+                get_button('lock'),
+                get_button('suspend'),
+                spacing = dpi(30),
+                layout = wibox.layout.fixed.horizontal,
+              },
+              widget = wibox.container.place,
+            },
+            spacing = dpi(50),
+            layout = wibox.layout.fixed.vertical,
+          },
+          widget = wibox.container.place,
+        },
+        screen = capi.screen.primary,
+        type = 'splash',
+        visible = false,
+        ontop = true,
+        bg = beautiful.colorscheme.bg .. '88',
+        height = capi.screen.primary.geometry.height,
+        width = capi.screen.primary.geometry.width,
+        x = capi.screen.primary.geometry.x,
+        y = capi.screen.primary.geometry.y,
+      }
+
+      self.w:buttons { gtable.join(
+        abutton({}, 3, function()
+          self:toggle()
+          self.keygrabber:stop()
+        end)
+      ), }
+
+      self.keygrabber = akeygrabber {
+        autostart = false,
+        stop_event = 'release',
+        stop_key = 'Escape',
+        keybindings = {
+          akey {
+            modifiers = {},
+            key = 'Escape',
+            on_press = function()
+              self:toggle()
+            end,
+          },
+        },
+      }
+
+      -- Get the profile script from /var/lib/AccountsService/icons/${USER}
+      -- and copy it to the assets folder
+      -- TODO: If the user doesnt have AccountsService look into $HOME/.faces
+      aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userPfp'", function(stdout)
+        if stdout then
+          self.w:get_children_by_id('icon_role')[1].image = stdout:gsub('\n', '')
+        else
+          self.w:get_children_by_id('icon_role')[1].image = icondir .. 'defaultpfp.svg'
+        end
+      end)
+
+      aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userName' '" .. beautiful.user_config.namestyle .. "'", function(stdout)
+        self.w:get_children_by_id('text_role')[1].text = stdout:gsub('\n', '')
+      end)
+    end,
+  })
 end
 return instance

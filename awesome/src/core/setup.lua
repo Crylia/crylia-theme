@@ -1,5 +1,8 @@
---- A module to manage the first installation and setup the config without having to edit
---- the config files manually.
+local setmetatable = setmetatable
+local pairs = pairs
+local ipairs = ipairs
+local table = table
+local math = math
 
 --Awesome Libs
 local abutton = require('awful.button')
@@ -10,20 +13,19 @@ local atooltip = require('awful.tooltip')
 local beautiful = require('beautiful')
 local dpi = require('beautiful').xresources.apply_dpi
 local gcolor = require('gears.color')
+local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
 local wibox = require('wibox')
-local gfilesystem = require('gears.filesystem')
-local inputwidget = require('src.modules.inputbox')
 
 --Own Libs
 local toggle_button = require('awful.widget.toggle_widget')
+local inputwidget = require('src.modules.inputbox')
 
 local capi = {
   screen = screen,
 }
 
 local assets_dir = os.getenv('HOME') .. '/.config/awesome/src/assets/'
-local font_dir = os.getenv('HOME') .. '/.config/awesome/src/assets/fonts/'
 local icon_dir = os.getenv('HOME') .. '/.config/awesome/src/assets/icons/setup/'
 
 local setup = { mt = {} }
