@@ -1,8 +1,8 @@
-local setmetatable = setmetatable
-local pairs = pairs
 local ipairs = ipairs
-local table = table
 local math = math
+local pairs = pairs
+local setmetatable = setmetatable
+local table = table
 
 --Awesome Libs
 local abutton = require('awful.button')
@@ -11,9 +11,10 @@ local apopup = require('awful.popup')
 local aspawn = require('awful.spawn')
 local atooltip = require('awful.tooltip')
 local beautiful = require('beautiful')
-local dpi = require('beautiful').xresources.apply_dpi
+local dpi = beautiful.xresources.apply_dpi
 local gcolor = require('gears.color')
 local gfilesystem = require('gears.filesystem')
+local gshape = require('gears.shape')
 local gtable = require('gears.table')
 local wibox = require('wibox')
 

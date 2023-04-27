@@ -43,8 +43,6 @@ local launcher = gobject {}
 --- and generates a wibox widget for each application, containing the application's icon, name and launch command.
 --- The generated wibox widget also includes a context menu that allows the user to launch,
 --- add to desktop, or pin the application to the dock.
---- @param self The launcher table.
----
 function launcher:fetch_apps()
   for _, app in ipairs(Gio.AppInfo.get_all()) do
     local app_id = app:get_id()
@@ -344,7 +342,7 @@ end
 local instance = nil
 if not instance then
   instance = setmetatable(launcher, {
-    __call = function(self, screen)
+    __call = function(self)
       self.app_table = {}
       self.cursor = {
         x = 1,
@@ -531,7 +529,6 @@ if not instance then
         ontop = true,
         visible = true,
         stretch = false,
-        screen = screen,
         placement = aplacement.centered,
         bg = beautiful.colorscheme.bg,
         border_color = beautiful.colorscheme.border_color,

@@ -27,8 +27,8 @@ if not instance then
         end
         require('src.modules.notification-center') { screen = s }
         require('src.modules.window_switcher')(s)
-        require('src.modules.app_launcher')(s)
       end)
+      require('src.modules.app_launcher')()
       require('src.modules.powermenu')()
     end,
   })
