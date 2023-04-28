@@ -1,23 +1,24 @@
-local table = table
 local ipairs = ipairs
+local table = table
 
 -- Awesome libs
-local akeygrabber = require('awful.keygrabber')
-local akey = require('awful.key')
-local gtable = require('gears.table')
-local atag = require('awful.tag')
 local aclient = require('awful.client')
-local aspawn = require('awful.spawn')
+local akey = require('awful.key')
+local akeygrabber = require('awful.keygrabber')
 local alayout = require('awful.layout')
 local ascreen = require('awful.screen')
+local aspawn = require('awful.spawn')
+local atag = require('awful.tag')
+local gfilesystem = require('gears.filesystem')
+local gtable = require('gears.table')
 local hotkeys_popup = require('awful.hotkeys_popup')
 local ruled = require('ruled')
 
 -- Local libs
-local config = require('src.tools.config')
 local audio_helper = require('src.tools.helpers.audio')
 local backlight_helper = require('src.tools.helpers.backlight')
 local beautiful = require('beautiful')
+local config = require('src.tools.config')
 local kb_helper = require('src.tools.helpers.kb_helper')
 local window_switcher = require('src.modules.window_switcher')
 
@@ -314,7 +315,7 @@ return gtable.join(
       capi.mousegrabber.run(
         function(m)
           if m.buttons[1] then
-            local data = config.read_json('/home/crylia/.config/awesome/src/config/floating.json')
+            local data = config.read_json(gfilesystem.get_configuration_dir() .. 'src/config/floating.json')
             if type(data) ~= 'table' then return end
 
             local c = capi.mouse.current_client
@@ -345,7 +346,7 @@ return gtable.join(
             }
             c.floating = true
 
-            config.write_json('/home/crylia/.config/awesome/src/config/floating.json', data)
+            config.write_json(gfilesystem.get_configuration_dir() .. 'src/config/floating.json', data)
             capi.mousegrabber.stop()
           end
           return true
@@ -361,7 +362,7 @@ return gtable.join(
       capi.mousegrabber.run(
         function(m)
           if m.buttons[1] then
-            local data = config.read_json('/home/crylia/.config/awesome/src/config/floating.json')
+            local data = config.read_json(gfilesystem.get_configuration_dir() .. 'src/config/floating.json')
             local c = capi.mouse.current_client
             if not c then return end
 
@@ -387,7 +388,7 @@ return gtable.join(
               end
             end
 
-            config.write_json('/home/crylia/.config/awesome/src/config/floating.json', data)
+            config.write_json(gfilesystem.get_configuration_dir() .. 'src/config/floating.json', data)
             capi.mousegrabber.stop()
           end
           return true

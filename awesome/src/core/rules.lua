@@ -1,5 +1,5 @@
-local setmetatable = setmetatable
 local ipairs = ipairs
+local setmetatable = setmetatable
 
 -- Awesome Libs
 local aclient = require('awful.client')
@@ -7,6 +7,7 @@ local aplacement = require('awful.placement')
 local ascreen = require('awful.screen')
 local beautiful = require('beautiful')
 local dpi = beautiful.xresources.apply_dpi
+local gfilesystem = require('gears.filesystem')
 local ruled = require('ruled')
 
 local config = require('src.tools.config')
@@ -64,18 +65,6 @@ if not instance then
             minimized = true,
           },
         }
-        ruled.client.append_rule {
-          rule_any = {
-            class = {
-              'discord',
-              'spotify',
-            },
-          },
-          properties = {
-            tag = '1',
-            screen = 2,
-          },
-        }
 
         ruled.client.append_rule {
           rule_any = {
@@ -97,7 +86,7 @@ if not instance then
       end)
 
 
-      local data = config.read_json('/home/crylia/.config/awesome/src/config/floating.json')
+      local data = config.read_json(gfilesystem.get_configuration_dir() .. 'src/config/floating.json')
       for _, c in ipairs(data) do
         ruled.client.append_rule {
           rule = { class = c.WM_CLASS, instance = c.WM_INSTANCE },

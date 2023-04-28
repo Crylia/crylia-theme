@@ -45,3 +45,5 @@ require('src.bindings.bind_to_tags')
 require('src.modules') {}
 require('src.tools.auto_starter') {}
 --require('src.core.setup')()
+
+require('src.tools.network')()
