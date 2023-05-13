@@ -1,9 +1,11 @@
 local lgi = require('lgi')
 local gobject = require('gears.object')
+local NM = require('lgi').NM
 
 local dbus_proxy = require('src.lib.lua-dbus_proxy.src.dbus_proxy')
 
 local nmdevice = require('src.tools.network.device')
+local settings = require('src.tools.network.settings')
 
 local network = gobject {}
 
@@ -39,17 +41,63 @@ network.DeviceState = {
   FAILED = 120,
 }
 
-function network:toggle_network()
-  self._private.NetworkManager:Set('org.freedesktop.NetworkManager', 'NetworkingEnabled', lgi.GLib.Variant('b', not self.NetworkingEnabled))
+---Will try to connect to an access point by first searching if the connection already exists
+--- and then adding the connection if its not.
+---@param ap any
+---@param connection any
+---@param callback any
+function network:ConnectToAccessPointAsync(ap, device, connection, callback)
+  print(ap, connection)
+
+  for path, value in pairs(self.NetworkManagerSettings.ConnectionList or {}) do
+    print(--[[ connection.connection.id.value,  ]] ap.SSID, value:GetSettings().connection.id)
+    if (connection and connection.connection.id.value or ap.SSID) == value:GetSettings().connection.id then
+      if connection then
+        value:Update(connection)
+      end
+      self.NetworkManager:ActivateConnectionAsync(function(_, _, succ, failure)
+        print(failure, succ)
+        if failure then
+          callback(false)
+          return
+        else
+          callback(true)
+          return
+        end
+      end, { call_id = 'amogus' }, path, device.object_path, ap.object_path)
+      return
+    end
+  end
+
+  if not connection then
+    callback(false)
+    return
+  end
+
+  self.NetworkManager:AddAndActivateConnectionAsync(function(_, _, succ, fail)
+    if fail then
+      callback(false)
+      return
+    else
+      callback(true)
+      return
+    end
+  end, { call_id = 'amogus' }, connection, device.object_path, ap.object_path)
+
 end
 
-function network:get_active_device()
-  for path, device in pairs(self.Devices) do
-    print(device.ActiveConnection, path)
-    if device.State == self.DeviceState.ACTIVATED then
-      print(device, path)
-    else
-      print('no active device')
+function network:DisconnectFromAP()
+  self.NetworkManager:DeactivateConnection(self:get_wireless_device().ActiveConnection)
+end
+
+--TODO: Make sure this works, I don't know how its going
+--TODO: to work if there were multiple wireless devices, probably try
+--TODO: to find the one that is active or something like that
+function network:get_wireless_device()
+  for _, device in pairs(self.Devices) do
+    print(device.DeviceType, device.device_path)
+    if device.DeviceType == self.DeviceType.WIFI then
+      return device
     end
   end
 end
@@ -60,16 +108,19 @@ function network:get_devices()
   for _, device in ipairs(devices) do
     self.Devices[device] = nmdevice(device)
     self.Devices[device]:connect_signal('NetworkManagerDevice::StateChanged', function(_, s, r)
-      print(device, s, r)
     end)
   end
 end
 
+function network:toggle_network()
+  self.NetworkManager:Set('org.freedesktop.NetworkManager', 'NetworkingEnabled', lgi.GLib.Variant('b', not self.NetworkingEnabled))
+end
+
 function network:toggle_wifi()
-  if not self.NetworkingEnabled then
+  if self.NetworkingEnabled == false then
     self:toggle_network()
   end
-  self._private.NetworkManager:Set('org.freedesktop.NetworkManager', 'WirelessEnabled', lgi.GLib.Variant('b', not self.NetworkingEnabled))
+  self.NetworkManager:Set('org.freedesktop.NetworkManager', 'WirelessEnabled', lgi.GLib.Variant('b', not self.WirelessEnabled))
 end
 
 local instance = nil
@@ -90,12 +141,7 @@ if not instance then
         path = '/org/freedesktop/NetworkManager',
       }
 
-      self.NetworkManagerSettings = dbus_proxy.Proxy:new {
-        bus = dbus_proxy.Bus.SYSTEM,
-        name = 'org.freedesktop.NetworkManager',
-        interface = 'org.freedesktop.NetworkManager.Settings',
-        path = '/org/freedesktop/NetworkManager/Settings',
-      }
+      self.NetworkManagerSettings = settings()
 
       self.NetworkManager:connect_signal(function(_, device_path)
         if device_path then
@@ -120,8 +166,17 @@ if not instance then
         end
       end, 'PropertiesChanged')
 
+      -- Init values because signal isn't emitted on startup
+      self:emit_signal('NetworkManager::WirelessEnabled', self.NetworkManager.WirelessEnabled)
+      self:emit_signal('NetworkManager::NetworkingEnabled', self.NetworkManager.NetworkingEnabled)
+      self.WirelessEnabled = self.NetworkManager.WirelessEnabled
+      self.NetworkingEnabled = self.NetworkManager.NetworkingEnabled
+
+
       self:get_devices()
-      self:get_active_device()
+
+
+      return self
     end,
   })
 end
