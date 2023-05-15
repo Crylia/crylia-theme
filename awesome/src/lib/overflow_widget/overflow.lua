@@ -338,7 +338,6 @@ function overflow:set_scroll_factor(factor)
   end
 
   self.rubato_timed.target = math.min(1, math.max(factor + (self.rubato_timed.target - self.rubato_timed.pos), 0))
-  print(self.rubato_timed.target)
   --self._private.scroll_factor = math.min(1, math.max(factor, 0))
 
   --self:emit_signal('widget::layout_changed')
