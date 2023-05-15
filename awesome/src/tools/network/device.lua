@@ -152,6 +152,10 @@ return setmetatable(device, {
           if self.NetworkManagerDeviceWireless then
             return self.NetworkManagerDeviceWireless.Bitrate
           end
+        elseif key == 'Speed' then
+          if self.NetworkManagerDeviceWired then
+            return self.NetworkManagerDeviceWired.Speed
+          end
         elseif key == 'Managed' then
           return self.NetworkManagerDevice.Managed
         elseif key == 'ActiveConnection' then

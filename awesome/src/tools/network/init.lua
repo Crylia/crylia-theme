@@ -93,13 +93,19 @@ end
 --TODO: Make sure this works, I don't know how its going
 --TODO: to work if there were multiple wireless devices, probably try
 --TODO: to find the one that is active or something like that
+---Returns the current wifi device, if none if found returns the ethernet devie, else nil
+---@return wifi|ethernet|nil device
 function network:get_wireless_device()
+  local ethernet_device = nil
   for _, device in pairs(self.Devices) do
     print(device.DeviceType, device.device_path)
     if device.DeviceType == self.DeviceType.WIFI then
       return device
+    elseif device.DeviceType == self.DeviceType.ETHERNET then
+      ethernet_device = device
     end
   end
+  return ethernet_device
 end
 
 function network:get_devices()

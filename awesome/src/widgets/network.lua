@@ -16,7 +16,8 @@ local wibox = require('wibox')
 
 -- Local Libs
 local hover = require('src.tools.hover')
-local nm_widget = require('src.modules.network_controller')
+local nm_widget = require('src.modules.network')
+local networkManager = require('src.tools.network')()
 
 local capi = {
   awesome = awesome,
@@ -62,32 +63,60 @@ return setmetatable({}, {
 
     hover.bg_hover { widget = w }
 
-    capi.awesome.connect_signal('NM::AccessPointStrength', function(strength)
-      strength = mfloor(strength)
-      w:get_children_by_id('wifi_strength')[1].text = strength .. '%'
-      w:get_children_by_id('wifi_icon')[1].image = gcolor.recolor_image(icondir ..
-        'wifi-strength-' .. mfloor(strength / 25) + 1 .. '.svg', beautiful.colorscheme.bg)
-    end)
-
-    capi.awesome.connect_signal('NM::EthernetStatus', function(connected, speed)
-      local tt = atooltip {
+    --  Little workaround because signals from nm_widget are not working?
+    --! Find out why the signals are not working
+    local function update_ethernet(device)
+      w.tt = atooltip {
         objects = { w },
         mode = 'outside',
         preferred_alignments = 'middle',
         margins = dpi(10),
+        text = 'Connected via Ethernet at ' .. mfloor(device.Speed or 0) .. '/Mbps',
       }
-      if connected then
-        w:get_children_by_id('wifi_icon')[1].image = gcolor.recolor_image(icondir .. 'ethernet.svg',
-          beautiful.colorscheme.bg)
-        tt.text = 'Connected via Ethernet at ' .. mfloor(speed or 0) .. '/Mbps'
-      else
-        w:get_children_by_id('wifi_icon')[1].image = gcolor.recolor_image(icondir .. 'no-internet.svg',
-          beautiful.colorscheme.bg)
-        tt.text = 'No connection found'
-      end
-    end)
+    end
 
     local nm = nm_widget { screen = screen }
+
+    local function active_access_point_strength(strength)
+      local s
+      if strength > 80 then
+        s = 5
+      elseif strength >= 60 and strength < 80 then
+        s = 4
+      elseif strength >= 40 and strength < 60 then
+        s = 3
+      elseif strength >= 20 and strength < 40 then
+        s = 2
+      else
+        s = 1
+      end
+      w:get_children_by_id('wifi_strength')[1].text = math.floor(strength) .. '%'
+      w:get_children_by_id('wifi_icon')[1].image = gcolor.recolor_image(icondir ..
+        'wifi-strength-' .. s .. '.svg', beautiful.colorscheme.bg)
+    end
+
+    capi.awesome.connect_signal('ActiveAccessPointStrength', active_access_point_strength)
+
+    -- Remove the wifi signals when no wifi is active/readd them when wifi is active
+    networkManager:connect_signal('NetworkManager::WirelessEnabled', function(enabled)
+      if enabled then
+        capi.awesome.connect_signal('ActiveAccessPointStrength', active_access_point_strength)
+        w:get_children_by_id('wifi_strength')[1].visible = true
+        w.tt = nil
+      else
+        -- If its nil then there is no internet
+        local dev = networkManager:get_wireless_device()
+        if not dev then
+          w:get_children_by_id('wifi_icon')[1].image = gcolor.recolor_image(icondir .. 'no-internet.svg', beautiful.colorscheme.bg)
+        else
+          w:get_children_by_id('wifi_icon')[1].image = gcolor.recolor_image(icondir .. 'ethernet.svg', beautiful.colorscheme.bg)
+          update_ethernet(dev)
+          w.tt = nil
+        end
+        capi.awesome.disconnect_signal('ActiveAccessPointStrength', active_access_point_strength)
+        w:get_children_by_id('wifi_strength')[1].visible = false
+      end
+    end)
 
     local network_controler_popup = apopup {
       widget = nm,
