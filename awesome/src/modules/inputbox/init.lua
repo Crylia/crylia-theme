@@ -395,7 +395,8 @@ function inputbox:set_cursor_pos_from_mouse(x, y)
 end
 
 function inputbox:get_text()
-  return self._private.layout:get_text()
+  return self._private.text
+  --return self._private.layout:get_text()
 end
 
 function inputbox:set_text(text)
@@ -407,7 +408,8 @@ function inputbox:set_text(text)
 
   if not attributes then return parsed.message or tostring(parsed) end
 
-  self._private.layout:set_text(parsed, string.len(parsed))
+  self._private.layout:set_text(self.password_mode and string.rep(self.password_char, string.len(parsed)) or parsed, string.len(parsed))
+  self._private.text = parsed
 
   self._private.layout:set_attributes(attributes)
 
@@ -486,11 +488,13 @@ function inputbox.new(args)
   gtable.crush(ret, inputbox)
 
   ret._private = {}
+  ret._private.text = args.text or ''
   ret._private.context = PangoCairo.font_map_get_default():create_context()
   ret._private.layout = Pango.Layout.new(ret._private.context)
   ret._private.layout:set_font_description(Pango.FontDescription.from_string(args.font or 'JetBrainsMono Nerd Font 16'))
 
   ret.password_mode = args.password_mode or false
+  ret.password_char = args.password_char or '*'
   ret._private.text_hint = args.text_hint or ''
   ret._private.cursor_pos = {
     index = args.cursor_pos or 0,
@@ -517,7 +521,7 @@ function inputbox.new(args)
     end)
   end
 
-  ret:set_text(args.text or '')
+  ret:set_text(ret._private.text)
   return ret
 end
 
