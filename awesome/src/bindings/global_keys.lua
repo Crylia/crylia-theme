@@ -240,7 +240,9 @@ return gtable.join(
     {},
     'XF86AudioLowerVolume',
     function(c)
-      audio_helper.sink_volume_down()
+      -- When changing the volume it makes sense to unmute
+      audio_helper:sink_volume_down()
+      audio_helper:sink_unmute()
     end,
     { description = 'Lower volume', group = 'System' }
   ),
@@ -248,7 +250,9 @@ return gtable.join(
     {},
     'XF86AudioRaiseVolume',
     function(c)
-      audio_helper.sink_volume_up()
+      -- When changing the volume it makes sense to unmute
+      audio_helper:sink_volume_up()
+      audio_helper:sink_unmute()
     end,
     { description = 'Increase volume', group = 'System' }
   ),
@@ -256,7 +260,7 @@ return gtable.join(
     {},
     'XF86AudioMute',
     function(c)
-      audio_helper.sink_toggle_mute()
+      audio_helper:sink_toggle_mute()
     end,
     { description = 'Mute volume', group = 'System' }
   ),
@@ -330,8 +334,8 @@ return gtable.join(
             -- Check if data already had the client then return
             for _, v in ipairs(data) do
               if v.WM_NAME == client_data.WM_NAME and
-                  v.WM_CLASS == client_data.WM_CLASS and
-                  v.WM_INSTANCE == client_data.WM_INSTANCE then
+                v.WM_CLASS == client_data.WM_CLASS and
+                v.WM_INSTANCE == client_data.WM_INSTANCE then
                 return
               end
             end
@@ -375,7 +379,7 @@ return gtable.join(
             -- Remove client_data from data_table
             for k, v in ipairs(data) do
               if v.WM_CLASS == client_data.WM_CLASS and
-                  v.WM_INSTANCE == client_data.WM_INSTANCE then
+                v.WM_INSTANCE == client_data.WM_INSTANCE then
                 table.remove(data, k)
                 ruled.client.remove_rule {
                   rule = { class = c.class, instance = c.instance },

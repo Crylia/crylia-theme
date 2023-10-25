@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Awesome Crylia Theme
+Comment=Crylia Theme for AwesomeWM
+TryExec=sh -c "awesome_crylia -c $HOME/.config/crylia_theme/rc.lua"
+Exec=sh -c "/usr/local/bin/awesome_crylia -c $HOME/.config/crylia_theme/rc.lua"
+Type=Application
+

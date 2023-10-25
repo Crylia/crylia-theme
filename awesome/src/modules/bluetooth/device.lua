@@ -227,7 +227,8 @@ function device.new(args)
         widget = wibox.container.margin,
       },
       widget = wibox.container.background,
-    }, spacing = dpi(10),
+    },
+    spacing = dpi(10),
     entries = {
       { -- Connect/Disconnect a device
         name = ret.device.Connected and 'Disconnect' or 'Connect',

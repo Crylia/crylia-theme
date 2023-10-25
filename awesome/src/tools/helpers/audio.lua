@@ -6,42 +6,107 @@ local audio = {}
 
 local instance = nil
 
-function audio.set_sink_volume(volume)
-  aspawn('pactl set-sink-volume @DEFAULT_SINK@ ' .. volume .. '%')
+function audio:set_sink_volume(volume)
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-sink-volume @DEFAULT_SINK@ ' .. volume .. '%', function()
+    self.allow_cmd = true
+  end)
 end
 
-function audio.set_source_volume(volume)
-  aspawn('pactl set-source-volume @DEFAULT_SOURCE@ ' .. volume .. '%')
+function audio:set_source_volume(volume)
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-source-volume @DEFAULT_SOURCE@ ' .. volume .. '%', function()
+    self.allow_cmd = true
+  end)
 end
 
-function audio.sink_volume_up()
-  aspawn('pactl set-sink-volume @DEFAULT_SINK@ +2%')
+function audio:sink_volume_up()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-sink-volume @DEFAULT_SINK@ +2%', function()
+    self.allow_cmd = true
+  end)
 end
 
-function audio.source_volume_up()
-  aspawn('pactl set-source-volume @DEFAULT_SOURCE@ +2%')
+function audio:source_volume_up()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-source-volume @DEFAULT_SOURCE@ +2%', function()
+    self.allow_cmd = true
+  end)
 end
 
-function audio.sink_volume_down()
-  aspawn('pactl set-sink-volume @DEFAULT_SINK@ -2%')
+function audio:sink_volume_down()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-sink-volume @DEFAULT_SINK@ -2%', function()
+    self.allow_cmd = true
+  end)
 end
 
-function audio.source_volume_down()
-  aspawn('pactl set-source-volume @DEFAULT_SOURCE@ -2%')
+function audio:source_volume_down()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-source-volume @DEFAULT_SOURCE@ -2%', function()
+    self.allow_cmd = true
+  end)
 end
 
-function audio.sink_toggle_mute()
-  aspawn('pactl set-sink-mute @DEFAULT_SINK@ toggle')
+function audio:sink_toggle_mute()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-sink-mute @DEFAULT_SINK@ toggle', function()
+    self.allow_cmd = true
+  end)
 end
 
-function audio.source_toggle_mute()
-  aspawn('pactl set-source-mute @DEFAULT_SOURCE@ toggle')
+function audio:source_toggle_mute()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-source-mute @DEFAULT_SOURCE@ toggle', function()
+    self.allow_cmd = true
+  end)
+end
+
+function audio:sink_unmute()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-sink-mute @DEFAULT_SINK@ false', function()
+    self.allow_cmd = true
+  end)
+end
+
+function audio:sink_mute()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-sink-mute @DEFAULT_SINK@ true', function()
+    self.allow_cmd = true
+  end)
+end
+
+function audio:source_unmute()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn.easy_async_with_shell('pactl set-source-mute @DEFAULT_SOURCE@ false', function()
+    self.allow_cmd = true
+  end)
+end
+
+function audio:source_mute()
+  if not self.allow_cmd then return end
+  self.allow_cmd = false
+  aspawn('pactl set-source-mute @DEFAULT_SOURCE@ true', function()
+    self.allow_cmd = true
+  end)
 end
 
 local function new()
-
   local self = gobject {}
   gtable.crush(self, audio, true)
+
+  self.allow_cmd = true
 
   aspawn.with_line_callback([[bash -c "LC_ALL=C pactl subscribe"]], {
     stdout = function(line)

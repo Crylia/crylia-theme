@@ -101,7 +101,9 @@ function dock:get_element_widget(desktop_file)
   if not desktop_file then return end
 
   local GDesktopAppInfo = Gio.DesktopAppInfo.new_from_filename(desktop_file)
-
+  if not GDesktopAppInfo then
+    return 
+  end
   local icon = icon_lookup:get_gicon_path(nil, GDesktopAppInfo.get_string(GDesktopAppInfo, 'Icon')) or
       icon_lookup:get_gicon_path(nil, Gio.DesktopAppInfo.get_string(GDesktopAppInfo, 'X-AppImage-Old-Icon')) or ''
 

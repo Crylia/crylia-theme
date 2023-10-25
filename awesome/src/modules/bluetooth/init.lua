@@ -1,645 +1,420 @@
---------------------------------------
--- This is the bluetooth controller --
---------------------------------------
+local setmetatable = setmetatable
 
--- Awesome Libs
-local abutton = require('awful.button')
-local aspawn = require('awful.spawn')
-local base = require('wibox.widget.base')
-local beautiful = require('beautiful')
-local dbus_proxy = require('src.lib.lua-dbus_proxy.src.dbus_proxy')
-local dpi = require('beautiful').xresources.apply_dpi
-local gcolor = require('gears').color
-local gfilesystem = require('gears').filesystem
-local gshape = require('gears').shape
-local gtable = require('gears').table
-local gtimer = require('gears.timer')
-local lgi = require('lgi')
-local naughty = require('naughty')
 local wibox = require('wibox')
+local gtable = require('gears.table')
+local gobject = require('gears.object')
+local beautiful = require('beautiful')
+local dpi = beautiful.xresources.apply_dpi
+local base = require('wibox.widget.base')
+local gfilesystem = require('gears.filesystem')
+local gcolor = require('gears.color')
+local gshape = require('gears.shape')
+local abutton = require('awful.button')
 
--- Third party libs
 local rubato = require('src.lib.rubato')
-local hover = require('src.tools.hover')
 
--- Own libs
-local bt_device = require('src.modules.bluetooth.device')
+local bt = require('src.tools.bluetooth.adapter')()
+local dev = require('src.tools.bluetooth.device')
 local dnd_widget = require('awful.widget.toggle_widget')
 
 local icondir = gfilesystem.get_configuration_dir() .. 'src/assets/icons/bluetooth/'
 
-local capi = {
-  awesome = awesome,
-  mouse = mouse,
-  mousegrabber = mousegrabber,
-}
+local bluetooth = gobject {}
 
-local bluetooth = { mt = {} }
 
---#region wibox.widget.base boilerplate
+---Add a device to a specified list
+---@param path string device
+function bluetooth:add_device_to_list(path)
+  if not path then return end
 
-function bluetooth:layout(_, width, height)
-  if self._private.widget then
-    return { base.place_widget_at(self._private.widget, 0, 0, width, height) }
-  end
-end
+  local paired_list = self:get_children_by_id('paired_list')[1]
+  local discovered_list = self:get_children_by_id('discovered_list')[1]
 
-function bluetooth:fit(context, width, height)
-  local w, h = 0, 0
-  if self._private.widget then
-    w, h = base.fit_widget(self, context, self._private.widget, width, height)
-  end
-  return w, h
-end
+  local device = dev(path)
 
-bluetooth.set_widget = base.set_widget_common
-
-function bluetooth:get_widget()
-  return self._private.widget
-end
-
---#endregion
-
----Get the list of paired devices
----@return table devices table of paired devices
-function bluetooth:get_paired_devices()
-  return self:get_children_by_id('connected_device_list')[1].children
-end
-
----Get the list of discovered devices
----@return table devices table of discovered devices
-function bluetooth:get_discovered_devices()
-  return self:get_children_by_id('discovered_device_list')[1].children
-end
-
---- Remove a device by first disconnecting it async then removing it
-function bluetooth:remove_device_information(device)
-  device:DisconnectAsync(function(_, _, out, err)
-    self._private.Adapter1:RemoveDevice(device.object_path)
-  end)
-end
-
---- Add a new device into the devices list
-function bluetooth:add_device(device, object_path)
-
-  -- Get a reference to both lists
-  local plist = self:get_children_by_id('connected_device_list')[1]
-  local dlist = self:get_children_by_id('discovered_device_list')[1]
-
-  -- For the first list check if the device already exists and if its connection state changed
-  -- if it changed then remove it from the current list and put it into the other one
-  for _, value in pairs(dlist.children) do
-    -- I'm not sure why Connected is in both cases true when its a new connection but eh just take it, it works
-    if value.device.Address:match(device.Address) and (device.Connected ~= value.device.Connected) then
-      return
-    elseif value.device.Address:match(device.Address) and (device.Connected == value.device.Connected) then
-      dlist:remove_widgets(value)
-      plist:add(plist:add(bt_device {
-        device = device,
-        path = object_path,
-        remove_callback = function()
-          self:remove_device_information(device)
-        end,
-      }))
-      return;
-    end
-  end
-  -- Just check if the device already exists in the list
-  for _, value in pairs(plist.children) do
-    if value.device.Address:match(device.Address) then return end
-  end
-
-  -- If its paired add it to the paired list
-  -- else add it to the discovered list
+  local bg, fg
   if device.Paired then
-    plist:add(bt_device {
-      device = device,
-      path = object_path,
-      remove_callback = function()
-        self:remove_device_information(device)
-      end,
-    })
-    self:emit_signal('device::added_connected')
+    bg = beautiful.colorscheme.bg_blue
+    fg = beautiful.colorscheme.bg
   else
-    dlist:add(bt_device {
-      device = device,
-      path = object_path,
-      remove_callback = function()
-        self:remove_device_information(device)
-      end,
-    })
-    self:emit_signal('device::added_discovered')
+    bg = beautiful.colorscheme.bg
+    fg = beautiful.colorscheme.bg_blue
   end
-end
 
----Remove a device from any list
----@param object_path string the object path of the device
-function bluetooth:remove_device(object_path)
-  local plist = self:get_children_by_id('connected_device_list')[1]
-  local dlist = self:get_children_by_id('discovered_device_list')[1]
-  for _, d in ipairs(dlist.children) do
-    if d.device.object_path == object_path then
-      dlist:remove_widgets(d)
-      self:emit_signal('device::removed_discovered')
-    end
-  end
-  for _, d in ipairs(plist.children) do
-    if d.device.object_path == object_path and (not d.device.Paired) then
-      plist:remove_widgets(d)
-      self:emit_signal('device::removed_connected')
-    end
-  end
-end
-
----Start scanning for devices
-function bluetooth:scan()
-  self._private.Adapter1:StartDiscovery()
-end
-
----Stop scanning for devices
-function bluetooth:stop_scan()
-  self._private.Adapter1:StopDiscovery()
-end
-
----Toggle bluetooth on or off
-function bluetooth:toggle()
-  local powered = self._private.Adapter1.Powered
-
-  self._private.Adapter1:Set('org.bluez.Adapter1', 'Powered', lgi.GLib.Variant('b', not powered))
-  self._private.Adapter1.Powered = {
-    signature = 'b',
-    value = not powered,
-  }
-end
-
---- Open blueman-manager
-function bluetooth:open_settings()
-  aspawn('blueman-manager')
-end
-
----Get a new device proxy and connect a PropertyChanged signal to it and
----add the device to the list
----@param object_path string the object path of the device
-function bluetooth:get_device_info(object_path)
-  if (not object_path) or (not object_path:match('/org/bluez/hci0/dev')) then return end
-
-  -- New Device1 proxy
-  local Device1 = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.bluez.Device1',
-    path = object_path,
-  }
-
-  -- New Properties proxy for the object_path
-  local Device1Properties = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.freedesktop.DBus.Properties',
-    path = object_path,
-  }
-
-  -- Just return if the Device1 has no name, this usually means random devices with just a mac address
-  if (not Device1.Name) or (Device1.Name == '') then return end
-
-  -- For some reason it notifies twice or thrice
-  local just_notified = false
-
-  local notify_timer = gtimer {
-    timeout = 3,
-    autostart = false,
-    single_shot = true,
-    callback = function()
-      just_notified = false
-    end,
-  }
-
-  -- Connect the PropertyChanged signal to update the device when a property changes and send a notification
-  Device1Properties:connect_signal(function(_, _, changed_props)
-    if changed_props['Connected'] ~= nil then
-      if not just_notified then
-        naughty.notification {
-          app_icon = icondir .. 'bluetooth-on.svg',
-          app_name = 'Bluetooth',
-          title = Device1.Name,
-          icon = icondir .. Device1.Icon .. '.svg',
-          timeout = 5,
-          message = 'Device ' ..
-              Device1.Name .. ' is now ' .. (changed_props['Connected'] and 'connected' or 'disconnected'),
-          category = Device1.Connected and 'device.added' or 'device.removed',
-        }
-        just_notified = true
-        notify_timer:start()
-      end
-    end
-    capi.awesome.emit_signal(object_path .. '_updated', Device1)
-  end, 'PropertiesChanged')
-
-  self:add_device(Device1, object_path)
-end
-
----Send a notification
----@param powered boolean the powered state of the adapter
-local function send_state_notification(powered)
-  naughty.notification {
-    app_icon = icondir .. 'bluetooth-on.svg',
-    app_name = 'Bluetooth',
-    title = 'Bluetooth',
-    message = powered and 'Enabled' or 'Disabled',
-    icon = powered and icondir .. 'bluetooth-on.svg' or icondir .. 'bluetooth-off.svg',
-    category = powered and 'device.added' or 'device.removed',
-  }
-end
-
-function bluetooth.new(args)
-  args = args or {}
-
-  -- For some reason the first widget isn't read so the first container is a duplicate
-  local ret = base.make_widget_from_value {
+  local w = base.make_widget_from_value {
     {
       {
         {
           {
             {
-              {
-                resize = false,
-                image = gcolor.recolor_image(icondir .. 'menu-down.svg',
-                  beautiful.colorscheme.bg_purple),
-                widget = wibox.widget.imagebox,
-                valign = 'center',
-                halign = 'center',
-                id = 'connected_icon',
-              },
-              {
-                {
-                  text = 'Paired Devices',
-                  valign = 'center',
-                  halign = 'center',
-                  widget = wibox.widget.textbox,
-                },
-                margins = dpi(5),
-                widget = wibox.container.margin,
-              },
-              layout = wibox.layout.fixed.horizontal,
-            },
-            bg = beautiful.colorscheme.bg1,
-            fg = beautiful.colorscheme.bg_purple,
-            shape = beautiful.shape[4],
-            widget = wibox.container.background,
-            id = 'connected_bg',
-          },
-          id = 'connected_margin',
-          widget = wibox.container.margin,
-        },
-        {
-          {
-            {
-              {
-                step = dpi(50),
-                spacing = dpi(10),
-                layout = require('src.lib.overflow_widget.overflow').vertical,
-                scrollbar_width = 0,
-                id = 'connected_device_list',
-              },
-              id = 'margin',
-              margins = dpi(10),
-              widget = wibox.container.margin,
-            },
-            border_color = beautiful.colorscheme.bg1,
-            border_width = dpi(2),
-            shape = beautiful.shape[4],
-            widget = wibox.container.background,
-          },
-          widget = wibox.container.constraint,
-          strategy = 'exact',
-          height = 0,
-          id = 'connected_list',
-        },
-        {
-          {
-            {
-              {
-                resize = false,
-                image = gcolor.recolor_image(icondir .. 'menu-down.svg',
-                  beautiful.colorscheme.bg_blue),
-                widget = wibox.widget.imagebox,
-                valign = 'center',
-                halign = 'center',
-                id = 'discovered_icon',
-              },
-              {
-                {
-                  text = 'Nearby Devices',
-                  valign = 'center',
-                  halign = 'center',
-                  widget = wibox.widget.textbox,
-                },
-                margins = dpi(5),
-                widget = wibox.container.margin,
-              },
-              layout = wibox.layout.fixed.horizontal,
-            },
-            id = 'discovered_bg',
-            bg = beautiful.colorscheme.bg1,
-            fg = beautiful.colorscheme.bg_blue,
-            shape = beautiful.shape[4],
-            widget = wibox.container.background,
-          },
-          id = 'discovered_margin',
-          top = dpi(10),
-          widget = wibox.container.margin,
-        },
-        {
-          {
-            {
-              id = 'discovered_device_list',
-              spacing = dpi(10),
-              step = dpi(50),
-              layout = require('src.lib.overflow_widget.overflow').vertical,
-              scrollbar_width = 0,
-            },
-            margins = dpi(10),
-            widget = wibox.container.margin,
-          },
-          border_color = beautiful.colorscheme.border_color,
-          border_width = dpi(2),
-          shape = beautiful.shape[4],
-          widget = wibox.container.background,
-          forced_height = 0,
-          id = 'discovered_list',
-        },
-        {
-          { -- action buttons
-            {
-              dnd_widget {
-                color = beautiful.colorscheme.bg_blue,
-                size = dpi(40),
-              },
-              id = 'dnd',
-              widget = wibox.container.place,
-              valign = 'center',
+              widget = wibox.widget.imagebox,
               halign = 'center',
+              valign = 'center',
+              resize = true,
+              id = 'icon_role',
+              image = gcolor.recolor_image(
+                icondir .. device.Icon .. '.svg', beautiful.colorscheme.bg_blue),
             },
-            nil,
-            { -- refresh
-              {
-                {
-                  image = gcolor.recolor_image(icondir .. 'refresh.svg',
-                    beautiful.colorscheme.bg),
-                  resize = false,
-                  valign = 'center',
-                  halign = 'center',
-                  widget = wibox.widget.imagebox,
-                },
-                widget = wibox.container.margin,
-                margins = dpi(5),
-              },
-              shape = beautiful.shape[4],
-              bg = beautiful.colorscheme.bg_blue,
-              id = 'scan',
-              widget = wibox.container.background,
-            },
-            layout = wibox.layout.align.horizontal,
+            height = dpi(24),
+            width = dpi(24),
+            strategy = 'exact',
+            widget = wibox.container.constraint,
           },
-          widget = wibox.container.margin,
-          top = dpi(10),
+          {
+            {
+              {
+                text = device.Alias or device.Name or path or '',
+                widget = wibox.widget.textbox,
+              },
+              widget = wibox.container.constraint,
+              width = dpi(300),
+              strategy = 'exact',
+            },
+            strategy = 'max',
+            height = dpi(40),
+            width = dpi(260),
+            widget = wibox.container.constraint,
+          },
+          spacing = dpi(10),
+          layout = wibox.layout.fixed.horizontal,
         },
-        layout = wibox.layout.fixed.vertical,
+        { -- Spacing
+          width = dpi(10),
+          widget = wibox.container.constraint,
+        },
+        {
+          {
+            {
+              halign = 'center',
+              valign = 'center',
+              resize = false,
+              id = 'con_icon',
+              image = gcolor.recolor_image(icondir .. 'link-off.svg', fg),
+              widget = wibox.widget.imagebox,
+            },
+            width = dpi(24),
+            height = dpi(24),
+            strategy = 'exact',
+            widget = wibox.container.constraint,
+          },
+          margins = dpi(5),
+          widget = wibox.container.margin,
+        },
+        layout = wibox.layout.align.horizontal,
       },
-      margins = dpi(15),
+      margins = dpi(5),
       widget = wibox.container.margin,
     },
-    margins = dpi(15),
-    widget = wibox.container.margin,
+    shape = beautiful.shape[4],
+    bg = bg,
+    fg = fg,
+    border_color = beautiful.colorscheme.border_color,
+    border_width = dpi(2),
+    widget = wibox.container.background,
+    object_path = path,
   }
 
-  --#region Dropdown logic
-  local connected_margin = ret:get_children_by_id('connected_margin')[1]
-  local connected_list = ret:get_children_by_id('connected_list')[1]
-  local connected_icon = ret:get_children_by_id('connected_icon')[1]
+  if device.Paired then
+    table.insert(paired_list.children, w)
+  else
+    table.insert(discovered_list.children, w)
+  end
+end
 
-  local connected_animation = rubato.timed {
-    duration = 0.2,
-    pos = connected_list.height,
-    clamp_position = true,
-    subscribed = function(v)
-      connected_list.height = v
-    end,
-  }
+return setmetatable(bluetooth, {
+  __call = function(self)
 
-  ret:connect_signal('device::added_connected', function(device)
-    if device.Connected then
-      local size = (#ret:get_paired_devices() * 60)
-      if size < 210 then
-        connected_animation.target = dpi(size)
+    local dnd = dnd_widget {
+      color = beautiful.colorscheme.bg_blue,
+      size = dpi(40),
+    }
 
-        connected_margin.connected_bg.shape = function(cr, width, height)
-          gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+    local w = base.make_widget_from_value {
+      {
+        {
+          {
+            { -- Paired header
+              {
+                {
+                  {
+                    widget = wibox.widget.imagebox,
+                    resize = false,
+                    id = 'paired_icon',
+                    image = gcolor.recolor_image(icondir .. 'menu-down.svg', beautiful.colorscheme.bg_blue),
+                  },
+                  widget = wibox.container.place,
+                },
+                {
+                  {
+                    text = 'Paired Devices',
+                    widget = wibox.widget.textbox,
+                  },
+                  margins = dpi(5),
+                  widget = wibox.container.margin,
+                },
+                layout = wibox.layout.fixed.horizontal,
+              },
+              id = 'paired_list_bar',
+              bg = beautiful.colorscheme.bg1,
+              fg = beautiful.colorscheme.bg_blue,
+              shape = beautiful.shape[4],
+              widget = wibox.container.background,
+            },
+            { -- Paired list
+              {
+                {
+                  {
+                    id = 'paired_list',
+                    scrollbar_width = 0,
+                    spacing = dpi(10),
+                    step = dpi(50),
+                    layout = require('src.lib.overflow_widget.overflow').vertical,
+                  },
+                  margins = dpi(10),
+                  widget = wibox.container.margin,
+                },
+                border_color = beautiful.colorscheme.border_color,
+                border_width = dpi(2),
+                shape = function(cr, width, height)
+                  gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+                end,
+                widget = wibox.container.background,
+              },
+              id = 'paired_list_height',
+              strategy = 'exact',
+              height = 0,
+              widget = wibox.container.constraint,
+            },
+            { -- Spacer
+              widget = wibox.container.constraint,
+              strategy = 'exact',
+              height = dpi(10),
+            },
+            { -- discovered header
+              {
+                {
+                  {
+                    widget = wibox.widget.imagebox,
+                    resize = false,
+                    id = 'discovered_icon',
+                    image = gcolor.recolor_image(icondir .. 'menu-down.svg', beautiful.colorscheme.bg_blue),
+                  },
+                  widget = wibox.container.place,
+                },
+                {
+                  {
+                    text = 'Discovered Devices',
+                    widget = wibox.widget.textbox,
+                  },
+                  margins = dpi(5),
+                  widget = wibox.container.margin,
+                },
+                layout = wibox.layout.fixed.horizontal,
+              },
+              id = 'discovered_list_bar',
+              bg = beautiful.colorscheme.bg1,
+              fg = beautiful.colorscheme.bg_blue,
+              shape = beautiful.shape[4],
+              widget = wibox.container.background,
+            },
+            { -- discovered list
+              {
+                {
+                  {
+                    id = 'discovered_list',
+                    scrollbar_width = 0,
+                    spacing = dpi(10),
+                    step = dpi(50),
+                    layout = require('src.lib.overflow_widget.overflow').vertical,
+                  },
+                  margins = dpi(10),
+                  widget = wibox.container.margin,
+                },
+                border_color = beautiful.colorscheme.border_color,
+                border_width = dpi(2),
+                shape = function(cr, width, height)
+                  gshape.partially_rounded_rect(cr, width, height, false, false, true, true, dpi(4))
+                end,
+                widget = wibox.container.background,
+              },
+              id = 'discovered_list_height',
+              strategy = 'exact',
+              height = 0,
+              widget = wibox.container.constraint,
+            },
+            { -- widgets
+              {
+                {
+                  dnd,
+                  widget = wibox.container.place,
+                },
+                nil,
+                {
+                  {
+                    {
+                      image = gcolor.recolor_image(icondir .. 'refresh.svg', beautiful.colorscheme.bg_blue),
+                      resize = false,
+                      valign = 'center',
+                      halign = 'center',
+                      widget = wibox.widget.imagebox,
+                    },
+                    widget = wibox.container.margin,
+                    margins = dpi(5),
+                  },
+                  id = 'refresh_button',
+                  border_color = beautiful.colorscheme.border_color,
+                  border_width = dpi(2),
+                  shape = beautiful.shape[4],
+                  bg = beautiful.colorscheme.bg,
+                  widget = wibox.container.background,
+                },
+                layout = wibox.layout.align.horizontal,
+              },
+              top = dpi(10),
+              widget = wibox.container.margin,
+            },
+            layout = wibox.layout.fixed.vertical,
+          },
+          margins = dpi(15),
+          widget = wibox.container.margin,
+        },
+        shape = beautiful.shape[8],
+        border_color = beautiful.colorscheme.border_color,
+        bg = beautiful.colorscheme.bg,
+        border_width = dpi(2),
+        widget = wibox.container.background,
+      },
+      strategy = 'exact',
+      width = dpi(400),
+      widget = wibox.container.constraint,
+    }
+
+    gtable.crush(self, w, true)
+
+    local paired_list = w:get_children_by_id('paired_list')[1]
+    local discovered_list = w:get_children_by_id('discovered_list')[1]
+
+    local paired_list_height = w:get_children_by_id('paired_list_height')[1]
+    local discovered_list_height = w:get_children_by_id('discovered_list_height')[1]
+
+    local paired_list_bar = w:get_children_by_id('paired_list_bar')[1]
+    local discovered_list_bar = w:get_children_by_id('discovered_list_bar')[1]
+
+    local paired_icon = w:get_children_by_id('paired_icon')[1]
+    local discovered_icon = w:get_children_by_id('discovered_icon')[1]
+
+    local paired_list_anim = rubato.timed {
+      duration = 0.2,
+      pos = paired_list_height.height,
+      clamp_position = true,
+      rate = 24,
+      subscribed = function(v)
+        paired_list_height.height = v
+      end,
+    }
+    local discovered_list_anim = rubato.timed {
+      duration = 0.2,
+      pos = discovered_list_height.height,
+      clamp_position = true,
+      rate = 24,
+      subscribed = function(v)
+        discovered_list_height.height = v
+      end,
+    }
+
+    paired_list_bar:buttons(gtable.join {
+      abutton({}, 1, function()
+        if paired_list_height.height == 0 then
+          local size = (paired_list.children and #paired_list.children or 0) * dpi(50)
+          if size > dpi(330) then
+            size = dpi(330)
+          end
+          paired_list_anim.target = dpi(size)
+          paired_list_bar.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+          end
+          if #paired_list.children > 0 then
+            paired_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
+              beautiful.colorscheme.bg_blue))
+          else
+            paired_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
+              beautiful.colorscheme.bg_blue))
+          end
+        else
+          paired_list_anim.target = 0
+          paired_list_bar.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, true, true, dpi(4))
+          end
+          paired_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
+            beautiful.colorscheme.bg_blue))
         end
+      end),
+    })
 
-        connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          beautiful.colorscheme.bg_purple))
-      end
-    end
-  end)
-
-  ret:connect_signal('device::removed_connected', function(device)
-    local size = (#ret:get_paired_devices() * 60)
-    if size < 210 then
-      connected_animation.target = dpi(size)
-
-      connected_margin.connected_bg.shape = function(cr, width, height)
-        gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
-      end
-
-      connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-        beautiful.colorscheme.bg_purple))
-    end
-  end)
-
-  connected_margin:connect_signal('button::press', function()
-    if connected_list.height == 0 then
-      local size = (#ret:get_paired_devices() * 60)
-      if size < 210 then
-        connected_animation.target = dpi(size)
-
-        connected_margin.connected_bg.shape = function(cr, width, height)
-          gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+    discovered_list_bar:buttons(gtable.join {
+      abutton({}, 1, function()
+        if discovered_list_height.height == 0 then
+          local size = (discovered_list.children and #discovered_list.children or 0) * dpi(50)
+          if size > dpi(330) then
+            size = dpi(330)
+          end
+          discovered_list_anim.target = dpi(size)
+          discovered_list_bar.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
+          end
+          if #discovered_list.children > 0 then
+            discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
+              beautiful.colorscheme.bg_blue))
+          else
+            discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
+              beautiful.colorscheme.bg_blue))
+          end
+        else
+          discovered_list_anim.target = 0
+          discovered_list_bar.shape = function(cr, width, height)
+            gshape.partially_rounded_rect(cr, width, height, true, true, true, true, dpi(4))
+          end
+          discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
+            beautiful.colorscheme.bg_blue))
         end
+      end),
+    })
 
-        connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          beautiful.colorscheme.bg_purple))
-      end
-    else
-      connected_animation.target = 0
-      connected_margin.connected_bg.shape = beautiful.shape[4]
+    local refresh_button = w:get_children_by_id('refresh_button')[1]
+    refresh_button:buttons(gtable.join {
+      abutton({}, 1, nil, function()
+        bt:StartDiscovery()
+      end),
+    })
 
-      connected_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
-        beautiful.colorscheme.bg_purple))
-    end
-  end)
+    dnd:buttons(gtable.join {
+      abutton({}, 1, function()
+        bt:toggle_wifi()
+      end),
+    })
 
-  local discovered_margin = ret:get_children_by_id('discovered_margin')[1]
-  local discovered_list = ret:get_children_by_id('discovered_list')[1]
-  local discovered_bg = ret:get_children_by_id('discovered_bg')[1]
-  local discovered_icon = ret:get_children_by_id('discovered_icon')[1]
-
-  local discovered_animation = rubato.timed {
-    duration = 0.2,
-    pos = discovered_list.forced_height,
-    easing = rubato.linear,
-    subscribed = function(v)
-      discovered_list.forced_height = v
-    end,
-  }
-
-  ret:connect_signal('device::added_discovered', function(device)
-    if not device.Connected then
-      local size = (#ret:get_discovered_devices() * 60)
-      if size > 210 then
-        size = 210
-      end
-      if size > 0 then
-        discovered_animation.target = dpi(size)
-        discovered_margin.discovered_bg.shape = function(cr, width, height)
-          gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
-        end
-        discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          beautiful.colorscheme.bg_blue))
-      end
-    end
-  end)
-
-  ret:connect_signal('device::removed_discovered', function(device)
-    local size = (#ret:get_discovered_devices() * 60)
-    if size > 210 then
-      size = 210
-    end
-    if size > 0 then
-      discovered_animation.target = dpi(size)
-      discovered_margin.discovered_bg.shape = function(cr, width, height)
-        gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
-      end
-      discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-        beautiful.colorscheme.bg_blue))
-    end
-  end)
-
-  discovered_margin:connect_signal('button::press', function()
-    if discovered_list.forced_height == 0 then
-      local size = (#ret:get_discovered_devices() * 60)
-      if size > 210 then
-        size = 210
-      end
-      if size > 0 then
-        discovered_animation.target = dpi(size)
-        discovered_margin.discovered_bg.shape = function(cr, width, height)
-          gshape.partially_rounded_rect(cr, width, height, true, true, false, false, dpi(4))
-        end
-        discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-up.svg',
-          beautiful.colorscheme.bg_blue))
-      end
-    else
-      discovered_animation.target = 0
-      discovered_bg.shape = beautiful.shape[4]
-      discovered_icon:set_image(gcolor.recolor_image(icondir .. 'menu-down.svg',
-        beautiful.colorscheme.bg_blue))
-    end
-  end)
-  --#endregion
-
-  -- Get a reference to the dnd button
-  local dnd = ret:get_children_by_id('dnd')[1]:get_widget()
-
-  -- Toggle bluetooth on or off
-  dnd:connect_signal('dnd::toggle', function()
-    ret:toggle()
-  end)
-
-  -- Add buttons to the scan button
-  ret:get_children_by_id('scan')[1]:buttons {
-    abutton({}, 1, function()
-      ret:scan()
-    end),
-  }
-
-  hover.bg_hover { widget = ret:get_children_by_id('scan')[1] }
-  hover.bg_hover { widget = connected_margin.connected_bg }
-  hover.bg_hover { widget = discovered_bg }
-
-  gtable.crush(ret, bluetooth, true)
-
-  --#region Bluetooth Proxies
-  -- Create a proxy for the freedesktop ObjectManager
-  ret._private.ObjectManager = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.freedesktop.DBus.ObjectManager',
-    path = '/',
-  }
-
-  -- Create a proxy for the bluez Adapter1 interface
-  ret._private.Adapter1 = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.bluez.Adapter1',
-    path = '/org/bluez/hci0',
-  }
-
-  if not ret._private.Adapter1.Powered then return ret end
-
-  -- Create a proxy for the bluez Adapter1 Properties interface
-  ret._private.Adapter1Properties = dbus_proxy.Proxy:new {
-    bus = dbus_proxy.Bus.SYSTEM,
-    name = 'org.bluez',
-    interface = 'org.freedesktop.DBus.Properties',
-    path = '/org/bluez/hci0',
-  }
-
-  -- Connect to the Adapter1's PropertiesChanged signal
-  ret._private.Adapter1Properties:connect_signal(function(_, _, data)
-    if data.Powered ~= nil then
-      send_state_notification(data.Powered)
-      if data.Powered then
-        dnd:set_enabled()
-        ret:scan()
-      else
-        dnd:set_disabled()
-      end
-      ret:emit_signal('bluetooth::status', data.Powered)
-    end
-  end, 'PropertiesChanged')
-
-  -- Connect to the ObjectManager's InterfacesAdded signal
-  ret._private.ObjectManager:connect_signal(function(_, interface)
-    ret:get_device_info(interface)
-  end, 'InterfacesAdded')
-
-  -- Connect to the ObjectManager's InterfacesRemoved signal
-  ret._private.ObjectManager:connect_signal(function(_, interface)
-    ret:remove_device(interface)
-  end, 'InterfacesRemoved')
-
-  gtimer.delayed_call(function()
-    for path, _ in pairs(ret._private.ObjectManager:GetManagedObjects()) do
-      ret:get_device_info(path)
-    end
-    if ret._private.Adapter1.Powered then
+    if bt.Powered then
       dnd:set_enabled()
-      ret:scan()
     else
       dnd:set_disabled()
     end
-    ret:emit_signal('bluetooth::status', ret._private.Adapter1.Powered)
-    send_state_notification(ret._private.Adapter1.Powered)
-  end)
-  --#endregion
+    bt:connect_signal('Bluetooth::Powered', function(_, powered)
+      if powered then
+        dnd:set_enabled()
+      else
+        dnd:set_disabled()
+      end
+      print(powered)
+    end)
 
-  return ret
-end
+    bt:connect_signal('Bluetooth::DeviceAdded', function(_, path)
+      self:add_device_to_list(path)
+    end)
 
-function bluetooth.mt:__call(...)
-  return bluetooth.new(...)
-end
+    bt:connect_signal('Bluetooth::DeviceRemoved', function(_, path)
+      self:remove_device_from_list(path)
+    end)
 
-return setmetatable(bluetooth, bluetooth.mt)
+    return self
+  end,
+})

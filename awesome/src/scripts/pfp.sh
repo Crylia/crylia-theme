@@ -5,7 +5,7 @@ case $1 in
   "userPfp")
     iconPath="/var/lib/AccountsService/icons/$USER"
 
-    userIconPath="$HOME/.config/awesome/src/assets/userpfp/"
+    userIconPath="../assets/userpfp/"
 
     if [[ -f "$userIconPath" ]];
     then

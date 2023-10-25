@@ -30,6 +30,8 @@ if not instance then
       end)
       require('src.modules.app_launcher')()
       require('src.modules.powermenu')()
+      require('src.modules.brightness')()
+      require('src.modules.audio')()
     end,
   })
 end

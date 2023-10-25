@@ -48,7 +48,6 @@ if not instance then
             raise = true,
           })
         end
-        collectgarbage('collect')
       end)
 
       capi.tag.connect_signal('property::selected', function(c)

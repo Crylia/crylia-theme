@@ -10,6 +10,7 @@ local dpi = require('beautiful').xresources.apply_dpi
 local gfilesystem = require('gears.filesystem')
 local gtable = require('gears.table')
 local wibox = require('wibox')
+local gsurface = require('gears.surface')
 
 local hover = require('src.tools.hover')
 
@@ -116,7 +117,7 @@ if instance == nil then
             {
               {
                 {
-                  image = icondir .. 'defaultpfp.svg',
+                  image = gsurface.load_uncached(gfilesystem.get_configuration_dir() .. 'src/assets/userpfp/userpfp.png'),
                   resize = true,
                   clip_shape = beautiful.shape[30],
                   valign = 'center',
@@ -192,13 +193,14 @@ if instance == nil then
       -- Get the profile script from /var/lib/AccountsService/icons/${USER}
       -- and copy it to the assets folder
       -- TODO: If the user doesnt have AccountsService look into $HOME/.faces
-      aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userPfp'", function(stdout)
+      --[[ aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userPfp'", function(stdout)
+        print(stdout)
         if stdout then
-          self.w:get_children_by_id('icon_role')[1].image = stdout:gsub('\n', '')
+          self.w:get_children_by_id('icon_role')[1].image = gsurface.load_uncached(gfilesystem.get_configuration_dir() .. 'src/assets/userpfp/userpfp.png')
         else
           self.w:get_children_by_id('icon_role')[1].image = icondir .. 'defaultpfp.svg'
         end
-      end)
+      end) ]]
 
       aspawn.easy_async_with_shell("./.config/awesome/src/scripts/pfp.sh 'userName' '" .. beautiful.user_config.namestyle .. "'", function(stdout)
         self.w:get_children_by_id('text_role')[1].text = stdout:gsub('\n', '')

@@ -380,7 +380,7 @@ function network:add_ap_to_list(ap)
               halign = 'center',
               widget = wibox.widget.imagebox,
             },
-            strategy = 'max',
+            strategy = 'exact',
             height = dpi(24),
             width = dpi(24),
             widget = wibox.container.constraint,

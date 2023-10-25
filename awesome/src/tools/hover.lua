@@ -30,7 +30,7 @@ local function overlay_color(col, overlay, opacity)
 end
 
 local function bg_hover(args)
-  --[[ args = args or {}
+--[[   args = args or {}
   local old_cursor, old_wibox
 
   local _, r, g, b, a = args.widget.bg:get_rgba()

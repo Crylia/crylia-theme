@@ -454,9 +454,9 @@ end
 
 local button_signal = function(self, x, y, button)
   if button == 1 then
-    self:set_cursor_pos_from_mouse(x, y)
-    self:start_mousegrabber(x, y)
-    self:start_keygrabber()
+    --self:set_cursor_pos_from_mouse(x, y)
+    --self:start_mousegrabber(x, y)
+    --self:start_keygrabber()
   end
 end
 
