@@ -99,11 +99,18 @@ return function(s)
     offset = dpi(5),
   }
 
+  local function is_not_a_number(value)
+    return value == nil or tonumber(value) == nil
+  end
+
   local function update_osd()
     awful.spawn.easy_async_with_shell(
       "./.config/awesome/src/scripts/vol.sh volume",
       function(stdout)
       local volume_level = stdout:gsub("\n", ""):gsub("%%", "")
+      if is_not_a_number(volume_level) then
+        return
+      end
       awesome.emit_signal("widget::volume")
       volume_osd_widget.container.osd_layout.icon_slider_layout.label_value_layout.value:set_text(volume_level .. "%")
 
@@ -152,8 +159,11 @@ return function(s)
         awful.spawn.easy_async_with_shell(
           "./.config/awesome/src/scripts/vol.sh volume",
           function(stdout2)
-          stdout2 = stdout2:gsub("%%", ""):gsub("\n", "")
-          volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:set_value(tonumber(stdout2))
+          local volume_level = stdout2:gsub("%%", ""):gsub("\n", "")
+          if is_not_a_number(volume_level) then
+            return
+          end
+          volume_osd_widget.container.osd_layout.icon_slider_layout.slider_layout.volume_slider:set_value(tonumber(volume_level))
           update_osd()
         end
         )
