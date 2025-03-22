@@ -79,6 +79,19 @@ client.connect_signal(
   end
 )
 
+-- Prevents fullscreen window cutoff.  
+client.connect_signal(
+  "property::fullscreen",
+  function(c)
+    if c.fullscreen then
+      c.floating = true
+      c:geometry(screen.primary.geometry)
+    else
+      c.floating = false
+    end
+  end
+)
+
 -- Workaround for focused border color, why in the love of god doesnt it work with
 -- beautiful.border_focus
 client.connect_signal(
